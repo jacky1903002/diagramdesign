@@ -23,9 +23,9 @@
       --accent-green: #10b981;
       --accent-red: #ef4444;
       
-      /* 流程圖節點固定尺寸（已放大） */
-      --node-width: 220px;
-      --node-height: 80px;
+      /* 流程圖節點固定尺寸 */
+      --node-width: 230px;
+      --node-height: 85px;
     }
 
     * { box-sizing: border-box; }
@@ -33,32 +33,70 @@
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       margin: 0;
-      padding: 30px 40px;
+      padding: 0;
       background-color: var(--bg-color);
       color: var(--text-main);
       -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Header */
-    .header-container {
+    /* 頂部 Header Bar */
+    .header-bar {
+      background: #1e3a8a;
+      color: #ffffff;
+      padding: 16px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .header-bar h2 { margin: 0; font-size: 22px; font-weight: 700; }
+    .header-bar p { margin: 2px 0 0 0; font-size: 13px; color: #93c5fd; }
+
+    /* 分頁頁籤 (Tabs Navigation) */
+    .nav-tabs {
+      background: #ffffff;
       border-bottom: 2px solid var(--border-color);
+      display: flex;
+      padding: 0 30px;
+      gap: 8px;
     }
-    .header-title h2 {
-      margin: 0;
-      font-size: 26px;
+    .tab-btn {
+      padding: 14px 24px;
+      font-size: 15px;
       font-weight: 700;
-      color: #1e3a8a;
-      letter-spacing: -0.5px;
-    }
-    .header-title p {
-      margin: 4px 0 0 0;
-      font-size: 14px;
       color: var(--text-muted);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover { color: var(--primary-color); }
+    .tab-btn.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+      background-color: #eff6ff;
+    }
+
+    /* 滿版主要內容區域 */
+    .main-container {
+      flex: 1;
+      padding: 24px 30px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 分頁視窗內容 */
+    .tab-content {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+    }
+    .tab-content.active {
+      display: flex;
     }
 
     /* 企業卡片 */
@@ -68,7 +106,9 @@
       border-radius: 12px;
       border: 1px solid var(--border-color);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      margin-bottom: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     .card-title {
@@ -82,7 +122,7 @@
       justify-content: space-between;
     }
 
-    /* 按鈕 */
+    /* 按鈕樣式 */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -90,7 +130,7 @@
       background: var(--primary-color);
       color: white;
       border: none;
-      padding: 9px 16px;
+      padding: 9px 18px;
       font-size: 14px;
       font-weight: 600;
       border-radius: 8px;
@@ -112,21 +152,30 @@
     }
     .btn-outline:hover { background: #e2e8f0; }
 
-    /* 表單元件 */
-    input[type="email"], input[type="password"], input[type="text"], input[type="number"], select {
+    /* 表單元件與的多行 Textarea 支援 */
+    input[type="email"], input[type="password"], input[type="text"], input[type="number"], select, textarea {
       padding: 8px 12px;
       border: 1.5px solid var(--border-color);
       border-radius: 6px;
       font-size: 14px;
+      font-family: inherit;
       outline: none;
       background-color: #ffffff;
       color: var(--text-main);
     }
 
+    textarea.table-textarea {
+      width: 100%;
+      height: 60px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
     /* 資料表格 */
     .table-container {
       overflow-x: auto;
-      margin-top: 16px;
+      flex: 1;
+      margin-top: 12px;
     }
     table {
       width: 100%;
@@ -141,6 +190,9 @@
       padding: 12px 16px;
       text-align: left;
       border-bottom: 2px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     td {
       padding: 8px 12px;
@@ -160,42 +212,44 @@
       background: #dbeafe;
       color: #1e40af;
     }
-    .save-time-info { color: var(--text-muted); font-size: 13px; font-weight: 500; }
+    .save-time-info { color: #93c5fd; font-size: 13px; font-weight: 500; }
     .error { color: var(--accent-red); font-size: 13px; margin-top: 8px; }
 
     /* ========================================================
-       原生流程圖樣式 (文字加大 + 粗體)
+       滿版流程圖視覺區域 (支援文字 Enter 換行)
        ======================================================== */
-    .chart-view-area {
+    .chart-full-area {
       background: #ffffff;
       border: 1.5px solid var(--border-color);
       border-radius: 12px;
       padding: 40px;
-      overflow-x: auto;
-      min-height: 300px;
+      overflow: auto;
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      position: relative;
+      justify-content: flex-start;
+      min-height: 600px;
     }
 
     /* 方框節點 */
     .flow-node {
       width: var(--node-width);
-      height: var(--node-height);
+      min-height: var(--node-height);
       background-color: #fef3c7;
       border: 2.5px solid #d97706;
       border-radius: 8px;
       color: #78350f;
-      font-weight: 800; /* 加粗 */
-      font-size: 16px;   /* 放大字體 */
+      font-weight: 800;
+      font-size: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 10px 14px;
+      padding: 12px 16px;
       word-break: break-word;
-      line-height: 1.35;
+      white-space: pre-wrap; /* 支援文字內 Enter 換行 */
+      line-height: 1.4;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
       position: relative;
       z-index: 2;
@@ -281,7 +335,7 @@
     .snake-container {
       display: flex;
       flex-direction: column;
-      gap: 30px;
+      gap: 32px;
       align-items: center;
       padding: 20px;
     }
@@ -296,163 +350,118 @@
     /* 折返彎道垂直箭頭 */
     .snake-turn-right {
       align-self: flex-end;
-      margin-right: 105px;
+      margin-right: 110px;
     }
     .snake-turn-left {
       align-self: flex-start;
-      margin-left: 105px;
+      margin-left: 110px;
     }
-
-    /* 全螢幕檢視 Modal 彈窗 (獨立滿版) */
-    .fullscreen-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(15, 23, 42, 0.9);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    .fullscreen-modal.active {
-      display: flex;
-    }
-    .modal-content {
-      background: #ffffff;
-      width: 98vw;
-      height: 95vh;
-      border-radius: 16px;
-      padding: 30px;
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-    .close-modal-btn {
-      position: absolute;
-      top: 20px;
-      right: 25px;
-      font-size: 28px;
-      font-weight: bold;
-      background: #f1f5f9;
-      border: none;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      cursor: pointer;
-      color: #64748b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .close-modal-btn:hover { color: #0f172a; background: #e2e8f0; }
   </style>
 </head>
 <body>
 
-  <!-- 頂部 Header -->
-  <div class="header-container">
-    <div class="header-title">
+  <!-- 頂部 Header Bar -->
+  <div class="header-bar">
+    <div>
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 高清晰大字粗體滿版排版</p>
+      <p>自動同步 Firebase 雲端資料庫 & 三分頁滿版排版管理</p>
     </div>
-    <div id="user-status-bar">
-      <span id="user-info" class="save-time-info">系統初始化中...</span>
-      <button class="btn btn-danger btn-outline" id="logout-btn" style="display:none; margin-left: 10px;">登出系統</button>
-    </div>
-  </div>
-
-  <!-- 1. 權限認證區塊 -->
-  <div class="card" id="auth-section">
-    <div class="card-title">帳號權限驗證</div>
-    <div style="display: flex; gap: 10px; align-items: center;">
-      <input type="email" id="email" placeholder="企業電子郵件">
-      <input type="password" id="password" placeholder="密碼">
-      <button class="btn" id="login-btn">登入系統</button>
-    </div>
-    <div id="auth-error" class="error"></div>
-  </div>
-
-  <!-- 2. 編輯與控制功能區塊 -->
-  <div class="card" id="edit-controls" style="display: none;">
-    <div class="card-title">
-      <span>流程節點資料管理</span>
+    <div>
       <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
-    </div>
-
-    <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
-      <div>
-        <button class="btn btn-outline" id="import-btn">匯入 Excel</button>
-        <button class="btn btn-success" id="export-excel-btn">匯出 Excel 範本</button>
-        <button class="btn" id="add-row-btn">＋ 新增步驟</button>
-        <input type="file" id="excel-file" accept=".xlsx, .xls" style="display:none;">
-      </div>
-      <span id="cloud-status" class="status-badge" style="display:none;"></span>
-    </div>
-    
-    <div class="table-container">
-      <table id="data-table">
-        <thead>
-          <tr>
-            <th style="width: 12%;">步驟 ID</th>
-            <th style="width: 30%;">步驟名稱 (Label)</th>
-            <th style="width: 18%;">節點外觀形狀</th>
-            <th style="width: 15%;">下一步驟 ID</th>
-            <th style="width: 15%;">條件標籤</th>
-            <th style="width: 10%;">操作</th>
-          </tr>
-        </thead>
-        <tbody id="table-body">
-          <!-- 動態繪製表格內容 -->
-        </tbody>
-      </table>
+      <span id="user-info" class="save-time-info" style="margin-left: 15px;">系統初始化中...</span>
+      <button class="btn btn-danger btn-outline" id="logout-btn" style="display:none; margin-left: 10px;">登出</button>
     </div>
   </div>
 
-  <!-- 3. 標準垂直流程圖預覽區塊 -->
-  <div class="card">
-    <div class="card-title">
-      <span>1. 標準垂直流程圖（Vertical Flowchart）</span>
-      <div>
-        <button class="btn btn-outline" onclick="openFullscreen('vertical-chart-target', '標準垂直流程圖 - 滿版檢視')">🔍 滿版全螢幕檢視</button>
-        <button class="btn btn-success" id="export-png-btn-1">下載 PNG</button>
-      </div>
-    </div>
-    <div class="chart-view-area" id="vertical-chart-target">
-      <!-- 動態產生垂直流程圖 -->
-    </div>
+  <!-- 分頁頁籤列 -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('tab-data')">📝 1. 資料維護表格</button>
+    <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 2. 標準垂直流程圖</button>
+    <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 3. S型貪食蛇流程圖</button>
   </div>
 
-  <!-- 4. 貪食蛇 S 型橫向折返流程圖預覽區塊 -->
-  <div class="card">
-    <div class="card-title">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <span>2. S 型貪食蛇橫向折返流程圖（Snake Flowchart）</span>
-        <label style="font-size: 13px; font-weight: normal; color: var(--text-muted);">
-          每行個數：
-          <input type="number" id="snake-cols" value="4" min="2" max="8" style="width: 60px; padding: 4px 8px;">
-        </label>
-      </div>
-      <div>
-        <button class="btn btn-outline" onclick="openFullscreen('snake-chart-target', 'S 型橫向流程圖 - 滿版檢視')">🔍 滿版全螢幕檢視</button>
-        <button class="btn btn-success" id="export-png-btn-2">下載 PNG</button>
-      </div>
-    </div>
-    <div class="chart-view-area" id="snake-chart-target">
-      <!-- 動態產生 S 型流程圖 -->
-    </div>
-  </div>
+  <!-- 滿版主內容視窗 -->
+  <div class="main-container">
 
-  <!-- 全螢幕檢視 Modal 彈窗 (獨立滿版) -->
-  <div class="fullscreen-modal" id="fullscreen-modal">
-    <div class="modal-content">
-      <button class="close-modal-btn" onclick="closeFullscreen()">✕</button>
-      <h3 id="modal-title" style="margin-top:0; color: var(--primary-color); font-size: 20px;">全螢幕滿版檢視</h3>
-      <div id="modal-body" style="flex:1; display:flex; flex-direction:column; justify-content:flex-start; align-items:center; overflow:auto; padding:30px; background:#f8fafc; border-radius:12px;"></div>
+    <!-- 分頁 1: 輸入與編輯表格 -->
+    <div id="tab-data" class="tab-content active">
+      <!-- 登入認證卡片 -->
+      <div class="card" id="auth-section" style="flex: none; margin-bottom: 20px;">
+        <div class="card-title">帳號權限驗證</div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="email" id="email" placeholder="企業電子郵件">
+          <input type="password" id="password" placeholder="密碼">
+          <button class="btn" id="login-btn">登入系統</button>
+        </div>
+        <div id="auth-error" class="error"></div>
+      </div>
+
+      <!-- 編輯表格卡片 -->
+      <div class="card" id="edit-controls" style="display: none;">
+        <div class="card-title">
+          <span>流程步驟編輯資料庫 (名稱欄位支援 Enter 換行)</span>
+          <span id="cloud-status" class="status-badge" style="display:none;"></span>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <button class="btn btn-outline" id="import-btn">匯入 Excel</button>
+          <button class="btn btn-success" id="export-excel-btn">匯出 Excel 範本</button>
+          <button class="btn" id="add-row-btn">＋ 新增步驟</button>
+          <input type="file" id="excel-file" accept=".xlsx, .xls" style="display:none;">
+        </div>
+        
+        <div class="table-container">
+          <table id="data-table">
+            <thead>
+              <tr>
+                <th style="width: 10%;">步驟 ID</th>
+                <th style="width: 40%;">步驟名稱 (Label, 支援 Enter 換行)</th>
+                <th style="width: 18%;">節點外觀形狀</th>
+                <th style="width: 12%;">下一步 ID</th>
+                <th style="width: 12%;">條件標籤</th>
+                <th style="width: 8%;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <!-- 動態繪製表格內容 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+
+    <!-- 分頁 2: 滿版標準垂直流程圖 -->
+    <div id="tab-vertical" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>標準垂直流程圖 (Vertical Flowchart)</span>
+          <button class="btn btn-success" id="export-png-btn-1">下載高解析度 PNG</button>
+        </div>
+        <div class="chart-full-area" id="vertical-chart-target">
+          <!-- 動態渲染垂直流程圖 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 分頁 3: 滿版貪食蛇流程圖 -->
+    <div id="tab-snake" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <span>S 型貪食蛇橫向折返流程圖 (Snake Flowchart)</span>
+            <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+              每行步驟數：
+              <input type="number" id="snake-cols" value="4" min="2" max="8" style="width: 65px; padding: 4px 8px;">
+            </label>
+          </div>
+          <button class="btn btn-success" id="export-png-btn-2">下載高解析度 PNG</button>
+        </div>
+        <div class="chart-full-area" id="snake-chart-target" style="justify-content: center;">
+          <!-- 動態渲染 S 型流程圖 -->
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- JS 邏輯模組 -->
@@ -484,7 +493,7 @@
       { id: "3", label: "Milling", shape: "rect", nextId: "4", condition: "" },
       { id: "4", label: "Post Treatment", shape: "rect", nextId: "5", condition: "" },
       { id: "5", label: "Cleaning", shape: "rect", nextId: "6", condition: "" },
-      { id: "6", label: "ENP(Withmasking), 0250-35000 clean", shape: "rect", nextId: "7", condition: "" },
+      { id: "6", label: "ENP(Withmasking),\n0250-35000 clean", shape: "rect", nextId: "7", condition: "" },
       { id: "7", label: "QC", shape: "rect", nextId: "8", condition: "" },
       { id: "8", label: "Package", shape: "rect", nextId: "9", condition: "" },
       { id: "9", label: "Inspection", shape: "rect", nextId: "10", condition: "" },
@@ -524,6 +533,15 @@
       });
     });
 
+    // 切換三分頁
+    window.switchTab = function(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    };
+
     function setupEventListeners() {
       document.getElementById("login-btn").addEventListener("click", () => {
         const email = document.getElementById("email").value;
@@ -555,33 +573,6 @@
         renderSnakeChart();
       });
     }
-
-    // 全螢幕開關全域函式 (修正佈局防變形)
-    window.openFullscreen = function(targetId, title) {
-      const target = document.getElementById(targetId);
-      const modal = document.getElementById("fullscreen-modal");
-      const modalBody = document.getElementById("modal-body");
-      const modalTitle = document.getElementById("modal-title");
-
-      modalTitle.innerText = title;
-      modalBody.innerHTML = target.innerHTML;
-      
-      // 確保垂直流程圖在全螢幕下維持垂直佈局
-      if (targetId === 'vertical-chart-target') {
-        modalBody.style.flexDirection = 'column';
-        modalBody.style.alignItems = 'center';
-      } else {
-        modalBody.style.flexDirection = 'row';
-        modalBody.style.justifyContent = 'center';
-      }
-
-      modal.classList.add("active");
-    };
-
-    window.closeFullscreen = function() {
-      const modal = document.getElementById("fullscreen-modal");
-      modal.classList.remove("active");
-    };
 
     function triggerAutoSave() {
       const statusEl = document.getElementById("cloud-status");
@@ -649,7 +640,7 @@
         const shape = row.shape || "rect";
         tr.innerHTML = `
           <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="例如: 1"></td>
-          <td><input type="text" value="${row.label || ''}" data-index="${index}" data-field="label" placeholder="步驟描述"></td>
+          <td><textarea data-index="${index}" data-field="label" class="table-textarea" placeholder="步驟描述 (支援 Enter 換行)">${row.label || ''}</textarea></td>
           <td>
             <select data-index="${index}" data-field="shape">
               <option value="round" ${shape === 'round' ? 'selected' : ''}>橢圓 (開始/結束)</option>
@@ -664,11 +655,11 @@
         tbody.appendChild(tr);
       });
 
-      document.querySelectorAll(".table-container input, .table-container select").forEach(input => {
+      document.querySelectorAll(".table-container input, .table-container select, .table-container textarea").forEach(input => {
         input.addEventListener("change", (e) => {
           const idx = e.target.dataset.index;
           const field = e.target.dataset.field;
-          flowData[idx][field] = e.target.value.trim();
+          flowData[idx][field] = e.target.value;
           renderAllCharts();
           triggerAutoSave();
         });
@@ -791,7 +782,7 @@
 
         flowData = json.map(row => ({
           id: String(row["步驟ID"] || row["id"] || "").trim(),
-          label: String(row["步驟名稱"] || row["label"] || "").trim(),
+          label: String(row["步驟名稱"] || row["label"] || ""),
           shape: String(row["節點形狀(rect/round/rhombus)"] || row["shape"] || "rect").trim(),
           nextId: String(row["下一步驟ID"] || row["nextId"] || "").trim(),
           condition: String(row["條件說明"] || row["condition"] || "").trim()
