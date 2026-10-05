@@ -23,11 +23,8 @@
       --accent-green: #10b981;
       --accent-red: #ef4444;
       
-      /* 標準流程圖節點固定尺寸 */
       --node-width: 230px;
       --node-height: 85px;
-
-      /* 垂直長條型貪食蛇節點尺寸 */
       --v-node-width: 75px;
       --v-node-height: 220px;
     }
@@ -65,12 +62,12 @@
       border-bottom: 2px solid var(--border-color);
       display: flex;
       padding: 0 30px;
-      gap: 8px;
+      gap: 6px;
       overflow-x: auto;
     }
     .tab-btn {
-      padding: 14px 20px;
-      font-size: 14px;
+      padding: 14px 16px;
+      font-size: 13.5px;
       font-weight: 700;
       color: var(--text-muted);
       border: none;
@@ -273,6 +270,7 @@
       flex-shrink: 0;
     }
     .flow-node.shape-round { border-radius: 40px; }
+    .flow-node.shape-rhombus { transform: rotate(0deg); }
 
     /* 垂直長條型節點 */
     .vertical-flow-node {
@@ -298,7 +296,7 @@
     }
     .vertical-flow-node.shape-round { border-radius: 40px; }
 
-    /* 垂直箭頭指示器 */
+    /* 箭頭指示器 */
     .arrow-down {
       width: 3px;
       height: 40px;
@@ -319,7 +317,6 @@
       border-top: 10px solid #334155;
     }
 
-    /* 橫向箭頭指示器 */
     .arrow-right {
       width: 50px;
       height: 3px;
@@ -376,23 +373,29 @@
       flex-direction: row-reverse;
     }
 
-    /* 折返彎道垂直箭頭定位 */
-    .snake-turn-right {
-      align-self: flex-end;
-      margin-right: 110px;
-    }
-    .snake-turn-left {
-      align-self: flex-start;
-      margin-left: 110px;
-    }
+    .snake-turn-right { align-self: flex-end; margin-right: 110px; }
+    .snake-turn-left { align-self: flex-start; margin-left: 110px; }
+    .v-snake-turn-right { align-self: flex-end; margin-right: 38px; }
+    .v-snake-turn-left { align-self: flex-start; margin-left: 38px; }
 
-    .v-snake-turn-right {
-      align-self: flex-end;
-      margin-right: 38px;
+    /* 樹狀階層流程圖專用樣式 */
+    .tree-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+      padding: 20px;
     }
-    .v-snake-turn-left {
-      align-self: flex-start;
-      margin-left: 38px;
+    .tree-level {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    .tree-node-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
   </style>
 </head>
@@ -402,7 +405,7 @@
   <div class="header-bar">
     <div>
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 動態方向控制管理</p>
+      <p>自動同步 Firebase 雲端資料庫 & 支援線性與樹狀階層管理</p>
     </div>
     <div>
       <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
@@ -411,20 +414,21 @@
     </div>
   </div>
 
-  <!-- 分頁頁籤列 (4個分頁) -->
+  <!-- 分頁頁籤列 (6個分頁) -->
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('tab-data')">📝 1. 資料維護表格</button>
-    <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 2. 標準垂直流程圖</button>
-    <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 3. S型橫向貪食蛇</button>
-    <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 4. 垂直長條型貪食蛇</button>
+    <button class="tab-btn active" onclick="switchTab('tab-data-linear')">📝 1. 線性流程資料</button>
+    <button class="tab-btn" onclick="switchTab('tab-data-tree')">🌳 2. 樹狀階層資料</button>
+    <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 3. 標準垂直流程圖</button>
+    <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 4. S型橫向貪食蛇</button>
+    <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 5. 垂直長條型貪食蛇</button>
+    <button class="tab-btn" onclick="switchTab('tab-tree-chart')">🌲 6. 樹狀階層流程圖</button>
   </div>
 
   <!-- 滿版主內容視窗 -->
   <div class="main-container">
 
-    <!-- 分頁 1: 輸入與編輯表格 -->
-    <div id="tab-data" class="tab-content active">
-      <!-- 登入認證卡片 -->
+    <!-- 分頁 1: 線性流程資料維護表格 -->
+    <div id="tab-data-linear" class="tab-content active">
       <div class="card" id="auth-section" style="flex: none; margin-bottom: 20px;">
         <div class="card-title">帳號權限驗證</div>
         <div style="display: flex; gap: 10px; align-items: center;">
@@ -435,10 +439,9 @@
         <div id="auth-error" class="error"></div>
       </div>
 
-      <!-- 編輯表格卡片 -->
       <div class="card" id="edit-controls" style="display: none;">
         <div class="card-title">
-          <span>流程步驟編輯資料庫 (支援 Enter 換行與自訂色彩)</span>
+          <span>線性流程資料庫 (適用於垂直與貪食蛇流程圖)</span>
           <span id="cloud-status" class="status-badge" style="display:none;"></span>
         </div>
 
@@ -463,28 +466,50 @@
                 <th style="width: 5%;">操作</th>
               </tr>
             </thead>
-            <tbody id="table-body">
-              <!-- 動態繪製表格內容 -->
-            </tbody>
+            <tbody id="table-body"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- 分頁 2: 滿版標準垂直流程圖 -->
+    <!-- 分頁 2: 樹狀階層資料維護表格 -->
+    <div id="tab-data-tree" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>樹狀階層資料庫 (適用於樹狀階層流程圖)</span>
+          <button class="btn btn-success" id="add-tree-row-btn">＋ 新增樹狀節點</button>
+        </div>
+        <div class="table-container">
+          <table id="tree-data-table">
+            <thead>
+              <tr>
+                <th style="width: 12%;">節點 ID</th>
+                <th style="width: 32%;">節點名稱 (Label)</th>
+                <th style="width: 15%;">父節點 ID (Parent)</th>
+                <th style="width: 12%;">節點形狀</th>
+                <th style="width: 10%;">格子顏色</th>
+                <th style="width: 10%;">文字顏色</th>
+                <th style="width: 9%;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tree-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分頁 3: 滿版標準垂直流程圖 -->
     <div id="tab-vertical" class="tab-content">
       <div class="card">
         <div class="card-title">
           <span>標準垂直流程圖 (Vertical Flowchart)</span>
           <button class="btn btn-success" id="export-png-btn-1">下載高解析度 PNG</button>
         </div>
-        <div class="chart-full-area" id="vertical-chart-target">
-          <!-- 動態渲染垂直流程圖 -->
-        </div>
+        <div class="chart-full-area" id="vertical-chart-target"></div>
       </div>
     </div>
 
-    <!-- 分頁 3: 滿版貪食蛇流程圖 -->
+    <!-- 分頁 4: 滿版貪食蛇流程圖 -->
     <div id="tab-snake" class="tab-content">
       <div class="card">
         <div class="card-title">
@@ -504,13 +529,11 @@
           </div>
           <button class="btn btn-success" id="export-png-btn-2">下載高解析度 PNG</button>
         </div>
-        <div class="chart-full-area" id="snake-chart-target" style="justify-content: center;">
-          <!-- 動態渲染 S 型流程圖 -->
-        </div>
+        <div class="chart-full-area" id="snake-chart-target" style="justify-content: center;"></div>
       </div>
     </div>
 
-    <!-- 分頁 4: 垂直長條型貪食蛇流程圖 -->
+    <!-- 分頁 5: 垂直長條型貪食蛇流程圖 -->
     <div id="tab-v-snake" class="tab-content">
       <div class="card">
         <div class="card-title">
@@ -530,9 +553,18 @@
           </div>
           <button class="btn btn-success" id="export-png-btn-3">下載高解析度 PNG</button>
         </div>
-        <div class="chart-full-area" id="v-snake-chart-target" style="justify-content: center;">
-          <!-- 動態渲染垂直長條型貪食蛇流程圖 -->
+        <div class="chart-full-area" id="v-snake-chart-target" style="justify-content: center;"></div>
+      </div>
+    </div>
+
+    <!-- 分頁 6: 樹狀階層流程圖 -->
+    <div id="tab-tree-chart" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>樹狀階層流程圖 (Tree / Org Chart)</span>
+          <button class="btn btn-success" id="export-png-btn-4">下載高解析度 PNG</button>
         </div>
+        <div class="chart-full-area" id="tree-chart-target" style="justify-content: center;"></div>
       </div>
     </div>
 
@@ -561,6 +593,7 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
+    // 1. 線性流程資料
     let flowData = [
       { id: "1", label: "Milling", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "2", condition: "" },
       { id: "2", label: "Grinding", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "3", condition: "" },
@@ -572,10 +605,23 @@
       { id: "8", label: "Package", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1", nextId: "", condition: "" }
     ];
 
+    // 2. 樹狀階層流程資料
+    let treeData = [
+      { id: "root", label: "公司總部 / 核心製程", parentId: "", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1" },
+      { id: "sub1", label: "精密加工部 (CNC)", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f" },
+      { id: "sub2", label: "表面處理部 (ENP)", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f" },
+      { id: "sub3", label: "品保檢驗部 (QC)", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f" },
+      { id: "sub1-1", label: "Milling 銑削線", parentId: "sub1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46" },
+      { id: "sub1-2", label: "Grinding 研磨線", parentId: "sub1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46" },
+      { id: "sub2-1", label: "清洗與除油", parentId: "sub2", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46" },
+      { id: "sub2-2", label: "化學鎳電鍍", parentId: "sub2", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46" }
+    ];
+
     let autoSaveTimer = null;
 
     document.addEventListener("DOMContentLoaded", () => {
       renderTable();
+      renderTreeTable();
       renderAllCharts();
       setupEventListeners();
 
@@ -614,28 +660,21 @@
         const email = document.getElementById("email").value;
         const pass = document.getElementById("password").value;
         signInWithEmailAndPassword(auth, email, pass)
-          .then(() => { 
-            document.getElementById("auth-error").innerText = ""; 
-          })
-          .catch(err => { 
-            document.getElementById("auth-error").innerText = "登入失敗：" + err.message; 
-          });
+          .then(() => { document.getElementById("auth-error").innerText = ""; })
+          .catch(err => { document.getElementById("auth-error").innerText = "登入失敗：" + err.message; });
       });
 
-      document.getElementById("logout-btn").addEventListener("click", () => {
-        signOut(auth);
-      });
-
-      document.getElementById("import-btn").addEventListener("click", () => {
-        document.getElementById("excel-file").click();
-      });
-
+      document.getElementById("logout-btn").addEventListener("click", () => signOut(auth));
+      document.getElementById("import-btn").addEventListener("click", () => document.getElementById("excel-file").click());
       document.getElementById("excel-file").addEventListener("change", handleImport);
       document.getElementById("export-excel-btn").addEventListener("click", exportToExcel);
       document.getElementById("add-row-btn").addEventListener("click", addRow);
+      document.getElementById("add-tree-row-btn").addEventListener("click", addTreeRow);
+
       document.getElementById("export-png-btn-1").addEventListener("click", () => exportToPNG("vertical-chart-target", "垂直流程圖.png"));
       document.getElementById("export-png-btn-2").addEventListener("click", () => exportToPNG("snake-chart-target", "S型橫向流程圖.png"));
       document.getElementById("export-png-btn-3").addEventListener("click", () => exportToPNG("v-snake-chart-target", "垂直長條型貪食蛇流程圖.png"));
+      document.getElementById("export-png-btn-4").addEventListener("click", () => exportToPNG("tree-chart-target", "樹狀階層流程圖.png"));
       
       document.getElementById("snake-cols").addEventListener("change", () => renderSnakeChart());
       document.getElementById("snake-direction").addEventListener("change", () => renderSnakeChart());
@@ -649,9 +688,7 @@
       statusEl.innerText = "資料變更中...";
       
       clearTimeout(autoSaveTimer);
-      autoSaveTimer = setTimeout(async () => {
-        await saveToCloud();
-      }, 1000);
+      autoSaveTimer = setTimeout(async () => { await saveToCloud(); }, 1000);
     }
 
     async function saveToCloud() {
@@ -662,6 +699,7 @@
       try {
         await set(ref(db, 'flowcharts/default_chart'), {
           data: flowData,
+          treeData: treeData,
           updatedAt: nowString
         });
         statusEl.innerText = "✅ 已自動同步";
@@ -684,23 +722,25 @@
           const cloudData = snapshot.val();
           if (cloudData.data && Array.isArray(cloudData.data)) {
             flowData = cloudData.data;
-            renderTable();
-            renderAllCharts();
-            statusEl.innerText = "✅ 載入雲端最新資料成功";
-            if (cloudData.updatedAt) {
-              document.getElementById("save-time-display").innerText = `上次儲存時間：${cloudData.updatedAt}`;
-            }
           }
-        } else {
-          statusEl.innerText = "ℹ️ 雲端尚無資料，顯示預設範本。";
+          if (cloudData.treeData && Array.isArray(cloudData.treeData)) {
+            treeData = cloudData.treeData;
+          }
+          renderTable();
+          renderTreeTable();
+          renderAllCharts();
+          statusEl.innerText = "✅ 載入雲端最新資料成功";
+          if (cloudData.updatedAt) {
+            document.getElementById("save-time-display").innerText = `上次儲存時間：${cloudData.updatedAt}`;
+          }
         }
         setTimeout(() => { statusEl.style.display = "none"; }, 2500);
       } catch (error) {
         console.error("讀取失敗:", error);
-        statusEl.innerText = "❌ 載入失敗：" + error.message;
       }
     }
 
+    // 1. 渲染線性流程表格
     function renderTable() {
       const tbody = document.getElementById("table-body");
       tbody.innerHTML = "";
@@ -720,8 +760,8 @@
               <option value="rhombus" ${shape === 'rhombus' ? 'selected' : ''}>菱形 {條件判斷}</option>
             </select>
           </td>
-          <td><input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor" title="選擇格子背景色"></td>
-          <td><input type="color" value="${textColor}" data-index="${index}" data-field="textColor" title="選擇文字顏色"></td>
+          <td><input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor"></td>
+          <td><input type="color" value="${textColor}" data-index="${index}" data-field="textColor"></td>
           <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" placeholder="2"></td>
           <td><input type="text" value="${row.condition || ''}" data-index="${index}" data-field="condition" placeholder="是/否"></td>
           <td><button class="btn btn-danger btn-outline delete-btn" data-index="${index}">刪除</button></td>
@@ -729,7 +769,7 @@
         tbody.appendChild(tr);
       });
 
-      document.querySelectorAll(".table-container input, .table-container select, .table-container textarea").forEach(input => {
+      document.querySelectorAll("#data-table input, #data-table select, #data-table textarea").forEach(input => {
         input.addEventListener("change", (e) => {
           const idx = e.target.dataset.index;
           const field = e.target.dataset.field;
@@ -739,12 +779,60 @@
         });
       });
 
-      document.querySelectorAll(".delete-btn").forEach(btn => {
+      document.querySelectorAll("#data-table .delete-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
           const idx = e.target.dataset.index;
           flowData.splice(idx, 1);
           renderTable();
           renderAllCharts();
+          triggerAutoSave();
+        });
+      });
+    }
+
+    // 2. 渲染樹狀階層表格
+    function renderTreeTable() {
+      const tbody = document.getElementById("tree-table-body");
+      tbody.innerHTML = "";
+      treeData.forEach((row, index) => {
+        const tr = document.createElement("tr");
+        const shape = row.shape || "rect";
+        const bgColor = row.bgColor || "#fef3c7";
+        const textColor = row.textColor || "#78350f";
+
+        tr.innerHTML = `
+          <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="ID"></td>
+          <td><textarea data-index="${index}" data-field="label" class="table-textarea" placeholder="節點名稱">${row.label || ''}</textarea></td>
+          <td><input type="text" value="${row.parentId || ''}" data-index="${index}" data-field="parentId" placeholder="父節點ID"></td>
+          <td>
+            <select data-index="${index}" data-field="shape">
+              <option value="round" ${shape === 'round' ? 'selected' : ''}>橢圓</option>
+              <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形</option>
+            </select>
+          </td>
+          <td><input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor"></td>
+          <td><input type="color" value="${textColor}" data-index="${index}" data-field="textColor"></td>
+          <td><button class="btn btn-danger btn-outline delete-tree-btn" data-index="${index}">刪除</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll("#tree-data-table input, #tree-data-table select, #tree-data-table textarea").forEach(input => {
+        input.addEventListener("change", (e) => {
+          const idx = e.target.dataset.index;
+          const field = e.target.dataset.field;
+          treeData[idx][field] = e.target.value;
+          renderTreeChart();
+          triggerAutoSave();
+        });
+      });
+
+      document.querySelectorAll("#tree-data-table .delete-tree-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const idx = e.target.dataset.index;
+          treeData.splice(idx, 1);
+          renderTreeTable();
+          renderTreeChart();
           triggerAutoSave();
         });
       });
@@ -758,10 +846,19 @@
       triggerAutoSave();
     }
 
+    function addTreeRow() {
+      const nextNum = treeData.length + 1;
+      treeData.push({ id: `node_${nextNum}`, label: "", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f" });
+      renderTreeTable();
+      renderTreeChart();
+      triggerAutoSave();
+    }
+
     function renderAllCharts() {
       renderVerticalChart();
       renderSnakeChart();
       renderVerticalSnakeChart();
+      renderTreeChart();
     }
 
     function createFlowNode(item) {
@@ -786,12 +883,9 @@
     function renderVerticalChart() {
       const target = document.getElementById("vertical-chart-target");
       target.innerHTML = "";
-
       flowData.forEach((item, idx) => {
         if (!item.id) return;
-        const node = createFlowNode(item);
-        target.appendChild(node);
-
+        target.appendChild(createFlowNode(item));
         if (item.nextId && idx < flowData.length - 1) {
           const arrow = document.createElement("div");
           arrow.className = "arrow-down";
@@ -800,24 +894,20 @@
       });
     }
 
-    // 2. S 型貪食蛇流程圖 (支援順/逆時針方向)
+    // 2. S 型貪食蛇流程圖
     function renderSnakeChart() {
       const target = document.getElementById("snake-chart-target");
       target.innerHTML = "";
-
       const cols = parseInt(document.getElementById("snake-cols").value) || 4;
-      const direction = document.getElementById("snake-direction").value; // clockwise / counter
+      const direction = document.getElementById("snake-direction").value;
       const validItems = flowData.filter(item => item.id);
 
       const snakeContainer = document.createElement("div");
       snakeContainer.className = "snake-container";
 
       let currentRow = null;
-      
       validItems.forEach((item, idx) => {
         const rowIdx = Math.floor(idx / cols);
-        // direction === 'clockwise': 偶數行正向(左至右)，奇數行反向(右至左)
-        // direction === 'counter': 偶數行反向(右至左)，奇數行正向(左至右)
         const isReverse = (direction === 'clockwise') ? (rowIdx % 2 === 1) : (rowIdx % 2 === 0);
 
         if (idx % cols === 0) {
@@ -826,8 +916,7 @@
           snakeContainer.appendChild(currentRow);
         }
 
-        const node = createFlowNode(item);
-        currentRow.appendChild(node);
+        currentRow.appendChild(createFlowNode(item));
 
         const isLastInRow = (idx % cols === cols - 1) || (idx === validItems.length - 1);
         if (!isLastInRow) {
@@ -842,24 +931,21 @@
           snakeContainer.appendChild(turnArrow);
         }
       });
-
       target.appendChild(snakeContainer);
     }
 
-    // 3. 垂直長條型貪食蛇流程圖 (支援順/逆時針方向)
+    // 3. 垂直長條型貪食蛇流程圖
     function renderVerticalSnakeChart() {
       const target = document.getElementById("v-snake-chart-target");
       target.innerHTML = "";
-
       const cols = parseInt(document.getElementById("v-snake-cols").value) || 6;
-      const direction = document.getElementById("v-snake-direction").value; // clockwise / counter
+      const direction = document.getElementById("v-snake-direction").value;
       const validItems = flowData.filter(item => item.id);
 
       const snakeContainer = document.createElement("div");
       snakeContainer.className = "snake-container";
 
       let currentRow = null;
-      
       validItems.forEach((item, idx) => {
         const rowIdx = Math.floor(idx / cols);
         const isReverse = (direction === 'clockwise') ? (rowIdx % 2 === 1) : (rowIdx % 2 === 0);
@@ -870,8 +956,7 @@
           snakeContainer.appendChild(currentRow);
         }
 
-        const node = createVerticalFlowNode(item);
-        currentRow.appendChild(node);
+        currentRow.appendChild(createVerticalFlowNode(item));
 
         const isLastInRow = (idx % cols === cols - 1) || (idx === validItems.length - 1);
         if (!isLastInRow) {
@@ -886,23 +971,73 @@
           snakeContainer.appendChild(turnArrow);
         }
       });
-
       target.appendChild(snakeContainer);
     }
 
+    // 4. 樹狀階層流程圖
+    function renderTreeChart() {
+      const target = document.getElementById("tree-chart-target");
+      target.innerHTML = "";
+
+      const treeContainer = document.createElement("div");
+      treeContainer.className = "tree-container";
+
+      // 找出根節點 (parentId 為空或找不到對應 parent 的節點)
+      const rootNodes = treeData.filter(item => !item.parentId || !treeData.some(p => p.id === item.parentId));
+
+      function buildSubTree(parentId) {
+        const children = treeData.filter(item => item.parentId === parentId);
+        if (children.length === 0) return null;
+
+        const levelDiv = document.createElement("div");
+        levelDiv.className = "tree-level";
+
+        children.forEach(childNode => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "tree-node-wrapper";
+
+          // 加上向下連線
+          const arrow = document.createElement("div");
+          arrow.className = "arrow-down";
+          wrapper.appendChild(arrow);
+
+          wrapper.appendChild(createFlowNode(childNode));
+
+          const subChildren = buildSubTree(childNode.id);
+          if (subChildren) {
+            wrapper.appendChild(subChildren);
+          }
+          levelDiv.appendChild(wrapper);
+        });
+        return levelDiv;
+      }
+
+      rootNodes.forEach(root => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "tree-node-wrapper";
+        wrapper.appendChild(createFlowNode(root));
+
+        const subTree = buildSubTree(root.id);
+        if (subTree) {
+          wrapper.appendChild(subTree);
+        }
+        treeContainer.appendChild(wrapper);
+      });
+
+      target.appendChild(treeContainer);
+    }
+
     function exportToExcel() {
-      const worksheet = XLSX.utils.json_to_sheet(flowData.map(item => ({
-        "步驟ID": item.id,
-        "步驟名稱": item.label,
-        "節點形狀(rect/round/rhombus)": item.shape || "rect",
-        "格子背景色": item.bgColor || "#fef3c7",
-        "文字顏色": item.textColor || "#78350f",
-        "下一步驟ID": item.nextId,
-        "條件說明": item.condition
+      const wb = XLSX.utils.book_new();
+      const wsLinear = XLSX.utils.json_to_sheet(flowData.map(item => ({
+        "步驟ID": item.id, "步驟名稱": item.label, "形狀": item.shape, "背景色": item.bgColor, "文字顏色": item.textColor, "下一步ID": item.nextId, "條件": item.condition
       })));
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "流程圖資料");
-      XLSX.writeFile(workbook, "企業流程圖資料範本.xlsx");
+      const wsTree = XLSX.utils.json_to_sheet(treeData.map(item => ({
+        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "背景色": item.bgColor, "文字顏色": item.textColor
+      })));
+      XLSX.utils.book_append_sheet(wb, wsLinear, "線性流程資料");
+      XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料");
+      XLSX.writeFile(wb, "企業流程圖資料集.xlsx");
     }
 
     function handleImport(e) {
@@ -913,21 +1048,34 @@
       reader.onload = function(evt) {
         const data = new Uint8Array(evt.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const json = XLSX.utils.sheet_to_json(worksheet);
+        
+        if (workbook.SheetNames.includes("線性流程資料")) {
+          const json1 = XLSX.utils.sheet_to_json(workbook.Sheets["線性流程資料"]);
+          flowData = json1.map(row => ({
+            id: String(row["步驟ID"] || row["id"] || "").trim(),
+            label: String(row["步驟名稱"] || row["label"] || ""),
+            shape: String(row["形狀"] || row["shape"] || "rect").trim(),
+            bgColor: String(row["背景色"] || row["bgColor"] || "#fef3c7").trim(),
+            textColor: String(row["文字顏色"] || row["textColor"] || "#78350f").trim(),
+            nextId: String(row["下一步ID"] || row["nextId"] || "").trim(),
+            condition: String(row["條件"] || row["condition"] || "").trim()
+          }));
+        }
 
-        flowData = json.map(row => ({
-          id: String(row["步驟ID"] || row["id"] || "").trim(),
-          label: String(row["步驟名稱"] || row["label"] || ""),
-          shape: String(row["節點形狀(rect/round/rhombus)"] || row["shape"] || "rect").trim(),
-          bgColor: String(row["格子背景色"] || row["bgColor"] || "#fef3c7").trim(),
-          textColor: String(row["文字顏色"] || row["textColor"] || "#78350f").trim(),
-          nextId: String(row["下一步驟ID"] || row["nextId"] || "").trim(),
-          condition: String(row["條件說明"] || row["condition"] || "").trim()
-        }));
+        if (workbook.SheetNames.includes("樹狀階層資料")) {
+          const json2 = XLSX.utils.sheet_to_json(workbook.Sheets["樹狀階層資料"]);
+          treeData = json2.map(row => ({
+            id: String(row["節點ID"] || row["id"] || "").trim(),
+            label: String(row["節點名稱"] || row["label"] || ""),
+            parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
+            shape: String(row["形狀"] || row["shape"] || "rect").trim(),
+            bgColor: String(row["背景色"] || row["bgColor"] || "#fef3c7").trim(),
+            textColor: String(row["文字顏色"] || row["textColor"] || "#78350f").trim()
+          }));
+        }
 
         renderTable();
+        renderTreeTable();
         renderAllCharts();
         triggerAutoSave();
       };
