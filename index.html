@@ -1196,7 +1196,7 @@
           const json2 = XLSX.utils.sheet_to_json(workbook.Sheets["樹狀階層資料"]);
           treeData = json2.map(row => ({
             id: String(row["節點ID"] || row["id"] || "").trim(),
-            label: String(row["節not名稱"] || row["label"] || "").trim(),
+            label: String(row["節點名稱"] || row["label"] || "").trim(), // 修正此處拼字錯誤 (原本為 節not名稱)
             parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
             shape: String(row["形狀"] || row["shape"] || "rect").trim(),
             bgColor: String(row["背景色"] || row["bgColor"] || "#ffffff").trim(),
