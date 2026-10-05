@@ -35,7 +35,7 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: var--bg-color);
+      background-color: var(--bg-color);
       color: var(--text-main);
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
@@ -537,7 +537,7 @@
           <table id="tree-data-table">
             <thead>
               <tr>
-                <th style="width: 12%;">節點 ID</th>
+                <th style="width: 12%;">節點 ID (不可重複)</th>
                 <th style="width: 32%;">節點名稱 (Label)</th>
                 <th style="width: 15%;">父節點 ID</th>
                 <th style="width: 12%;">節點形狀</th>
@@ -659,12 +659,12 @@
     ];
 
     let treeData = [
-      { id: "root", label: "公司總部 / 核心製程", parentId: "", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1", note: "總管理處" },
-      { id: "sub1", label: "精密加工部 (CNC)", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "一廠" },
-      { id: "sub2", label: "表面處理部 (ENP)", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "二廠" },
-      { id: "sub3", label: "品保檢驗部 (QC)", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "獨立實驗室" },
-      { id: "sub1-1", label: "Milling 銑削線", parentId: "sub1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "三班制" },
-      { id: "sub1-2", label: "Grinding 研磨線", parentId: "sub1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "兩班制" }
+      { id: "root", label: "製造處", parentId: "", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1", note: "總管理處" },
+      { id: "sub1", label: "製造一部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "一廠" },
+      { id: "sub2", label: "製造二部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "二廠" },
+      { id: "sub3", label: "製造三部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "三廠" },
+      { id: "sub5", label: "製造五部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "五廠" },
+      { id: "dev",  label: "產品開發部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "研發中心" }
     ];
 
     let autoSaveTimer = null;
@@ -871,7 +871,6 @@
           </td>
         `;
 
-        // 拖曳事件繫結
         tr.addEventListener("dragstart", (e) => {
           e.dataTransfer.setData("text/plain", index);
           tr.classList.add("dragging");
@@ -1199,7 +1198,7 @@
     }
 
     function exportToPNG(containerId, filename) {
-      const target = document.getElementById(containerId);
+      The target = document.getElementById(containerId);
       html2canvas(target, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
         const link = document.createElement("a");
         link.download = filename;
