@@ -408,13 +408,21 @@
     .v-snake-turn-right { align-self: flex-end; margin-right: 38px; }
     .v-snake-turn-left { align-self: flex-start; margin-left: 38px; }
 
-    /* 樹狀階層流程圖專用樣式 (完美階層與水平並列) */
+    /* ========================================================
+       樹狀階層流程圖專用樣式 (修正水平並列)
+       ======================================================== */
     .tree-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 40px;
       padding: 20px;
+      width: 100%;
+    }
+    .tree-node-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       width: 100%;
     }
     .tree-level {
@@ -424,11 +432,7 @@
       gap: 24px;
       flex-wrap: nowrap; /* 確保同層節點水平並列不換行 */
       width: 100%;
-    }
-    .tree-node-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      margin-top: 15px;
     }
     .tree-node-box {
       display: flex;
@@ -1075,7 +1079,7 @@
       target.appendChild(snakeContainer);
     }
 
-    // 4. 樹狀階層流程圖 (關鍵修復：頂層與子層皆以 flex-direction: row 水平並列)
+    // 4. 樹狀階層流程圖修正
     function renderTreeChart() {
       const target = document.getElementById("tree-chart-target");
       target.innerHTML = "";
@@ -1116,7 +1120,7 @@
         if (children.length === 0) return null;
 
         const levelDiv = document.createElement("div");
-        levelDiv.className = "tree-level"; // 這會使所有子節點水平並列
+        levelDiv.className = "tree-level"; // 水平並列容器
 
         children.forEach(childNode => {
           const wrapper = document.createElement("div");
@@ -1192,7 +1196,7 @@
           const json2 = XLSX.utils.sheet_to_json(workbook.Sheets["樹狀階層資料"]);
           treeData = json2.map(row => ({
             id: String(row["節點ID"] || row["id"] || "").trim(),
-            label: String(row["節點名稱"] || row["label"] || ""),
+            label: String(row["節not名稱"] || row["label"] || "").trim(),
             parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
             shape: String(row["形狀"] || row["shape"] || "rect").trim(),
             bgColor: String(row["背景色"] || row["bgColor"] || "#ffffff").trim(),
