@@ -1198,7 +1198,7 @@
     }
 
     function exportToPNG(containerId, filename) {
-      The target = document.getElementById(containerId);
+      const target = document.getElementById(containerId);
       html2canvas(target, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
         const link = document.createElement("a");
         link.download = filename;
