@@ -23,8 +23,8 @@
       --accent-green: #10b981;
       --accent-red: #ef4444;
       
-      --node-width: 230px;
-      --node-height: 85px;
+      --node-width: 190px;
+      --node-height: 80px;
       --v-node-width: 75px;
       --v-node-height: 220px;
     }
@@ -280,32 +280,34 @@
     .flow-node {
       width: var(--node-width);
       min-height: var(--node-height);
-      border: 2.5px solid rgba(0, 0, 0, 0.15);
-      border-radius: 8px;
-      font-weight: 800;
+      border: 2px solid #1e3a8a;
+      border-radius: 4px;
+      font-weight: 700;
       font-size: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 12px 16px;
+      padding: 10px 14px;
       word-break: break-word;
       white-space: pre-wrap;
       line-height: 1.4;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       position: relative;
       z-index: 2;
       flex-shrink: 0;
+      background-color: #ffffff;
+      color: #0f172a;
     }
-    .flow-node.shape-round { border-radius: 40px; }
+    .flow-node.shape-round { border-radius: 30px; }
 
     /* 垂直長條型節點 */
     .vertical-flow-node {
       width: var(--v-node-width);
       height: var(--v-node-height);
-      border: 2.5px solid rgba(0, 0, 0, 0.15);
-      border-radius: 8px;
-      font-weight: 800;
+      border: 2px solid #1e3a8a;
+      border-radius: 4px;
+      font-weight: 700;
       font-size: 15px;
       display: flex;
       align-items: center;
@@ -316,72 +318,74 @@
       writing-mode: vertical-rl;
       text-orientation: upright;
       letter-spacing: 2px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       position: relative;
       z-index: 2;
       flex-shrink: 0;
+      background-color: #ffffff;
+      color: #0f172a;
     }
-    .vertical-flow-node.shape-round { border-radius: 40px; }
+    .vertical-flow-node.shape-round { border-radius: 30px; }
 
     /* 箭頭指示器 */
     .arrow-down {
-      width: 3px;
-      height: 40px;
-      background-color: #334155;
+      width: 2px;
+      height: 35px;
+      background-color: #2563eb;
       position: relative;
-      margin: 6px 0;
+      margin: 4px 0;
       flex-shrink: 0;
     }
     .arrow-down::after {
       content: '';
       position: absolute;
       bottom: 0;
-      left: -6px;
+      left: -5px;
       width: 0;
       height: 0;
-      border-left: 7.5px solid transparent;
-      border-right: 7.5px solid transparent;
-      border-top: 10px solid #334155;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid #2563eb;
     }
 
     .arrow-right {
-      width: 50px;
-      height: 3px;
-      background-color: #334155;
+      width: 40px;
+      height: 2px;
+      background-color: #2563eb;
       position: relative;
-      margin: 0 6px;
+      margin: 0 4px;
       flex-shrink: 0;
     }
     .arrow-right::after {
       content: '';
       position: absolute;
       right: 0;
-      top: -6px;
+      top: -5px;
       width: 0;
       height: 0;
-      border-top: 7.5px solid transparent;
-      border-bottom: 7.5px solid transparent;
-      border-left: 10px solid #334155;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 8px solid #2563eb;
     }
 
     .arrow-left {
-      width: 50px;
-      height: 3px;
-      background-color: #334155;
+      width: 40px;
+      height: 2px;
+      background-color: #2563eb;
       position: relative;
-      margin: 0 6px;
+      margin: 0 4px;
       flex-shrink: 0;
     }
     .arrow-left::after {
       content: '';
       position: absolute;
       left: 0;
-      top: -6px;
+      top: -5px;
       width: 0;
       height: 0;
-      border-top: 7.5px solid transparent;
-      border-bottom: 7.5px solid transparent;
-      border-right: 8px solid #334155;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-right: 8px solid #2563eb;
     }
 
     /* 貪食蛇佈局容器 */
@@ -405,12 +409,12 @@
     .v-snake-turn-right { align-self: flex-end; margin-right: 38px; }
     .v-snake-turn-left { align-self: flex-start; margin-left: 38px; }
 
-    /* 樹狀階層流程圖專用樣式 (並列排版優化) */
+    /* 樹狀階層流程圖專用樣式 (完美群組並列排版) */
     .tree-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 35px;
+      gap: 40px;
       padding: 20px;
       width: 100%;
     }
@@ -462,7 +466,7 @@
   <div class="header-bar">
     <div>
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 支援同階層並列排版</p>
+      <p>自動同步 Firebase 雲端資料庫 & 支援組織樹狀階層分組並列</p>
     </div>
     <div>
       <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
@@ -614,7 +618,7 @@
       </div>
     </div>
 
-    <!-- 分頁 6: 樹狀階層流程圖 (支援雙擊備註與並列排版) -->
+    <!-- 分頁 6: 樹狀階層流程圖 (支援群組並列與雙擊備註) -->
     <div id="tab-tree-chart" class="tab-content">
       <div class="card">
         <div class="card-title">
@@ -651,23 +655,30 @@
     const db = getDatabase(app);
 
     let flowData = [
-      { id: "1", label: "Milling", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "2", condition: "" },
-      { id: "2", label: "Grinding", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "3", condition: "" },
-      { id: "3", label: "Milling", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "4", condition: "" },
-      { id: "4", label: "Post Treatment", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "5", condition: "" },
-      { id: "5", label: "Cleaning", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "6", condition: "" },
-      { id: "6", label: "ENP(Withmasking),\n0250-35000 clean", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "7", condition: "" },
-      { id: "7", label: "QC", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "8", condition: "" },
-      { id: "8", label: "Package", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1", nextId: "", condition: "" }
+      { id: "1", label: "Milling", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "2", condition: "" },
+      { id: "2", label: "Grinding", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "3", condition: "" },
+      { id: "3", label: "Milling", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "4", condition: "" },
+      { id: "4", label: "Post Treatment", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "5", condition: "" },
+      { id: "5", label: "Cleaning", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "6", condition: "" },
+      { id: "6", label: "ENP(Withmasking),\n0250-35000 clean", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "7", condition: "" },
+      { id: "7", label: "QC", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "8", condition: "" },
+      { id: "8", label: "Package", shape: "round", bgColor: "#ffffff", textColor: "#0f172a", nextId: "", condition: "" }
     ];
 
     let treeData = [
-      { id: "root", label: "製造處", parentId: "", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1", note: "廠長: 劉金勳 | 副廠長:蔡儀誠" },
-      { id: "sub1", label: "製造一部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "sub2", label: "製造二部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "sub3", label: "製造三部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "sub5", label: "製造五部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "dev",  label: "產品開發部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" }
+      { id: "root", label: "製造處", parentId: "", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sub1", label: "製造一部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sub2", label: "製造二部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sub3", label: "製造三部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sub5", label: "製造五部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "dev",  label: "產品開發部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sec_wire", label: "線切割課", parentId: "sub1", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sec_lathe", label: "車床課", parentId: "sub1", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sec_m2", label: "金屬二課", parentId: "sub2", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sec_m3", label: "金屬三課", parentId: "sub2", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sec_dry", label: "乾式製程課", parentId: "sub3", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sec_wet", label: "濕式製程課", parentId: "sub3", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "sec_si", label: "矽加工課", parentId: "sub5", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" }
     ];
 
     let autoSaveTimer = null;
@@ -800,8 +811,8 @@
       flowData.forEach((row, index) => {
         const tr = document.createElement("tr");
         const shape = row.shape || "rect";
-        const bgColor = row.bgColor || "#fef3c7";
-        const textColor = row.textColor || "#78350f";
+        const bgColor = row.bgColor || "#ffffff";
+        const textColor = row.textColor || "#0f172a";
 
         tr.innerHTML = `
           <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="1"></td>
@@ -854,8 +865,8 @@
         tr.dataset.index = index;
 
         const shape = row.shape || "rect";
-        const bgColor = row.bgColor || "#fef3c7";
-        const textColor = row.textColor || "#78350f";
+        const bgColor = row.bgColor || "#ffffff";
+        const textColor = row.textColor || "#0f172a";
 
         tr.innerHTML = `
           <td><span class="drag-handle" title="按住拖曳排序">⠿</span> <input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="ID" style="width: calc(100% - 24px); display: inline-block;"></td>
@@ -933,7 +944,7 @@
 
     function addRow() {
       const nextNum = flowData.length + 1;
-      flowData.push({ id: String(nextNum), label: "", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "", condition: "" });
+      flowData.push({ id: String(nextNum), label: "", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "", condition: "" });
       renderTable();
       renderAllCharts();
       triggerAutoSave();
@@ -941,7 +952,7 @@
 
     function addTreeRow() {
       const nextNum = treeData.length + 1;
-      treeData.push({ id: `node_${nextNum}`, label: "", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" });
+      treeData.push({ id: `node_${nextNum}`, label: "", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" });
       renderTreeTable();
       renderTreeChart();
       triggerAutoSave();
@@ -1067,7 +1078,7 @@
       target.appendChild(snakeContainer);
     }
 
-    // 4. 樹狀階層流程圖 (同階層格子並列排版)
+    // 4. 樹狀階層流程圖 (子節點對應父節點正下方群組並列)
     function renderTreeChart() {
       const target = document.getElementById("tree-chart-target");
       target.innerHTML = "";
@@ -1107,7 +1118,6 @@
         const children = treeData.filter(item => item.parentId === parentId);
         if (children.length === 0) return null;
 
-        // 建立同階層的水平排列容器 (並列排版)
         const levelDiv = document.createElement("div");
         levelDiv.className = "tree-level";
 
@@ -1173,8 +1183,8 @@
             id: String(row["步驟ID"] || row["id"] || "").trim(),
             label: String(row["步驟名稱"] || row["label"] || ""),
             shape: String(row["形狀"] || row["shape"] || "rect").trim(),
-            bgColor: String(row["背景色"] || row["bgColor"] || "#fef3c7").trim(),
-            textColor: String(row["文字顏色"] || row["textColor"] || "#78350f").trim(),
+            bgColor: String(row["背景色"] || row["bgColor"] || "#ffffff").trim(),
+            textColor: String(row["文字顏色"] || row["textColor"] || "#0f172a").trim(),
             nextId: String(row["下一步ID"] || row["nextId"] || "").trim(),
             condition: String(row["條件"] || row["condition"] || "").trim()
           }));
@@ -1187,8 +1197,8 @@
             label: String(row["節點名稱"] || row["label"] || ""),
             parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
             shape: String(row["形狀"] || row["shape"] || "rect").trim(),
-            bgColor: String(row["背景色"] || row["bgColor"] || "#fef3c7").trim(),
-            textColor: String(row["文字顏色"] || row["textColor"] || "#78350f").trim(),
+            bgColor: String(row["背景色"] || row["bgColor"] || "#ffffff").trim(),
+            textColor: String(row["文字顏色"] || row["textColor"] || "#0f172a").trim(),
             note: String(row["備註"] || row["note"] || "").trim()
           }));
         }
