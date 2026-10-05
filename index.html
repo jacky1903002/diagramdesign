@@ -9,20 +9,20 @@
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <!-- Google Fonts 企業字型 -->
+  <!-- Google Fonts 字型 -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --primary-color: #1e3a8a; /* 企業深藍 */
+      --primary-color: #2563eb;
       --primary-hover: #1d4ed8;
-      --bg-color: #f8fafc;
+      --bg-color: #f1f5f9;
       --card-bg: #ffffff;
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      --accent-green: #059669;
-      --accent-red: #dc2626;
+      --border-color: #cbd5e1;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
     }
 
     body {
@@ -34,7 +34,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* 標題與 Header */
+    /* 頁首 header */
     .header-container {
       display: flex;
       justify-content: space-between;
@@ -45,9 +45,9 @@
     }
     .header-title h2 {
       margin: 0;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 700;
-      color: var(--primary-color);
+      color: #1e3a8a;
       letter-spacing: -0.5px;
     }
     .header-title p {
@@ -56,19 +56,19 @@
       color: var(--text-muted);
     }
 
-    /* 企業卡片樣式 */
+    /* 企業卡片 */
     .card {
       background: var(--card-bg);
       padding: 24px;
       border-radius: 12px;
       border: 1px solid var(--border-color);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       margin-bottom: 24px;
     }
 
     .card-title {
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 17px;
+      font-weight: 700;
       margin-top: 0;
       margin-bottom: 16px;
       color: var(--text-main);
@@ -77,7 +77,7 @@
       justify-content: space-between;
     }
 
-    /* 按鈕元件 */
+    /* 按鈕樣式 */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -85,31 +85,32 @@
       background: var(--primary-color);
       color: white;
       border: none;
-      padding: 9px 16px;
+      padding: 10px 18px;
       font-size: 14px;
-      font-weight: 500;
-      border-radius: 6px;
+      font-weight: 600;
+      border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
       margin-right: 8px;
     }
     .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
-    .btn-success { background: var(--accent-green); }
-    .btn-success:hover { background: #047857; }
-    .btn-danger { background: var(--accent-red); }
-    .btn-danger:hover { background: #b91c1c; }
+    .btn-success { background: var(--accent-green); box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+    .btn-success:hover { background: #059669; }
+    .btn-danger { background: var(--accent-red); box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
+    .btn-danger:hover { background: #dc2626; }
     .btn-outline {
       background: transparent;
       color: var(--text-main);
-      border: 1px solid var(--border-color);
+      border: 1.5px solid var(--border-color);
+      box-shadow: none;
     }
-    .btn-outline:hover { background: #f1f5f9; }
+    .btn-outline:hover { background: #e2e8f0; }
 
-    /* 表單輸入框 */
+    /* 表單元件 */
     input[type="email"], input[type="password"], input[type="text"], select {
-      padding: 8px 12px;
-      border: 1px solid var(--border-color);
+      padding: 9px 12px;
+      border: 1.5px solid var(--border-color);
       border-radius: 6px;
       font-size: 14px;
       outline: none;
@@ -119,7 +120,7 @@
     }
     input[type="text"]:focus, select:focus {
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
     /* 資料表格 */
@@ -135,8 +136,8 @@
     }
     th {
       background-color: #f8fafc;
-      color: var(--text-muted);
-      font-weight: 600;
+      color: #334155;
+      font-weight: 700;
       padding: 12px 16px;
       text-align: left;
       border-bottom: 2px solid var(--border-color);
@@ -152,80 +153,136 @@
       box-sizing: border-box;
     }
 
-    /* 狀態提示 */
+    /* 狀態標籤 */
     .status-badge {
       display: inline-block;
-      padding: 4px 10px;
+      padding: 4px 12px;
       font-size: 12px;
       font-weight: 600;
       border-radius: 20px;
-      background: #eff6ff;
-      color: #1d4ed8;
+      background: #dbeafe;
+      color: #1e40af;
       margin-left: 10px;
     }
     .save-time-info {
       color: var(--text-muted);
       font-size: 13px;
-      font-weight: 400;
+      font-weight: 500;
     }
 
-    /* 流程圖檢視區塊 */
+    /* 流程圖預覽容器 */
     #chart-container {
       background: #ffffff;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 30px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      padding: 40px;
       text-align: center;
       overflow-x: auto;
-      min-height: 250px;
+      min-height: 300px;
       display: flex;
       justify-content: center;
       align-items: center;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
     .error { color: var(--accent-red); font-size: 13px; margin-top: 8px; }
 
-    /* 高辨識度 Mermaid 樣式覆蓋 */
-    .mermaid .node rect, .mermaid .node circle, .mermaid .node ellipse, .mermaid .node polygon {
+    /* ========================================================
+       Mermaid 鮮豔視覺樣式與統一寬度設定
+       ======================================================== */
+    
+    /* 1. 統一框框的大小與寬度 */
+    .mermaid .node rect,
+    .mermaid .node polygon,
+    .mermaid .node circle,
+    .mermaid .node ellipse {
+      width: 240px !important;            /* 統一寬度 */
+      min-width: 240px !important;
+      height: 55px !important;             /* 統一高度 */
+      min-height: 55px !important;
       stroke-width: 2.5px !important;
-      filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.08));
+      filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.12));
+      transition: all 0.3s ease;
     }
-    /* 橢圓 (開始/結束) - 深藍邊框 + 淺藍填滿 */
-    .mermaid .node.shape-round rect, .mermaid .node.shape-round polygon, .mermaid .node.shape-round circle, .mermaid .node.shape-round rx {
-      stroke: #1e40af !important;
-      fill: #eff6ff !important;
+
+    /* 文字居中與色彩 */
+    .mermaid .node .label {
+      font-family: 'Inter', sans-serif !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      font-size: 15px !important;
+      text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
     }
-    /* 矩形 (步驟) - 石墨灰邊框 + 純白填滿 */
+
+    .mermaid .node foreignObject {
+      width: 240px !important;
+      overflow: visible !important;
+    }
+
+    /* 2. 鮮豔漸層與高對比色彩配置 */
+    
+    /* 開始/結束 (橢圓) - 鮮豔皇家藍漸層 */
+    .mermaid .node.shape-round rect,
+    .mermaid .node.shape-round polygon,
+    .mermaid .node.shape-round circle {
+      fill: #2563eb !important;
+      stroke: #1d4ed8 !important;
+      rx: 28px !important;
+      ry: 28px !important;
+    }
+
+    /* 標準步驟 (矩形) - 活力翡翠綠漸層 */
     .mermaid .node.shape-rect rect {
-      stroke: #334155 !important;
-      fill: #ffffff !important;
+      fill: #10b981 !important;
+      stroke: #047857 !important;
+      rx: 8px !important;
+      ry: 8px !important;
     }
-    /* 菱形 (判斷) - 琥珀黃邊框 + 淺黃填滿 */
+
+    /* 條件判斷 (菱形) - 亮亮亮橘金黃漸層 */
     .mermaid .node.shape-rhombus polygon {
+      fill: #f59e0b !important;
       stroke: #d97706 !important;
-      fill: #fffbeb !important;
     }
-    /* 箭頭連線與文字加強 */
+
+    /* 滑鼠懸停效果 */
+    .mermaid .node:hover rect,
+    .mermaid .node:hover polygon {
+      transform: scale(1.04);
+      filter: drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.25));
+    }
+
+    /* 3. 連接線與箭頭強化 */
     .mermaid .edgePath .path {
-      stroke: #475569 !important;
-      stroke-width: 2px !important;
+      stroke: #334155 !important;
+      stroke-width: 3px !important;
     }
+
+    .mermaid .marker {
+      fill: #334155 !important;
+      stroke: #334155 !important;
+    }
+
+    /* 條件標籤氣泡 */
     .mermaid .edgeLabel {
       background-color: #ffffff !important;
-      padding: 2px 6px !important;
-      border-radius: 4px !important;
-      border: 1px solid #cbd5e1 !important;
-      font-size: 12px !important;
+      color: #0f172a !important;
+      padding: 4px 10px !important;
+      border-radius: 6px !important;
+      border: 1.5px solid #94a3b8 !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     }
   </style>
 </head>
 <body>
 
-  <!-- 頂部標頭 -->
+  <!-- 頂部 Header -->
   <div class="header-container">
     <div class="header-title">
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>即時同步 Firebase 雲端資料庫與 Excel 多格式管理</p>
+      <p>自動同步 Firebase 雲端資料庫 & 智慧型尺寸視覺化</p>
     </div>
     <div id="user-status-bar">
       <span id="user-info" class="save-time-info">系統初始化中...</span>
@@ -266,8 +323,8 @@
         <thead>
           <tr>
             <th style="width: 12%;">步驟 ID</th>
-            <th style="width: 28%;">步驟名稱 (Label)</th>
-            <th style="width: 20%;">節點外觀形狀</th>
+            <th style="width: 30%;">步驟名稱 (Label)</th>
+            <th style="width: 18%;">節點外觀形狀</th>
             <th style="width: 15%;">下一步驟 ID</th>
             <th style="width: 15%;">條件標籤</th>
             <th style="width: 10%;">操作</th>
@@ -315,26 +372,26 @@
     const db = getDatabase(app);
 
     let flowData = [
-      { id: "A", label: "開始流程", shape: "round", nextId: "B", condition: "" },
-      { id: "B", label: "需求與規格確認", shape: "rect", nextId: "C", condition: "" },
-      { id: "C", label: "系統架構設計", shape: "rect", nextId: "D", condition: "" },
-      { id: "D", label: "程式碼開發與編譯", shape: "rect", nextId: "E", condition: "" },
-      { id: "E", label: "整合測試執行", shape: "rect", nextId: "F", condition: "" },
-      { id: "F", label: "測試是否通過？", shape: "rhombus", nextId: "G", condition: "是" },
-      { id: "F", label: "測試是否通過？", shape: "rhombus", nextId: "H", condition: "否" },
-      { id: "H", label: "問題排查與修正", shape: "rect", nextId: "E", condition: "" },
-      { id: "G", label: "正式上線部署", shape: "rect", nextId: "I", condition: "" },
-      { id: "I", label: "結束流程", shape: "round", nextId: "", condition: "" }
+      { id: "A", label: "Milling", shape: "rect", nextId: "B", condition: "" },
+      { id: "B", label: "Grinding", shape: "rect", nextId: "C", condition: "" },
+      { id: "C", label: "Milling", shape: "rect", nextId: "D", condition: "" },
+      { id: "D", label: "Post Treatment", shape: "rect", nextId: "E", condition: "" },
+      { id: "E", label: "Cleaning", shape: "rect", nextId: "F", condition: "" },
+      { id: "F", label: "ENP (Withmasking), 0250-35000 clean", shape: "rect", nextId: "G", condition: "" },
+      { id: "G", label: "QC", shape: "rect", nextId: "H", condition: "" },
+      { id: "H", label: "Package", shape: "round", nextId: "", condition: "" }
     ];
 
     let autoSaveTimer = null;
 
     mermaid.initialize({ 
       startOnLoad: false, 
-      theme: 'neutral',
+      theme: 'base',
       flowchart: {
         htmlLabels: true,
-        curve: 'basis'
+        curve: 'linear',
+        nodeSpacing: 40,
+        rankSpacing: 40
       }
     });
 
@@ -441,7 +498,7 @@
             }
           }
         } else {
-          statusEl.innerText = "ℹ️ 雲端尚無預設資料，使用本機預設範本。";
+          statusEl.innerText = "ℹ️ 雲端尚無資料，顯示預設範本。";
         }
         setTimeout(() => { statusEl.style.display = "none"; }, 2500);
       } catch (error) {
@@ -595,7 +652,7 @@
         generateDiagram();
         triggerAutoSave();
       };
-      reader.readAsReadAsArrayBuffer ? reader.readAsArrayBuffer(file) : reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer ? reader.readAsArrayBuffer(file) : reader.readAsBinaryString(file);
     }
 
     function exportToPNG() {
