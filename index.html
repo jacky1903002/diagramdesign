@@ -23,9 +23,13 @@
       --accent-green: #10b981;
       --accent-red: #ef4444;
       
-      /* 流程圖節點固定尺寸 */
+      /* 標準流程圖節點固定尺寸 */
       --node-width: 230px;
       --node-height: 85px;
+
+      /* 垂直長條型貪食蛇節點尺寸 */
+      --v-node-width: 75px;
+      --v-node-height: 220px;
     }
 
     * { box-sizing: border-box; }
@@ -62,10 +66,11 @@
       display: flex;
       padding: 0 30px;
       gap: 8px;
+      overflow-x: auto;
     }
     .tab-btn {
-      padding: 14px 24px;
-      font-size: 15px;
+      padding: 14px 20px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--text-muted);
       border: none;
@@ -73,6 +78,7 @@
       cursor: pointer;
       border-bottom: 3px solid transparent;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
     .tab-btn:hover { color: var(--primary-color); }
     .tab-btn.active {
@@ -141,9 +147,9 @@
     }
     .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
     .btn-success { background: var(--accent-green); box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
-    .btn-success:hover { background: #059669; }
+    .btn-success:hover { background: #047857; }
     .btn-danger { background: var(--accent-red); box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
-    .btn-danger:hover { background: #dc2626; }
+    .btn-danger:hover { background: #b91c1c; }
     .btn-outline {
       background: transparent;
       color: var(--text-main);
@@ -243,7 +249,7 @@
       min-height: 600px;
     }
 
-    /* 動態方框節點 (支援自訂背景色與文字顏色) */
+    /* 標準方框節點 */
     .flow-node {
       width: var(--node-width);
       min-height: var(--node-height);
@@ -264,10 +270,31 @@
       z-index: 2;
       flex-shrink: 0;
     }
+    .flow-node.shape-round { border-radius: 40px; }
 
-    .flow-node.shape-round {
-      border-radius: 40px;
+    /* 垂直長條型節點 (分頁 4 專用，支援直向文字書寫) */
+    .vertical-flow-node {
+      width: var(--v-node-width);
+      height: var(--v-node-height);
+      border: 2.5px solid rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 12px 6px;
+      word-break: break-word;
+      writing-mode: vertical-rl; /* 文字改為直向書寫 */
+      text-orientation: upright;
+      letter-spacing: 2px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
     }
+    .vertical-flow-node.shape-round { border-radius: 40px; }
 
     /* 垂直箭頭指示器 */
     .arrow-down {
@@ -331,7 +358,7 @@
       border-right: 8px solid #334155;
     }
 
-    /* 貪食蛇 S 型佈局容器 */
+    /* 貪食蛇 S 型與垂直長條型佈局容器 */
     .snake-container {
       display: flex;
       flex-direction: column;
@@ -356,6 +383,15 @@
       align-self: flex-start;
       margin-left: 110px;
     }
+
+    .v-snake-turn-right {
+      align-self: flex-end;
+      margin-right: 38px;
+    }
+    .v-snake-turn-left {
+      align-self: flex-start;
+      margin-left: 38px;
+    }
   </style>
 </head>
 <body>
@@ -364,7 +400,7 @@
   <div class="header-bar">
     <div>
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 自訂色彩與滿版排版管理</p>
+      <p>自動同步 Firebase 雲端資料庫 & 多維度滿版排版管理</p>
     </div>
     <div>
       <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
@@ -373,11 +409,12 @@
     </div>
   </div>
 
-  <!-- 分頁頁籤列 -->
+  <!-- 分頁頁籤列 (4個分頁) -->
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('tab-data')">📝 1. 資料維護表格</button>
     <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 2. 標準垂直流程圖</button>
     <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 3. S型貪食蛇流程圖</button>
+    <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 4. 垂直長條型貪食蛇</button>
   </div>
 
   <!-- 滿版主內容視窗 -->
@@ -460,6 +497,25 @@
         </div>
         <div class="chart-full-area" id="snake-chart-target" style="justify-content: center;">
           <!-- 動態渲染 S 型流程圖 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 分頁 4: 垂直長條型貪食蛇流程圖 -->
+    <div id="tab-v-snake" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <span>垂直長條型貪食蛇流程圖 (Vertical Column Snake Flowchart)</span>
+            <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+              每行步驟數：
+              <input type="number" id="v-snake-cols" value="6" min="2" max="12" style="width: 65px; padding: 4px 8px;">
+            </label>
+          </div>
+          <button class="btn btn-success" id="export-png-btn-3">下載高解析度 PNG</button>
+        </div>
+        <div class="chart-full-area" id="v-snake-chart-target" style="justify-content: center;">
+          <!-- 動態渲染垂直長條型貪食蛇流程圖 -->
         </div>
       </div>
     </div>
@@ -563,10 +619,10 @@
       document.getElementById("add-row-btn").addEventListener("click", addRow);
       document.getElementById("export-png-btn-1").addEventListener("click", () => exportToPNG("vertical-chart-target", "垂直流程圖.png"));
       document.getElementById("export-png-btn-2").addEventListener("click", () => exportToPNG("snake-chart-target", "S型橫向流程圖.png"));
+      document.getElementById("export-png-btn-3").addEventListener("click", () => exportToPNG("v-snake-chart-target", "垂直長條型貪食蛇流程圖.png"));
       
-      document.getElementById("snake-cols").addEventListener("change", () => {
-        renderSnakeChart();
-      });
+      document.getElementById("snake-cols").addEventListener("change", () => renderSnakeChart());
+      document.getElementById("v-snake-cols").addEventListener("change", () => renderVerticalSnakeChart());
     }
 
     function triggerAutoSave() {
@@ -687,29 +743,36 @@
     function renderAllCharts() {
       renderVerticalChart();
       renderSnakeChart();
+      renderVerticalSnakeChart();
     }
 
-    // 建立通用節點 DOM 元素
+    // 建立標準節點
     function createFlowNode(item) {
       const node = document.createElement("div");
       node.className = `flow-node shape-${item.shape || 'rect'}`;
       node.innerText = item.label || item.id;
-      
-      // 套用自訂背景色與文字顏色
       if (item.bgColor) node.style.backgroundColor = item.bgColor;
       if (item.textColor) node.style.color = item.textColor;
-      
       return node;
     }
 
-    // 1. 原生垂直流程圖繪製
+    // 建立垂直長條型節點 (直向文字書寫)
+    function createVerticalFlowNode(item) {
+      const node = document.createElement("div");
+      node.className = `vertical-flow-node shape-${item.shape || 'rect'}`;
+      node.innerText = item.label || item.id;
+      if (item.bgColor) node.style.backgroundColor = item.bgColor;
+      if (item.textColor) node.style.color = item.textColor;
+      return node;
+    }
+
+    // 1. 標準垂直流程圖
     function renderVerticalChart() {
       const target = document.getElementById("vertical-chart-target");
       target.innerHTML = "";
 
       flowData.forEach((item, idx) => {
         if (!item.id) return;
-
         const node = createFlowNode(item);
         target.appendChild(node);
 
@@ -721,7 +784,7 @@
       });
     }
 
-    // 2. 原生 S 型貪食蛇流程圖繪製
+    // 2. S 型貪食蛇流程圖
     function renderSnakeChart() {
       const target = document.getElementById("snake-chart-target");
       target.innerHTML = "";
@@ -757,6 +820,49 @@
         if (isLastInRow && idx < validItems.length - 1) {
           const turnArrow = document.createElement("div");
           turnArrow.className = `arrow-down ${isReverse ? 'snake-turn-left' : 'snake-turn-right'}`;
+          snakeContainer.appendChild(turnArrow);
+        }
+      });
+
+      target.appendChild(snakeContainer);
+    }
+
+    // 3. 垂直長條型貪食蛇流程圖 (直向文字)
+    function renderVerticalSnakeChart() {
+      const target = document.getElementById("v-snake-chart-target");
+      target.innerHTML = "";
+
+      const cols = parseInt(document.getElementById("v-snake-cols").value) || 6;
+      const validItems = flowData.filter(item => item.id);
+
+      const snakeContainer = document.createElement("div");
+      snakeContainer.className = "snake-container";
+
+      let currentRow = null;
+      
+      validItems.forEach((item, idx) => {
+        const rowIdx = Math.floor(idx / cols);
+        const isReverse = rowIdx % 2 === 1;
+
+        if (idx % cols === 0) {
+          currentRow = document.createElement("div");
+          currentRow.className = `snake-row ${isReverse ? 'reverse' : ''}`;
+          snakeContainer.appendChild(currentRow);
+        }
+
+        const node = createVerticalFlowNode(item);
+        currentRow.appendChild(node);
+
+        const isLastInRow = (idx % cols === cols - 1) || (idx === validItems.length - 1);
+        if (!isLastInRow) {
+          const arrow = document.createElement("div");
+          arrow.className = isReverse ? "arrow-left" : "arrow-right";
+          currentRow.appendChild(arrow);
+        }
+
+        if (isLastInRow && idx < validItems.length - 1) {
+          const turnArrow = document.createElement("div");
+          turnArrow.className = `arrow-down ${isReverse ? 'v-snake-turn-left' : 'v-snake-turn-right'}`;
           snakeContainer.appendChild(turnArrow);
         }
       });
