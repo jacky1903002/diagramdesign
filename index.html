@@ -666,18 +666,26 @@
 
     let treeData = [
       { id: "root", label: "製造處", parentId: "", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1", note: "廠長: 劉金勳 | 副廠長:蔡儀誠" },
-      { id: "sub1", label: "製造一部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sub2", label: "製造二部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sub3", label: "製造三部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sub5", label: "製造五部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "dev",  label: "產品開發部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "c1",   label: "線切割課", parentId: "sub1", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "c2",   label: "車床課", parentId: "sub1", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "c3",   label: "金屬二課", parentId: "sub2", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "c4",   label: "金屬三課", parentId: "sub2", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "c5",   label: "乾式製程課", parentId: "sub3", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "c6",   label: "濕式製程課", parentId: "sub3", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "c7",   label: "矽加工課", parentId: "sub5", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" }
+      { id: "sub1", label: "製造一部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
+      { id: "sub2", label: "製造二部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
+      { id: "sub3", label: "製造三部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
+      { id: "sub5", label: "製造五部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
+      { id: "dev",  label: "產品開發部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
+      
+      // 製造一部底下的課 (parentId 設為 sub1)
+      { id: "c1",   label: "線切割課", parentId: "sub1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" },
+      { id: "c2",   label: "車床課", parentId: "sub1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" },
+      
+      // 製造二部底下的課 (parentId 設為 sub2)
+      { id: "c3",   label: "金屬二課", parentId: "sub2", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" },
+      { id: "c4",   label: "金屬三課", parentId: "sub2", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" },
+      
+      // 製造三部底下的課 (parentId 設為 sub3)
+      { id: "c5",   label: "乾式製程課", parentId: "sub3", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" },
+      { id: "c6",   label: "濕式製程課", parentId: "sub3", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" },
+      
+      // 製造五部底下的課 (parentId 設為 sub5)
+      { id: "c7",   label: "矽加工課", parentId: "sub5", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" }
     ];
 
     let autoSaveTimer = null;
@@ -1077,7 +1085,7 @@
       target.appendChild(snakeContainer);
     }
 
-    // 4. 樹狀階層流程圖 (正確遞迴分組並列)
+    // 4. 樹狀階層流程圖 (正確分組並列)
     function renderTreeChart() {
       const target = document.getElementById("tree-chart-target");
       target.innerHTML = "";
@@ -1130,7 +1138,6 @@
 
           wrapper.appendChild(createTreeBox(childNode));
 
-          // 遞迴渲染該子節點底下的下一層（例如部底下的課）
           const subChildren = buildSubTree(childNode.id);
           if (subChildren) {
             wrapper.appendChild(subChildren);
