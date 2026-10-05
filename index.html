@@ -3,480 +3,300 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 個人專屬英文家教</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Excel 自動生成流程圖系統</title>
+  
+  <!-- 載入必要套件 -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <style>
-    :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --bg-color: #f8fafc;
-      --card-bg: #ffffff;
-      --text-main: #1e293b;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --success: #10b981;
-      --danger: #ef4444;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
-
-    header {
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .logo { font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-    .user-status { display: flex; gap: 16px; font-size: 0.9rem; color: var(--text-muted); }
-    .user-status span strong { color: var(--text-main); }
-
-    main { max-width: 800px; width: 100%; margin: 32px auto; padding: 0 16px; flex: 1; }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      margin-bottom: 24px;
-    }
-
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: #e2e8f0; }
-
-    /* 介面區塊切換 */
-    .view { display: none; }
-    .view.active { display: block; }
-
-    /* 測驗區樣式 */
-    .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.9rem; color: var(--text-muted); }
-    .word-display { font-size: 2.2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; text-align: center; }
-    .word-pos { text-align: center; font-size: 0.95rem; color: var(--text-muted); margin-bottom: 24px; font-style: italic; }
-    
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-    @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
-    
-    .option-btn {
-      background: #f8fafc;
-      border: 2px solid var(--border);
-      padding: 14px 16px;
-      border-radius: 8px;
-      font-size: 1rem;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: 500;
-    }
-    .option-btn:hover:not(:disabled) { border-color: var(--primary); background: #eff6ff; }
-    .option-btn.correct { background: #d1fae5; border-color: var(--success); color: #065f46; }
-    .option-btn.incorrect { background: #fee2e這是一份為您量身打造的**個人專屬英文家教網頁**完整程式碼。本程式採用單一 HTML 檔案設計（結合 Tailwind CSS 風格與原生 JavaScript），包含了您要求的六大核心功能：
-
-1. **英文單字資料庫**：內建多個難度等級（初級、中級、高級）的單字與例句。
-2. **隨機 10 個單字**：每次進入測驗或學習時，系統會自動從符合目前等級的題庫中隨機抽選 10 個單字。
-3. **測驗題模式**：提供互動式選擇題測驗，即時作答與評分。
-4. **紀錄學習歷程**：將每次測驗的日期、分數、答對率與錯題記錄保存在瀏覽器的 `localStorage` 中。
-5. **評判等級與動態調整難度**：根據使用者的測驗表現（正確率），自動提升或降低難度等級（Level 1 ~ 3），實現智慧化學習調整。
-
-### 完整程式碼
-
-您可以將以下程式碼儲存為一個 `.html` 檔案（例如 `english_tutor.html`），然後直接用任何瀏覽器開啟即可使用：
-
-```html
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>個人專屬英文家教網頁</title>
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+    body { font-family: "Segoe UI", Arial, sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .btn { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px; }
+    .btn:hover { background: #0056b3; }
+    .btn-success { background: #28a745; }
+    .btn-success:hover { background: #218838; }
+    .btn-danger { background: #dc3545; }
+    .btn-danger:hover { background: #c82333; }
+    input[type="email"], input[type="password"], input[type="text"] { padding: 8px; margin-right: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #e9ecef; }
+    #chart-container { background: white; padding: 20px; text-align: center; overflow-x: auto; min-height: 200px; }
+    .error { color: red; margin-top: 5px; font-size: 0.9em; }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body>
 
-  <!-- 導航列 -->
-  <header class="bg-indigo-600 text-white shadow-md">
-    <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <i class="fa-solid fa-graduation-cap text-2xl"></i>
-        <h1 class="text-xl font-bold">AI 個人英文家教</h1>
-      </div>
-      <div id="user-status" class="text-sm bg-indigo-700 px-3 py-1.5 rounded-full font-medium">
-        目前等級：<span id="current-level-badge">Level 1 (初級)</span>
-      </div>
+  <h2>Excel 自動生成流程圖系統</h2>
+
+  <!-- 1. 權限認證區塊 -->
+  <div class="card">
+    <div id="auth-section">
+      <h3>系統登入（編輯者權限）</h3>
+      <input type="email" id="email" placeholder="電子郵件">
+      <input type="password" id="password" placeholder="密碼">
+      <button class="btn" id="login-btn">登入</button>
+      <div id="auth-error" class="error"></div>
     </div>
-  </header>
+    <div>
+      <span id="user-info">載入驗證模組中...</span>
+      <button class="btn btn-danger" id="logout-btn" style="display:none; margin-left: 10px;">登出</button>
+    </div>
+  </div>
 
-  <!-- 主要內容區 -->
-  <main class="max-w-5xl mx-auto px-4 py-8 flex-1 w-full">
+  <!-- 2. 編輯與控制功能區塊 -->
+  <div class="card" id="edit-controls" style="display: none;">
+    <h3>流程圖編輯與 Excel 管理</h3>
+    <input type="file" id="excel-file" accept=".xlsx, .xls" style="display:none;">
+    <button class="btn" id="import-btn">匯入 Excel</button>
+    <button class="btn btn-success" id="export-excel-btn">匯出 Excel 範本</button>
+    <button class="btn" id="add-row-btn">新增一行</button>
     
-    <!-- 功能頁籤 -->
-    <div class="flex space-x-2 border-b border-slate-200 mb-6 pb-2 overflow-x-auto">
-      <button onclick="switchTab('study')" id="tab-study" class="tab-btn px-4 py-2 font-semibold text-indigo-600 border-b-2 border-indigo-600 transition">今日學習 (10單字)</button>
-      <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn px-4 py-2 font-semibold text-slate-500 hover:text-indigo-600 transition">單字測驗</button>
-      <button onclick="switchTab('history')" id="tab-history" class="tab-btn px-4 py-2 font-semibold text-slate-500 hover:text-indigo-600 transition">學習歷程與等級</button>
-      <button onclick="switchTab('database')" id="tab-database" class="tab-btn px-4 py-2 font-semibold text-slate-500 hover:text-indigo-600 transition">單字資料庫</button>
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>步驟 ID (ID)</th>
+          <th>步驟名稱 (Label)</th>
+          <th>下一步驟 ID (NextID)</th>
+          <th>條件標籤 (Condition)</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <!-- 動態繪製表格內容 -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. 流程圖展示與 PNG 下載區塊 -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3>流程圖預覽</h3>
+      <button class="btn btn-success" id="export-png-btn">匯出 PNG 圖片</button>
     </div>
+    <div id="chart-container">
+      <div id="mermaid-target"></div>
+    </div>
+  </div>
 
-    <!-- 1. 學習區 (A & F) -->
-    <section id="section-study" class="space-y-6">
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
-        <div>
-          <h2 class="text-lg font-bold text-slate-900">今日 10 個隨機單字推薦</h2>
-          <p class="text-sm text-slate-500">系統已根據您的當前等級為您挑選適合的單字進行學習。</p>
-        </div>
-        <button onclick="loadStudyWords()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
-          <i class="fa-solid fa-rotate-right mr-1"></i> 重新抽取 10 個單字
-        </button>
-      </div>
-      <div id="study-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- 動態載入單字卡 -->
-      </div>
-    </section>
+  <!-- JS 邏輯 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    <!-- 2. 測驗區 (B, D, E) -->
-    <section id="section-quiz" class="hidden space-y-6">
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
-        <div id="quiz-start-screen">
-          <h2 class="text-xl font-bold mb-2">準備好接受英文單字挑戰了嗎？</h2>
-          <p class="text-slate-500 mb-6">每次測驗包含 10 道選擇題，系統將根據您的答對率自動評估並調整難度等級。</p>
-          <button onclick="startQuiz()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold shadow transition">
-            開始測驗
-          </button>
-        </div>
-
-        <div id="quiz-question-screen" class="hidden text-left">
-          <div class="flex justify-between items-center mb-4 text-sm text-slate-500 font-medium">
-            <span id="quiz-progress">題目 1 / 10</span>
-            <span id="quiz-level-tag" class="bg-slate-100 px-2.5 py-1 rounded">Level 1</span>
-          </div>
-          <h3 id="quiz-word" class="text-3xl font-extrabold text-slate-900 mb-6 text-center">Apple</h3>
-          <div id="quiz-options" class="grid grid-cols-1 gap-3">
-            <!-- 選項按鈕 -->
-          </div>
-        </div>
-
-        <div id="quiz-result-screen" class="hidden">
-          <div class="text-5xl mb-4 text-indigo-600"><i class="fa-solid fa-award"></i></div>
-          <h3 class="text-2xl font-bold mb-2">測驗完成！</h3>
-          <p id="quiz-score-text" class="text-lg text-slate-600 mb-4">您的得分：8 / 10 (80%)</p>
-          <p id="quiz-feedback-text" class="text-sm text-indigo-600 font-medium mb-6">表現優異！系統已為您調升難度等級。</p>
-          <button onclick="resetQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-medium transition">
-            再次測驗
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. 學習歷程區 (C, D) -->
-    <section id="section-history" class="hidden space-y-6">
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-bold text-slate-900">學習與測驗紀錄歷程</h2>
-          <button onclick="clearHistory()" class="text-xs text-rose-500 hover:underline">清除紀錄</button>
-        </div>
-        <div id="history-list" class="divide-y divide-slate-100">
-          <!-- 歷程清單 -->
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. 單字資料庫瀏覽 (F) -->
-    <section id="section-database" class="hidden space-y-6">
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-          <h2 class="text-lg font-bold text-slate-900">完整單字資料庫</h2>
-          <div class="flex gap-2">
-            <select id="filter-level" onchange="renderDatabase()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm outline-none">
-              <option value="all">全部等級</option>
-              <option value="1">Level 1 (初級)</option>
-              <option value="2">Level 2 (中級)</option>
-              <option value="3">Level 3 (高級)</option>
-            </select>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm text-slate-600">
-            <thead class="bg-slate-100 text-slate-700 uppercase text-xs">
-              <tr>
-                <th class="px-4 py-3 rounded-l-lg">單字 (Word)</th>
-                <th class="px-4 py-3">中文意思</th>
-                <th class="px-4 py-3">難度</th>
-                <th class="px-4 py-3 rounded-r-lg">例句</th>
-              </tr>
-            </thead>
-            <tbody id="database-table-body" class="divide-y divide-slate-100">
-              <!-- 資料庫表格內容 -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- JavaScript 邏輯 -->
-  <script>
-    // 英文單字資料庫 (F)
-    const vocabDatabase = [
-      // Level 1
-      { word: "apple", meaning: "蘋果", level: 1, example: "I eat an apple every day." },
-      { word: "book", meaning: "書籍", level: 1, example: "She is reading an interesting book." },
-      { word: "cat", meaning: "貓", level: 1, example: "The cat is sleeping on the sofa." },
-      { word: "dog", meaning: "狗", level: 1, example: "My dog likes to run in the park." },
-      { word: "water", meaning: "水", level: 1, example: "Please drink more water." },
-      { word: "house", meaning: "房子", level: 1, example: "They live in a big house." },
-      { word: "school", meaning: "學校", level: 1, example: "Students go to school in the morning." },
-      { word: "friend", meaning: "朋友", level: 1, example: "He is my best friend." },
-      { word: "happy", meaning: "快樂的", level: 1, example: "I am very happy today." },
-      { word: "sun", meaning: "太陽", level: 1, example: "The sun shines brightly." },
-      // Level 2
-      { word: "achieve", meaning: "達成、實現", level: 2, example: "Hard work helps you achieve your goals." },
-      { word: "benefit", meaning: "利益、好處", level: 2, example: "Exercise has many health benefits." },
-      { word: "curious", meaning: "好奇的", level: 2, example: "Children are curious about the world." },
-      { word: "develop", meaning: "發展、開發", level: 2, example: "The company plans to develop a new app." },
-      { word: "efficient", meaning: "有效率的", level: 2, example: "This method is much more efficient." },
-      { word: "frequent", meaning: "頻繁的", level: 2, example: "He made frequent trips abroad." },
-      { word: "global", meaning: "全球的", level: 2, example: "English is a global language." },
-      { word: "honest", meaning: "誠實的", level: 2, example: "It is important to be honest." },
-      { word: "invest", meaning: "投資", level: 2, example: "They invest money in real estate." },
-      { word: "journal", meaning: "雜誌、日誌", level: 2, example: "She writes in her journal every night." },
-      // Level 3
-      { word: "ambiguous", meaning: "語意模糊的、不明確的", level: 3, example: "His instructions were somewhat ambiguous." },
-      { word: "benevolent", meaning: "仁慈的、慈善的", level: 3, example: "The benevolent donor funded the hospital." },
-      { word: "consequence", meaning: "結果、後果", level: 3, example: "You must face the consequences of your actions." },
-      { word: "diligence", meaning: "勤勉、勤奮", level: 3, example: "Success is the result of diligence." },
-      { word: "elusive", meaning: "難以捉摸的、 elusive", level: 3, example: "The truth remains elusive." },
-      { word: "fluctuate", meaning: "波動、起伏", level: 3, example: "Prices tend to fluctuate with the seasons." },
-      { word: "gargantuan", meaning: "巨大的、龐大的", level: 3, example: "They faced a gargantuan task." },
-      { word: "hypothesis", meaning: "假設、假說", level: 3, example: "The scientist tested her hypothesis." },
-      { word: "innovative", meaning: "創新的", level: 3, example: "We need innovative solutions." },
-      { word: "juxtapose", meaning: "並列、並置", level: 3, example: "The artist likes to juxtapose light and shadow." }
-    ];
-
-    // 使用者狀態
-    let userState = {
-      level: parseInt(localStorage.getItem('user_level')) || 1,
-      history: JSON.parse(localStorage.getItem('user_history')) || []
+    // ⚠️ 請填入您的 Firebase 專案設定資訊
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
-    function updateLevelBadge() {
-      const levelNames = { 1: "Level 1 (初級)", 2: "Level 2 (中級)", 3: "Level 3 (高級)" };
-      document.getElementById('current-level-badge').innerText = levelNames[userState.level];
-      localStorage.setItem('user_level', userState.level);
-    }
+    let flowData = [
+      { id: "A", label: "開始流程", nextId: "B", condition: "" },
+      { id: "B", label: "檢查資料規格", nextId: "C", condition: "合格" },
+      { id: "B", label: "檢查資料規格", nextId: "D", condition: "退回" },
+      { id: "C", label: "執行自動生產", nextId: "E", condition: "" },
+      { id: "D", label: "人工修正資料", nextId: "B", condition: "重新送審" },
+      { id: "E", label: "結案完成", nextId: "", condition: "" }
+    ];
 
-    // 分頁切換
-    function switchTab(tabId) {
-      ['study', 'quiz', 'history', 'database'].forEach(id => {
-        document.getElementById(`section-${id}`).classList.add('hidden');
-        document.getElementById(`tab-${id}`).classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
-        document.getElementById(`tab-${id}`).classList.add('text-slate-500');
-      });
-      document.getElementById(`section-${tabId}`).classList.remove('hidden');
-      document.getElementById(`tab-${tabId}`).classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
-      document.getElementById(`tab-${tabId}`).classList.remove('text-slate-500');
+    // 初始化 Mermaid
+    mermaid.initialize({ startOnLoad: false, theme: 'default' });
 
-      if (tabId === 'study') loadStudyWords();
-      if (tabId === 'history') renderHistory();
-      if (tabId === 'database') renderDatabase();
-    }
-
-    // 隨機抽樣陣列元素
-    function getRandomItems(arr, count) {
-      const shuffled = [...arr].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, count);
-    }
-
-    // A. 隨機出 10 個英文單字 (根據當前等級)
-    function loadStudyWords() {
-      const pool = vocabDatabase.filter(item => item.level === userState.level);
-      const selected = getRandomItems(pool, 10);
-      const grid = document.getElementById('study-cards-grid');
-      grid.innerHTML = '';
-
-      selected.forEach(item => {
-        grid.innerHTML += `
-          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
-            <div>
-              <div class="flex justify-between items-start mb-2">
-                <h3 class="text-lg font-bold text-indigo-600">${item.word}</h3>
-                <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-medium">L${item.level}</span>
-              </div>
-              <p class="text-slate-800 font-medium mb-2">${item.meaning}</p>
-            </div>
-            <p class="text-xs text-slate-500 italic bg-slate-50 p-2.5 rounded-lg border border-slate-100">"${item.example}"</p>
-          </div>
-        `;
-      });
-    }
-
-    // 測驗邏輯相關變數
-    let quizData = [];
-    let currentQuizIndex = 0;
-    let quizScore = 0;
-
-    function startQuiz() {
-      const pool = vocabDatabase.filter(item => item.level === userState.level);
-      quizData = getRandomItems(pool, 10);
-      currentQuizIndex = 0;
-      quizScore = 0;
-
-      document.getElementById('quiz-start-screen').classList.add('hidden');
-      document.getElementById('quiz-result-screen').classList.add('hidden');
-      document.getElementById('quiz-question-screen').classList.remove('hidden');
-      renderQuestion();
-    }
-
-    function renderQuestion() {
-      if (currentQuizIndex >= quizData.length) {
-        finishQuiz();
-        return;
+    // 安全初始化 Firebase
+    let auth = null;
+    try {
+      if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
       }
-
-      const currentItem = quizData[currentQuizIndex];
-      document.getElementById('quiz-progress').innerText = `題目 ${currentQuizIndex + 1} / 10`;
-      document.getElementById('quiz-level-tag').innerText = `Level ${userState.level}`;
-      document.getElementById('quiz-word').innerText = currentItem.word;
-
-      // 生成選項 (1個正確，3個錯誤)
-      const wrongPool = vocabDatabase.filter(item => item.word !== currentItem.word);
-      const wrongOptions = getRandomItems(wrongPool, 3);
-      const options = getRandomItems([currentItem, ...wrongOptions], 4);
-
-      const optionsContainer = document.getElementById('quiz-options');
-      optionsContainer.innerHTML = '';
-      options.forEach(opt => {
-        optionsContainer.innerHTML += `
-          <button onclick="checkAnswer('${opt.word}', '${currentItem.word}')" class="w-full text-left p-3.5 rounded-xl border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 font-medium transition">
-            ${opt.meaning}
-          </button>
-        `;
-      });
+    } catch (e) {
+      console.warn("Firebase 設定未完全更新，切換至純預覽模式。", e);
     }
 
-    function checkAnswer(selectedWord, correctWord) {
-      if (selectedWord === correctWord) {
-        quizScore++;
-      }
-      currentQuizIndex++;
-      renderQuestion();
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      renderTable();
+      generateDiagram();
+      setupEventListeners();
 
-    // D & E. 評判等級與動態調整難度
-    function finishQuiz() {
-      document.getElementById('quiz-question-screen').classList.add('hidden');
-      document.getElementById('quiz-result-screen').classList.remove('hidden');
+      if (auth) {
+        onAuthStateChanged(auth, (user) => {
+          const editControls = document.getElementById("edit-controls");
+          const authSection = document.getElementById("auth-section");
+          const userInfo = document.getElementById("user-info");
+          const logoutBtn = document.getElementById("logout-btn");
 
-      const percentage = (quizScore / 10) * 100;
-      document.getElementById('quiz-score-text').innerText = `您的得分：${quizScore} / 10 (${percentage}%)`;
-
-      let feedback = "";
-      let oldLevel = userState.level;
-
-      if (percentage >= 80 && userState.level < 3) {
-        userState.level++;
-        feedback = `表現優異！系統已將您的等級提升至 Level ${userState.level}。`;
-      } else if (percentage < 50 && userState.level > 1) {
-        userState.level--;
-        feedback = `別氣餒！系統已將難度調降至 Level ${userState.level} 協助您穩扎穩打。`;
+          if (user) {
+            editControls.style.display = "block";
+            authSection.style.display = "none";
+            logoutBtn.style.display = "inline-block";
+            userInfo.innerText = `已登入：${user.email}`;
+          } else {
+            editControls.style.display = "none";
+            authSection.style.display = "block";
+            logoutBtn.style.display = "none";
+            userInfo.innerText = "未登入（僅唯讀檢視模式）";
+          }
+        });
       } else {
-        feedback = `表現穩定！繼續維持在目前的 Level ${userState.level} 練習。`;
+        document.getElementById("user-info").innerText = "未設定 Firebase 金鑰（目前為唯讀預覽模式）";
       }
+    });
 
-      document.getElementById('quiz-feedback-text').innerText = feedback;
-      updateLevelBadge();
+    function setupEventListeners() {
+      document.getElementById("login-btn").addEventListener("click", () => {
+        if (!auth) {
+          alert("請先在 HTML 內貼入正確的 Firebase Config 設定參數！");
+          return;
+        }
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+        signInWithEmailAndPassword(auth, email, pass)
+          .then(() => { document.getElementById("auth-error").innerText = ""; })
+          .catch(err => { document.getElementById("auth-error").innerText = "登入失敗: " + err.message; });
+      });
 
-      // C. 紀錄學習歷程
-      const record = {
-        date: new Date().toLocaleString(),
-        score: quizScore,
-        level: oldLevel,
-        percentage: percentage
+      document.getElementById("logout-btn").addEventListener("click", () => {
+        if (auth) signOut(auth);
+      });
+
+      document.getElementById("import-btn").addEventListener("click", () => {
+        document.getElementById("excel-file").click();
+      });
+
+      document.getElementById("excel-file").addEventListener("change", handleImport);
+      document.getElementById("export-excel-btn").addEventListener("click", exportToExcel);
+      document.getElementById("add-row-btn").addEventListener("click", addRow);
+      document.getElementById("export-png-btn").addEventListener("click", exportToPNG);
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+      flowData.forEach((row, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><input type="text" value="${row.id}" data-index="${index}" data-field="id" class="table-input"></td>
+          <td><input type="text" value="${row.label}" data-index="${index}" data-field="label" class="table-input"></td>
+          <td><input type="text" value="${row.nextId}" data-index="${index}" data-field="nextId" class="table-input"></td>
+          <td><input type="text" value="${row.condition}" data-index="${index}" data-field="condition" class="table-input"></td>
+          <td><button class="btn btn-danger delete-btn" data-index="${index}">刪除</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll(".table-input").forEach(input => {
+        input.addEventListener("change", (e) => {
+          const idx = e.target.dataset.index;
+          const field = e.target.dataset.field;
+          flowData[idx][field] = e.target.value.trim();
+          generateDiagram();
+        });
+      });
+
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const idx = e.target.dataset.index;
+          flowData.splice(idx, 1);
+          renderTable();
+          generateDiagram();
+        });
+      });
+    }
+
+    function addRow() {
+      flowData.push({ id: "", label: "", nextId: "", condition: "" });
+      renderTable();
+    }
+
+    async function generateDiagram() {
+      let code = "graph TD\n";
+      const nodeLabels = {};
+
+      flowData.forEach(row => {
+        if (row.id && row.label) {
+          nodeLabels[row.id] = row.label;
+        }
+      });
+
+      flowData.forEach(row => {
+        if (row.id && row.nextId) {
+          const fromLabel = nodeLabels[row.id] ? `${row.id}["${nodeLabels[row.id]}"]` : row.id;
+          const toLabel = nodeLabels[row.nextId] ? `${row.nextId}["${nodeLabels[row.nextId]}"]` : row.nextId;
+          
+          if (row.condition) {
+            code += `    ${fromLabel} -- "${row.condition}" --> ${toLabel}\n`;
+          } else {
+            code += `    ${fromLabel} --> ${toLabel}\n`;
+          }
+        } else if (row.id && !row.nextId) {
+          const fromLabel = nodeLabels[row.id] ? `${row.id}["${nodeLabels[row.id]}"]` : row.id;
+          code += `    ${fromLabel}\n`;
+        }
+      });
+
+      const container = document.getElementById("mermaid-target");
+      container.removeAttribute("data-processed");
+      container.innerHTML = code;
+
+      try {
+        await mermaid.run({ nodes: [container] });
+      } catch (e) {
+        console.error("Mermaid 渲染失敗:", e);
+      }
+    }
+
+    function exportToExcel() {
+      const worksheet = XLSX.utils.json_to_sheet(flowData.map(item => ({
+        "步驟ID": item.id,
+        "步驟名稱": item.label,
+        "下一步驟ID": item.nextId,
+        "條件說明": item.condition
+      })));
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "流程圖資料");
+      XLSX.writeFile(workbook, "流程圖資料範本.xlsx");
+    }
+
+    function handleImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet);
+
+        flowData = json.map(row => ({
+          id: String(row["步驟ID"] || row["id"] || "").trim(),
+          label: String(row["步驟名稱"] || row["label"] || "").trim(),
+          nextId: String(row["下一步驟ID"] || row["nextId"] || "").trim(),
+          condition: String(row["條件說明"] || row["condition"] || "").trim()
+        }));
+
+        renderTable();
+        generateDiagram();
       };
-      userState.history.unshift(record);
-      localStorage.setItem('user_history', JSON.stringify(userState.history));
+      reader.readAsArrayBuffer(file);
     }
 
-    function resetQuiz() {
-      document.getElementById('quiz-result-screen').classList.add('hidden');
-      document.getElementById('quiz-start-screen').classList.remove('hidden');
-    }
-
-    // C. 渲染學習歷程
-    function renderHistory() {
-      const container = document.getElementById('history-list');
-      if (userState.history.length === 0) {
-        container.innerHTML = `<p class="text-sm text-slate-400 py-4 text-center">尚無測驗紀錄，快去進行單字測驗吧！</p>`;
-        return;
-      }
-
-      container.innerHTML = '';
-      userState.history.forEach((h, index) => {
-        container.innerHTML += `
-          <div class="py-3 flex justify-between items-center text-sm">
-            <div>
-              <span class="font-bold text-slate-900">測驗 #${userState.history.length - index}</span>
-              <span class="text-slate-400 ml-2">${h.date}</span>
-              <span class="ml-3 text-xs bg-slate-100 px-2 py-0.5 rounded">L${h.level}</span>
-            </div>
-            <div class="font-bold ${h.percentage >= 80 ? 'text-emerald-600' : 'text-indigo-600'}">
-              得分：${h.score}/10 (${h.percentage}%)
-            </div>
-          </div>
-        `;
+    function exportToPNG() {
+      const target = document.getElementById("chart-container");
+      html2canvas(target, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "流程圖.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
       });
     }
-
-    function clearHistory() {
-      if (confirm('確定要清除所有學習紀錄嗎？')) {
-        userState.history = [];
-        localStorage.removeItem('user_history');
-        renderHistory();
-      }
-    }
-
-    // F. 單字資料庫瀏覽
-    function renderDatabase() {
-      const filter = document.getElementById('filter-level').value;
-      const tbody = document.getElementById('database-table-body');
-      tbody.innerHTML = '';
-
-      const filtered = filter === 'all' ? vocabDatabase : vocabDatabase.filter(i => i.level == filter);
-
-      filtered.forEach(item => {
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="px-4 py-3 font-bold text-slate-900">${item.word}</td>
-            <td class="px-4 py-3">${item.meaning}</td>
-            <td class="px-4 py-3"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-semibold">Level ${item.level}</span></td>
-            <td class="px-4 py-3 text-slate-500 italic">${item.example}</td>
-          </tr>
-        `;
-      });
-    }
-
-    // 初始化載入
-    updateLevelBadge();
-    loadStudyWords();
   </script>
 </body>
 </html>
