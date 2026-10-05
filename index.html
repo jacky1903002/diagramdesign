@@ -16,7 +16,7 @@
     :root {
       --primary-color: #2563eb;
       --primary-hover: #1d4ed8;
-      --bg-color: #f8fafc;
+      --bg-color: #f1f5f9;
       --card-bg: #ffffff;
       --text-main: #0f172a;
       --text-muted: #64748b;
@@ -108,7 +108,7 @@
     .btn-outline:hover { background: #e2e8f0; }
 
     /* 表單元件 */
-    input[type="email"], input[type="password"], input[type="text"], select {
+    input[type="email"], input[type="password"], input[type="text"], input[type="number"], select {
       padding: 9px 12px;
       border: 1.5px solid var(--border-color);
       border-radius: 6px;
@@ -171,14 +171,14 @@
     }
 
     /* 流程圖預覽容器 */
-    #chart-container {
+    .chart-container {
       background: #ffffff;
       border: 1.5px solid var(--border-color);
       border-radius: 12px;
       padding: 40px;
       text-align: center;
       overflow-x: auto;
-      min-height: 300px;
+      min-height: 250px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -188,67 +188,81 @@
     .error { color: var(--accent-red); font-size: 13px; margin-top: 8px; }
 
     /* ========================================================
-       Mermaid 彈性視覺樣式（最小寬度 + 高辨識度色彩）
+       Mermaid 強制「統一格子大小」+「自動換行」+ 色彩樣式
        ======================================================== */
     
-    /* 基礎形狀樣式：最小寬度 + 質感內襯 */
+    /* 強制設定所有 SVG 方框/節點為固定寬高 (200px x 75px) */
     .mermaid .node rect,
     .mermaid .node polygon,
     .mermaid .node circle,
     .mermaid .node ellipse {
-      min-width: 160px !important;       /* 設定最小寬度，防止 QC 太短 */
+      width: 200px !important;
+      height: 75px !important;
+      x: -100px !important;
+      y: -37.5px !important;
       stroke-width: 2px !important;
-      filter: drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.06));
+      filter: drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.08));
       transition: all 0.25s ease;
     }
 
-    .mermaid .node .label {
-      font-family: 'Inter', sans-serif !important;
-      font-weight: 600 !important;
-      font-size: 14px !important;
-      padding: 8px 16px !important;
+    /* 強制文字容器為固定尺寸並啟用自動換行與垂直水平居中 */
+    .mermaid .node foreignObject {
+      width: 200px !important;
+      height: 75px !important;
+      x: -100px !important;
+      y: -37.5px !important;
+      overflow: visible !important;
     }
 
-    /* 1. 開始/結束 (橢圓) - 柔和藍色調 */
+    .mermaid .node foreignObject div {
+      width: 200px !important;
+      height: 75px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      word-break: break-word !important;
+      white-space: normal !important;
+      padding: 6px 12px !important;
+      box-sizing: border-box !important;
+      font-family: 'Inter', sans-serif !important;
+      font-weight: 600 !important;
+      font-size: 13.5px !important;
+      line-height: 1.35 !important;
+    }
+
+    /* 色彩設定 (以傳統黃底框線高質感展示) */
     .mermaid .node.shape-round rect,
     .mermaid .node.shape-round polygon,
     .mermaid .node.shape-round circle {
       fill: #e0f2fe !important;
       stroke: #0284c7 !important;
-      rx: 20px !important;
-      ry: 20px !important;
+      rx: 24px !important;
+      ry: 24px !important;
     }
-    .mermaid .node.shape-round .label {
-      color: #0369a1 !important;
-    }
+    .mermaid .node.shape-round foreignObject div { color: #0369a1 !important; }
 
-    /* 2. 標準步驟 (矩形) - 暖黃/米色調 (同圖片風格加強版) */
     .mermaid .node.shape-rect rect {
       fill: #fef3c7 !important;
       stroke: #d97706 !important;
       rx: 6px !important;
       ry: 6px !important;
     }
-    .mermaid .node.shape-rect .label {
-      color: #78350f !important;
-    }
+    .mermaid .node.shape-rect foreignObject div { color: #78350f !important; }
 
-    /* 3. 條件判斷 (菱形) - 薄荷綠色調 */
     .mermaid .node.shape-rhombus polygon {
       fill: #d1fae5 !important;
       stroke: #059669 !important;
     }
-    .mermaid .node.shape-rhombus .label {
-      color: #065f46 !important;
-    }
+    .mermaid .node.shape-rhombus foreignObject div { color: #065f46 !important; }
 
-    /* 滑鼠懸停效果 */
+    /* 懸停視覺光暈 */
     .mermaid .node:hover rect,
     .mermaid .node:hover polygon {
-      filter: drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.15));
+      filter: drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.18));
     }
 
-    /* 連接線與箭頭加強 */
+    /* 連接線與箭頭 */
     .mermaid .edgePath .path {
       stroke: #1e293b !important;
       stroke-width: 2.5px !important;
@@ -259,11 +273,10 @@
       stroke: #1e293b !important;
     }
 
-    /* 條件標籤氣泡 */
     .mermaid .edgeLabel {
       background-color: #ffffff !important;
       color: #0f172a !important;
-      padding: 4px 10px !important;
+      padding: 4px 8px !important;
       border-radius: 6px !important;
       border: 1.5px solid #94a3b8 !important;
       font-size: 12px !important;
@@ -277,7 +290,7 @@
   <div class="header-container">
     <div class="header-title">
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 彈性排版視覺化</p>
+      <p>自動同步 Firebase 雲端資料庫 & 多維度流程排版</p>
     </div>
     <div id="user-status-bar">
       <span id="user-info" class="save-time-info">系統初始化中...</span>
@@ -332,14 +345,31 @@
     </div>
   </div>
 
-  <!-- 3. 流程圖展示與 PNG 下載區塊 -->
+  <!-- 3. 標準垂直流程圖預覽區塊 -->
   <div class="card">
     <div class="card-title">
-      <span>標準流程圖視覺化預覽</span>
-      <button class="btn btn-success" id="export-png-btn">下載高解析度 PNG</button>
+      <span>1. 標準垂直流程圖（Vertical Diagram）</span>
+      <button class="btn btn-success" id="export-png-btn-1">下載高解析度 PNG</button>
     </div>
-    <div id="chart-container">
-      <div id="mermaid-target"></div>
+    <div class="chart-container" id="chart-container-1">
+      <div id="mermaid-target-1" class="mermaid"></div>
+    </div>
+  </div>
+
+  <!-- 4. 貪食蛇 S 型橫向折返流程圖預覽區塊 -->
+  <div class="card">
+    <div class="card-title">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span>2. S 型貪食蛇橫向折返流程圖（Snake Layout Diagram）</span>
+        <label style="font-size: 13px; font-weight: normal; color: var(--text-muted);">
+          每行個數：
+          <input type="number" id="snake-cols" value="6" min="2" max="10" style="width: 60px; padding: 4px 8px;">
+        </label>
+      </div>
+      <button class="btn btn-success" id="export-png-btn-2">下載 S 型流程圖 PNG</button>
+    </div>
+    <div class="chart-container" id="chart-container-2">
+      <div id="mermaid-target-2" class="mermaid"></div>
     </div>
   </div>
 
@@ -367,14 +397,20 @@
     const db = getDatabase(app);
 
     let flowData = [
-      { id: "A", label: "Milling", shape: "rect", nextId: "B", condition: "" },
-      { id: "B", label: "Grinding", shape: "rect", nextId: "C", condition: "" },
-      { id: "C", label: "Milling", shape: "rect", nextId: "D", condition: "" },
-      { id: "D", label: "Post Treatment", shape: "rect", nextId: "E", condition: "" },
-      { id: "E", label: "Cleaning", shape: "rect", nextId: "F", condition: "" },
-      { id: "F", label: "ENP(Withmasking), 0250-35000 clean", shape: "rect", nextId: "G", condition: "" },
-      { id: "G", label: "QC", shape: "rect", nextId: "H", condition: "" },
-      { id: "H", label: "Package", shape: "round", nextId: "", condition: "" }
+      { id: "1", label: "Milling", shape: "rect", nextId: "2", condition: "" },
+      { id: "2", label: "Grinding", shape: "rect", nextId: "3", condition: "" },
+      { id: "3", label: "Milling", shape: "rect", nextId: "4", condition: "" },
+      { id: "4", label: "Post Treatment", shape: "rect", nextId: "5", condition: "" },
+      { id: "5", label: "Cleaning", shape: "rect", nextId: "6", condition: "" },
+      { id: "6", label: "ENP(Withmasking), 0250-35000 clean", shape: "rect", nextId: "7", condition: "" },
+      { id: "7", label: "QC", shape: "rect", nextId: "8", condition: "" },
+      { id: "8", label: "Package", shape: "rect", nextId: "9", condition: "" },
+      { id: "9", label: "Inspection", shape: "rect", nextId: "10", condition: "" },
+      { id: "10", label: "Labeling", shape: "rect", nextId: "11", condition: "" },
+      { id: "11", label: "Warehouse", shape: "rect", nextId: "12", condition: "" },
+      { id: "12", label: "Shipping Check", shape: "rect", nextId: "13", condition: "" },
+      { id: "13", label: "Delivery", shape: "rect", nextId: "14", condition: "" },
+      { id: "14", label: "Customer Sign", shape: "round", nextId: "", condition: "" }
     ];
 
     let autoSaveTimer = null;
@@ -385,14 +421,14 @@
       flowchart: {
         htmlLabels: true,
         curve: 'linear',
-        nodeSpacing: 45,
-        rankSpacing: 45
+        nodeSpacing: 40,
+        rankSpacing: 40
       }
     });
 
     document.addEventListener("DOMContentLoaded", () => {
       renderTable();
-      generateDiagram();
+      generateDiagrams();
       setupEventListeners();
 
       onAuthStateChanged(auth, async (user) => {
@@ -441,7 +477,12 @@
       document.getElementById("excel-file").addEventListener("change", handleImport);
       document.getElementById("export-excel-btn").addEventListener("click", exportToExcel);
       document.getElementById("add-row-btn").addEventListener("click", addRow);
-      document.getElementById("export-png-btn").addEventListener("click", exportToPNG);
+      document.getElementById("export-png-btn-1").addEventListener("click", () => exportToPNG("chart-container-1", "垂直流程圖.png"));
+      document.getElementById("export-png-btn-2").addEventListener("click", () => exportToPNG("chart-container-2", "S型橫向流程圖.png"));
+      
+      document.getElementById("snake-cols").addEventListener("change", () => {
+        generateDiagrams();
+      });
     }
 
     function triggerAutoSave() {
@@ -486,7 +527,7 @@
           if (cloudData.data && Array.isArray(cloudData.data)) {
             flowData = cloudData.data;
             renderTable();
-            generateDiagram();
+            generateDiagrams();
             statusEl.innerText = "✅ 載入雲端最新資料成功";
             if (cloudData.updatedAt) {
               document.getElementById("save-time-display").innerText = `上次儲存時間：${cloudData.updatedAt}`;
@@ -509,7 +550,7 @@
         const tr = document.createElement("tr");
         const shape = row.shape || "rect";
         tr.innerHTML = `
-          <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="例如: A"></td>
+          <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="例如: 1"></td>
           <td><input type="text" value="${row.label || ''}" data-index="${index}" data-field="label" placeholder="步驟描述"></td>
           <td>
             <select data-index="${index}" data-field="shape">
@@ -518,7 +559,7 @@
               <option value="rhombus" ${shape === 'rhombus' ? 'selected' : ''}>菱形 {條件判斷}</option>
             </select>
           </td>
-          <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" placeholder="例如: B"></td>
+          <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" placeholder="例如: 2"></td>
           <td><input type="text" value="${row.condition || ''}" data-index="${index}" data-field="condition" placeholder="例如: 是/否"></td>
           <td><button class="btn btn-danger btn-outline delete-btn" data-index="${index}">刪除</button></td>
         `;
@@ -530,7 +571,7 @@
           const idx = e.target.dataset.index;
           const field = e.target.dataset.field;
           flowData[idx][field] = e.target.value.trim();
-          generateDiagram();
+          generateDiagrams();
           triggerAutoSave();
         });
       });
@@ -540,37 +581,44 @@
           const idx = e.target.dataset.index;
           flowData.splice(idx, 1);
           renderTable();
-          generateDiagram();
+          generateDiagrams();
           triggerAutoSave();
         });
       });
     }
 
     function addRow() {
-      flowData.push({ id: "", label: "", shape: "rect", nextId: "", condition: "" });
+      const nextNum = flowData.length + 1;
+      flowData.push({ id: String(nextNum), label: "", shape: "rect", nextId: "", condition: "" });
       renderTable();
       triggerAutoSave();
     }
 
     function formatNodeText(id, label, shape) {
-      if (!label) return id;
+      const displayText = label ? label : id;
       switch (shape) {
         case 'round':
-          return `${id}("${label}")`;
+          return `${id}("${displayText}")`;
         case 'rhombus':
-          return `${id}{"${label}"}`;
+          return `${id}{"${displayText}"}`;
         case 'rect':
         default:
-          return `${id}["${label}"]`;
+          return `${id}["${displayText}"]`;
       }
     }
 
-    async function generateDiagram() {
+    async function generateDiagrams() {
+      await generateVerticalDiagram();
+      await generateSnakeDiagram();
+    }
+
+    // 1. 生成垂直標準流程圖
+    async function generateVerticalDiagram() {
       let code = "graph TD\n";
       const nodeDefs = {};
 
       flowData.forEach(row => {
-        if (row.id && row.label) {
+        if (row.id) {
           nodeDefs[row.id] = formatNodeText(row.id, row.label, row.shape);
         }
       });
@@ -579,7 +627,6 @@
         if (row.id && row.nextId) {
           const fromLabel = nodeDefs[row.id] || row.id;
           const toLabel = nodeDefs[row.nextId] || row.nextId;
-          
           if (row.condition) {
             code += `    ${fromLabel} -- "${row.condition}" --> ${toLabel}\n`;
           } else {
@@ -591,7 +638,6 @@
         }
       });
 
-      // 附加 Mermaid 節點 Class 名稱進行自訂 CSS 樣式綁定
       flowData.forEach(row => {
         if (row.id) {
           const shapeClass = row.shape || "rect";
@@ -599,14 +645,64 @@
         }
       });
 
-      const container = document.getElementById("mermaid-target");
+      const container = document.getElementById("mermaid-target-1");
       container.removeAttribute("data-processed");
       container.innerHTML = code;
 
       try {
         await mermaid.run({ nodes: [container] });
       } catch (e) {
-        console.error("Mermaid 渲染失敗:", e);
+        console.error("垂直流程圖渲染失敗:", e);
+      }
+    }
+
+    // 2. 生成 S 型貪食蛇折返流程圖
+    async function generateSnakeDiagram() {
+      const cols = parseInt(document.getElementById("snake-cols").value) || 6;
+      let code = "graph LR\n";
+      const nodeDefs = {};
+
+      flowData.forEach(row => {
+        if (row.id) {
+          nodeDefs[row.id] = formatNodeText(row.id, row.label, row.shape);
+        }
+      });
+
+      // 依序抓取主線點建立蛇形排列
+      const validRows = flowData.filter(r => r.id);
+      
+      for (let i = 0; i < validRows.length; i++) {
+        const curr = validRows[i];
+        const next = validRows.find(r => r.id === curr.nextId);
+        
+        if (next) {
+          const currRowIdx = Math.floor(i / cols);
+          const nextRowIdx = Math.floor((i + 1) / cols);
+
+          const fromLabel = nodeDefs[curr.id] || curr.id;
+          const toLabel = nodeDefs[next.id] || next.id;
+          const condText = curr.condition ? ` -- "${curr.condition}" --> ` : ` --> `;
+
+          code += `    ${fromLabel}${condText}${toLabel}\n`;
+        } else {
+          const fromLabel = nodeDefs[curr.id] || curr.id;
+          code += `    ${fromLabel}\n`;
+        }
+      }
+
+      validRows.forEach(row => {
+        const shapeClass = row.shape || "rect";
+        code += `    class ${row.id} shape-${shapeClass};\n`;
+      });
+
+      const container = document.getElementById("mermaid-target-2");
+      container.removeAttribute("data-processed");
+      container.innerHTML = code;
+
+      try {
+        await mermaid.run({ nodes: [container] });
+      } catch (e) {
+        console.error("S 型流程圖渲染失敗:", e);
       }
     }
 
@@ -644,17 +740,17 @@
         }));
 
         renderTable();
-        generateDiagram();
+        generateDiagrams();
         triggerAutoSave();
       };
       reader.readAsArrayBuffer ? reader.readAsArrayBuffer(file) : reader.readAsBinaryString(file);
     }
 
-    function exportToPNG() {
-      const target = document.getElementById("chart-container");
+    function exportToPNG(containerId, filename) {
+      const target = document.getElementById(containerId);
       html2canvas(target, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
         const link = document.createElement("a");
-        link.download = "企業流程圖.png";
+        link.download = filename;
         link.href = canvas.toDataURL("image/png");
         link.click();
       });
