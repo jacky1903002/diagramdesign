@@ -23,8 +23,8 @@
       --accent-green: #10b981;
       --accent-red: #ef4444;
       
-      --node-width: 190px;
-      --node-height: 80px;
+      --node-width: 170px;
+      --node-height: 75px;
       --v-node-width: 75px;
       --v-node-height: 220px;
     }
@@ -283,12 +283,12 @@
       border: 2px solid #1e3a8a;
       border-radius: 4px;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 10px 14px;
+      padding: 10px 12px;
       word-break: break-word;
       white-space: pre-wrap;
       line-height: 1.4;
@@ -308,7 +308,7 @@
       border: 2px solid #1e3a8a;
       border-radius: 4px;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -325,7 +325,6 @@
       background-color: #ffffff;
       color: #0f172a;
     }
-    .vertical-flow-node.shape-round { border-radius: 30px; }
 
     /* 箭頭指示器 */
     .arrow-down {
@@ -409,12 +408,12 @@
     .v-snake-turn-right { align-self: flex-end; margin-right: 38px; }
     .v-snake-turn-left { align-self: flex-start; margin-left: 38px; }
 
-    /* 樹狀階層流程圖專用樣式 (完美群組並列排版) */
+    /* 樹狀階層流程圖專用樣式 (完美層級並列) */
     .tree-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 40px;
+      gap: 30px;
       padding: 20px;
       width: 100%;
     }
@@ -422,8 +421,8 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      gap: 30px;
-      flex-wrap: wrap;
+      gap: 24px;
+      flex-wrap: nowrap;
       width: 100%;
     }
     .tree-node-wrapper {
@@ -454,7 +453,7 @@
       border: 1px dashed #0284c7;
       padding: 2px 8px;
       border-radius: 4px;
-      max-width: 230px;
+      max-width: 170px;
       text-align: center;
       word-break: break-word;
     }
@@ -466,7 +465,7 @@
   <div class="header-bar">
     <div>
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 支援組織樹狀階層分組並列</p>
+      <p>自動同步 Firebase 雲端資料庫 & 組織樹狀圖正確並列排版</p>
     </div>
     <div>
       <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
@@ -618,7 +617,7 @@
       </div>
     </div>
 
-    <!-- 分頁 6: 樹狀階層流程圖 (支援群組並列與雙擊備註) -->
+    <!-- 分頁 6: 樹狀階層流程圖 (正確分組並列) -->
     <div id="tab-tree-chart" class="tab-content">
       <div class="card">
         <div class="card-title">
@@ -666,19 +665,19 @@
     ];
 
     let treeData = [
-      { id: "root", label: "製造處", parentId: "", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "root", label: "製造處", parentId: "", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1", note: "廠長: 劉金勳 | 副廠長:蔡儀誠" },
       { id: "sub1", label: "製造一部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
       { id: "sub2", label: "製造二部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
       { id: "sub3", label: "製造三部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
       { id: "sub5", label: "製造五部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
       { id: "dev",  label: "產品開發部", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sec_wire", label: "線切割課", parentId: "sub1", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sec_lathe", label: "車床課", parentId: "sub1", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sec_m2", label: "金屬二課", parentId: "sub2", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sec_m3", label: "金屬三課", parentId: "sub2", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sec_dry", label: "乾式製程課", parentId: "sub3", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sec_wet", label: "濕式製程課", parentId: "sub3", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
-      { id: "sec_si", label: "矽加工課", parentId: "sub5", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" }
+      { id: "c1",   label: "線切割課", parentId: "sub1", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "c2",   label: "車床課", parentId: "sub1", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "c3",   label: "金屬二課", parentId: "sub2", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "c4",   label: "金屬三課", parentId: "sub2", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "c5",   label: "乾式製程課", parentId: "sub3", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "c6",   label: "濕式製程課", parentId: "sub3", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" },
+      { id: "c7",   label: "矽加工課", parentId: "sub5", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" }
     ];
 
     let autoSaveTimer = null;
@@ -1078,7 +1077,7 @@
       target.appendChild(snakeContainer);
     }
 
-    // 4. 樹狀階層流程圖 (子節點對應父節點正下方群組並列)
+    // 4. 樹狀階層流程圖 (正確遞迴分組並列)
     function renderTreeChart() {
       const target = document.getElementById("tree-chart-target");
       target.innerHTML = "";
@@ -1131,10 +1130,12 @@
 
           wrapper.appendChild(createTreeBox(childNode));
 
+          // 遞迴渲染該子節點底下的下一層（例如部底下的課）
           const subChildren = buildSubTree(childNode.id);
           if (subChildren) {
             wrapper.appendChild(subChildren);
           }
+
           levelDiv.appendChild(wrapper);
         });
         return levelDiv;
