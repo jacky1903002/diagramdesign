@@ -3,90 +3,295 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Excel 自動生成流程圖系統</title>
+  <title>企業級流程圖自動化管理系統</title>
   
   <!-- 載入必要套件 -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- Google Fonts 企業字型 -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: "Segoe UI", Arial, sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    .btn { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px; }
-    .btn:hover { background: #0056b3; }
-    .btn-success { background: #28a745; }
-    .btn-success:hover { background: #218838; }
-    .btn-danger { background: #dc3545; }
-    .btn-danger:hover { background: #c82333; }
-    input[type="email"], input[type="password"], input[type="text"], select { padding: 8px; margin-right: 8px; border: 1px solid #ccc; border-radius: 4px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #e9ecef; }
-    #chart-container { background: white; padding: 20px; text-align: center; overflow-x: auto; min-height: 200px; }
-    .error { color: red; margin-top: 5px; font-size: 0.9em; }
-    .status-msg { color: #28a745; margin-left: 10px; font-weight: bold; font-size: 0.9em; }
-    .save-time-info { color: #6c757d; font-size: 0.85em; margin-top: 6px; }
+    :root {
+      --primary-color: #1e3a8a; /* 企業深藍 */
+      --primary-hover: #1d4ed8;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --accent-green: #059669;
+      --accent-red: #dc2626;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 30px 40px;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 標題與 Header */
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border-color);
+    }
+    .header-title h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-color);
+      letter-spacing: -0.5px;
+    }
+    .header-title p {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* 企業卡片樣式 */
+    .card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* 按鈕元件 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      margin-right: 8px;
+    }
+    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-success { background: var(--accent-green); }
+    .btn-success:hover { background: #047857; }
+    .btn-danger { background: var(--accent-red); }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-outline {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+    .btn-outline:hover { background: #f1f5f9; }
+
+    /* 表單輸入框 */
+    input[type="email"], input[type="password"], input[type="text"], select {
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      background-color: #ffffff;
+      color: var(--text-main);
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+    /* 資料表格 */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 14px;
+    }
+    th {
+      background-color: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 2px solid var(--border-color);
+    }
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    tr:hover td { background-color: #f8fafc; }
+    table input[type="text"], table select {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* 狀態提示 */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 20px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      margin-left: 10px;
+    }
+    .save-time-info {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    /* 流程圖檢視區塊 */
+    #chart-container {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      overflow-x: auto;
+      min-height: 250px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .error { color: var(--accent-red); font-size: 13px; margin-top: 8px; }
+
+    /* 高辨識度 Mermaid 樣式覆蓋 */
+    .mermaid .node rect, .mermaid .node circle, .mermaid .node ellipse, .mermaid .node polygon {
+      stroke-width: 2.5px !important;
+      filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.08));
+    }
+    /* 橢圓 (開始/結束) - 深藍邊框 + 淺藍填滿 */
+    .mermaid .node.shape-round rect, .mermaid .node.shape-round polygon, .mermaid .node.shape-round circle, .mermaid .node.shape-round rx {
+      stroke: #1e40af !important;
+      fill: #eff6ff !important;
+    }
+    /* 矩形 (步驟) - 石墨灰邊框 + 純白填滿 */
+    .mermaid .node.shape-rect rect {
+      stroke: #334155 !important;
+      fill: #ffffff !important;
+    }
+    /* 菱形 (判斷) - 琥珀黃邊框 + 淺黃填滿 */
+    .mermaid .node.shape-rhombus polygon {
+      stroke: #d97706 !important;
+      fill: #fffbeb !important;
+    }
+    /* 箭頭連線與文字加強 */
+    .mermaid .edgePath .path {
+      stroke: #475569 !important;
+      stroke-width: 2px !important;
+    }
+    .mermaid .edgeLabel {
+      background-color: #ffffff !important;
+      padding: 2px 6px !important;
+      border-radius: 4px !important;
+      border: 1px solid #cbd5e1 !important;
+      font-size: 12px !important;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Excel 自動生成流程圖系統</h2>
+  <!-- 頂部標頭 -->
+  <div class="header-container">
+    <div class="header-title">
+      <h2>企業級流程圖自動化管理系統</h2>
+      <p>即時同步 Firebase 雲端資料庫與 Excel 多格式管理</p>
+    </div>
+    <div id="user-status-bar">
+      <span id="user-info" class="save-time-info">系統初始化中...</span>
+      <button class="btn btn-danger btn-outline" id="logout-btn" style="display:none; margin-left: 10px;">登出系統</button>
+    </div>
+  </div>
 
   <!-- 1. 權限認證區塊 -->
-  <div class="card">
-    <div id="auth-section">
-      <h3>系統登入（編輯者權限）</h3>
-      <input type="email" id="email" placeholder="電子郵件">
+  <div class="card" id="auth-section">
+    <div class="card-title">帳號權限驗證</div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <input type="email" id="email" placeholder="企業電子郵件">
       <input type="password" id="password" placeholder="密碼">
-      <button class="btn" id="login-btn">登入</button>
-      <div id="auth-error" class="error"></div>
+      <button class="btn" id="login-btn">登入系統</button>
     </div>
-    <div>
-      <span id="user-info">載入驗證模組中...</span>
-      <button class="btn btn-danger" id="logout-btn" style="display:none; margin-left: 10px;">登出</button>
-    </div>
+    <div id="auth-error" class="error"></div>
   </div>
 
   <!-- 2. 編輯與控制功能區塊 -->
   <div class="card" id="edit-controls" style="display: none;">
-    <h3>流程圖編輯與 Excel / 雲端管理</h3>
-    <input type="file" id="excel-file" accept=".xlsx, .xls" style="display:none;">
-    <button class="btn" id="import-btn">匯入 Excel</button>
-    <button class="btn btn-success" id="export-excel-btn">匯出 Excel 範本</button>
-    <button class="btn" id="add-row-btn">新增一行</button>
-    <span id="cloud-status" class="status-msg"></span>
-    <div id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</div>
+    <div class="card-title">
+      <span>流程節點資料管理</span>
+      <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
+    </div>
+
+    <div style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <button class="btn btn-outline" id="import-btn">匯入 Excel</button>
+        <button class="btn btn-success" id="export-excel-btn">匯出 Excel 範本</button>
+        <button class="btn" id="add-row-btn">＋ 新增步驟</button>
+        <input type="file" id="excel-file" accept=".xlsx, .xls" style="display:none;">
+      </div>
+      <span id="cloud-status" class="status-badge" style="display:none;"></span>
+    </div>
     
-    <table id="data-table">
-      <thead>
-        <tr>
-          <th>步驟 ID (ID)</th>
-          <th>步驟名稱 (Label)</th>
-          <th>節點形狀 (Shape)</th>
-          <th>下一步驟 ID (NextID)</th>
-          <th>條件標籤 (Condition)</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="table-body">
-        <!-- 動態繪製表格內容 -->
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table id="data-table">
+        <thead>
+          <tr>
+            <th style="width: 12%;">步驟 ID</th>
+            <th style="width: 28%;">步驟名稱 (Label)</th>
+            <th style="width: 20%;">節點外觀形狀</th>
+            <th style="width: 15%;">下一步驟 ID</th>
+            <th style="width: 15%;">條件標籤</th>
+            <th style="width: 10%;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- 動態繪製表格內容 -->
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- 3. 流程圖展示與 PNG 下載區塊 -->
   <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h3>流程圖預覽</h3>
-      <button class="btn btn-success" id="export-png-btn">匯出 PNG 圖片</button>
+    <div class="card-title">
+      <span>標準流程圖視覺化預覽</span>
+      <button class="btn btn-success" id="export-png-btn">下載高解析度 PNG</button>
     </div>
     <div id="chart-container">
       <div id="mermaid-target"></div>
     </div>
   </div>
 
-  <!-- JS 邏輯 -->
+  <!-- JS 邏輯模組 -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
@@ -110,21 +315,28 @@
     const db = getDatabase(app);
 
     let flowData = [
-      { id: "A", label: "開始", shape: "round", nextId: "B", condition: "" },
-      { id: "B", label: "需求分析", shape: "rect", nextId: "C", condition: "" },
-      { id: "C", label: "UI 設計", shape: "rect", nextId: "D", condition: "" },
-      { id: "D", label: "開發", shape: "rect", nextId: "E", condition: "" },
-      { id: "E", label: "測試", shape: "rect", nextId: "F", condition: "" },
-      { id: "F", label: "測試通過？", shape: "rhombus", nextId: "G", condition: "是" },
-      { id: "F", label: "測試通過？", shape: "rhombus", nextId: "H", condition: "否" },
-      { id: "H", label: "除錯修正", shape: "rect", nextId: "E", condition: "" },
-      { id: "G", label: "上線發布", shape: "rect", nextId: "I", condition: "" },
-      { id: "I", label: "結束", shape: "round", nextId: "", condition: "" }
+      { id: "A", label: "開始流程", shape: "round", nextId: "B", condition: "" },
+      { id: "B", label: "需求與規格確認", shape: "rect", nextId: "C", condition: "" },
+      { id: "C", label: "系統架構設計", shape: "rect", nextId: "D", condition: "" },
+      { id: "D", label: "程式碼開發與編譯", shape: "rect", nextId: "E", condition: "" },
+      { id: "E", label: "整合測試執行", shape: "rect", nextId: "F", condition: "" },
+      { id: "F", label: "測試是否通過？", shape: "rhombus", nextId: "G", condition: "是" },
+      { id: "F", label: "測試是否通過？", shape: "rhombus", nextId: "H", condition: "否" },
+      { id: "H", label: "問題排查與修正", shape: "rect", nextId: "E", condition: "" },
+      { id: "G", label: "正式上線部署", shape: "rect", nextId: "I", condition: "" },
+      { id: "I", label: "結束流程", shape: "round", nextId: "", condition: "" }
     ];
 
     let autoSaveTimer = null;
 
-    mermaid.initialize({ startOnLoad: false, theme: 'default' });
+    mermaid.initialize({ 
+      startOnLoad: false, 
+      theme: 'neutral',
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis'
+      }
+    });
 
     document.addEventListener("DOMContentLoaded", () => {
       renderTable();
@@ -141,14 +353,14 @@
           editControls.style.display = "block";
           authSection.style.display = "none";
           logoutBtn.style.display = "inline-block";
-          userInfo.innerText = `已登入：${user.email}`;
+          userInfo.innerText = `登入者：${user.email}`;
 
           await loadFromCloud();
         } else {
           editControls.style.display = "none";
           authSection.style.display = "block";
           logoutBtn.style.display = "none";
-          userInfo.innerText = "未登入（僅唯讀檢視模式）";
+          userInfo.innerText = "目前狀態：未登入（僅檢視模式）";
         }
       });
     });
@@ -162,7 +374,7 @@
             document.getElementById("auth-error").innerText = ""; 
           })
           .catch(err => { 
-            document.getElementById("auth-error").innerText = "登入失敗: " + err.message; 
+            document.getElementById("auth-error").innerText = "登入失敗：" + err.message; 
           });
       });
 
@@ -182,7 +394,8 @@
 
     function triggerAutoSave() {
       const statusEl = document.getElementById("cloud-status");
-      statusEl.innerText = "變更中...";
+      statusEl.style.display = "inline-block";
+      statusEl.innerText = "資料變更中...";
       
       clearTimeout(autoSaveTimer);
       autoSaveTimer = setTimeout(async () => {
@@ -192,7 +405,7 @@
 
     async function saveToCloud() {
       const statusEl = document.getElementById("cloud-status");
-      statusEl.innerText = "正在自動儲存至雲端...";
+      statusEl.innerText = "正在自動同步至雲端...";
       const nowString = new Date().toLocaleString("zh-TW", { hour12: false });
 
       try {
@@ -200,18 +413,19 @@
           data: flowData,
           updatedAt: nowString
         });
-        statusEl.innerText = "✅ 自動儲存成功！";
+        statusEl.innerText = "✅ 已自動同步";
         document.getElementById("save-time-display").innerText = `上次儲存時間：${nowString}`;
-        setTimeout(() => { statusEl.innerText = ""; }, 2500);
+        setTimeout(() => { statusEl.style.display = "none"; }, 2500);
       } catch (error) {
-        console.error("儲存失敗:", error);
-        statusEl.innerText = "❌ 自動儲存失敗：" + error.message;
+        console.error("同步失敗:", error);
+        statusEl.innerText = "❌ 同步失敗：" + error.message;
       }
     }
 
     async function loadFromCloud() {
       const statusEl = document.getElementById("cloud-status");
-      statusEl.innerText = "載入雲端資料中...";
+      statusEl.style.display = "inline-block";
+      statusEl.innerText = "同步雲端資料中...";
       try {
         const dbRef = ref(db);
         const snapshot = await get(child(dbRef, 'flowcharts/default_chart'));
@@ -221,15 +435,15 @@
             flowData = cloudData.data;
             renderTable();
             generateDiagram();
-            statusEl.innerText = "✅ 已同步雲端最新資料";
+            statusEl.innerText = "✅ 載入雲端最新資料成功";
             if (cloudData.updatedAt) {
               document.getElementById("save-time-display").innerText = `上次儲存時間：${cloudData.updatedAt}`;
             }
           }
         } else {
-          statusEl.innerText = "ℹ️ 雲端無資料，已載入範本。";
+          statusEl.innerText = "ℹ️ 雲端尚無預設資料，使用本機預設範本。";
         }
-        setTimeout(() => { statusEl.innerText = ""; }, 2500);
+        setTimeout(() => { statusEl.style.display = "none"; }, 2500);
       } catch (error) {
         console.error("讀取失敗:", error);
         statusEl.innerText = "❌ 載入失敗：" + error.message;
@@ -243,23 +457,23 @@
         const tr = document.createElement("tr");
         const shape = row.shape || "rect";
         tr.innerHTML = `
-          <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" class="table-input"></td>
-          <td><input type="text" value="${row.label || ''}" data-index="${index}" data-field="label" class="table-input"></td>
+          <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="例如: A"></td>
+          <td><input type="text" value="${row.label || ''}" data-index="${index}" data-field="label" placeholder="步驟描述"></td>
           <td>
-            <select data-index="${index}" data-field="shape" class="table-select">
-              <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形 [步驟]</option>
-              <option value="round" ${shape === 'round' ? 'selected' : ''}>圓角/橢圓 (開始/結束)</option>
-              <option value="rhombus" ${shape === 'rhombus' ? 'selected' : ''}>菱形 {判斷}</option>
+            <select data-index="${index}" data-field="shape">
+              <option value="round" ${shape === 'round' ? 'selected' : ''}>橢圓 (開始/結束)</option>
+              <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形 [標準步驟]</option>
+              <option value="rhombus" ${shape === 'rhombus' ? 'selected' : ''}>菱形 {條件判斷}</option>
             </select>
           </td>
-          <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" class="table-input"></td>
-          <td><input type="text" value="${row.condition || ''}" data-index="${index}" data-field="condition" class="table-input"></td>
-          <td><button class="btn btn-danger delete-btn" data-index="${index}">刪除</button></td>
+          <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" placeholder="例如: B"></td>
+          <td><input type="text" value="${row.condition || ''}" data-index="${index}" data-field="condition" placeholder="例如: 是/否"></td>
+          <td><button class="btn btn-danger btn-outline delete-btn" data-index="${index}">刪除</button></td>
         `;
         tbody.appendChild(tr);
       });
 
-      document.querySelectorAll(".table-input, .table-select").forEach(input => {
+      document.querySelectorAll(".table-container input, .table-container select").forEach(input => {
         input.addEventListener("change", (e) => {
           const idx = e.target.dataset.index;
           const field = e.target.dataset.field;
@@ -325,6 +539,14 @@
         }
       });
 
+      // 附加 Mermaid 節點 Class 名稱進行自訂 CSS 樣式綁定
+      flowData.forEach(row => {
+        if (row.id) {
+          const shapeClass = row.shape || "rect";
+          code += `    class ${row.id} shape-${shapeClass};\n`;
+        }
+      });
+
       const container = document.getElementById("mermaid-target");
       container.removeAttribute("data-processed");
       container.innerHTML = code;
@@ -346,7 +568,7 @@
       })));
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "流程圖資料");
-      XLSX.writeFile(workbook, "流程圖資料範本.xlsx");
+      XLSX.writeFile(workbook, "企業流程圖資料範本.xlsx");
     }
 
     function handleImport(e) {
@@ -373,14 +595,14 @@
         generateDiagram();
         triggerAutoSave();
       };
-      reader.readAsArrayBuffer(file);
+      reader.readAsReadAsArrayBuffer ? reader.readAsArrayBuffer(file) : reader.readAsBinaryString(file);
     }
 
     function exportToPNG() {
       const target = document.getElementById("chart-container");
       html2canvas(target, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
         const link = document.createElement("a");
-        link.download = "流程圖.png";
+        link.download = "企業流程圖.png";
         link.href = canvas.toDataURL("image/png");
         link.click();
       });
