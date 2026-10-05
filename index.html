@@ -409,7 +409,7 @@
     .v-snake-turn-left { align-self: flex-start; margin-left: 38px; }
 
     /* ========================================================
-       樹狀階層流程圖專用樣式 (修正水平並列)
+       樹狀階層流程圖專用樣式 (垂直展開)
        ======================================================== */
     .tree-container {
       display: flex;
@@ -430,7 +430,7 @@
       justify-content: center;
       align-items: flex-start;
       gap: 24px;
-      flex-wrap: nowrap; /* 確保同層節點水平並列不換行 */
+      flex-wrap: nowrap;
       width: 100%;
       margin-top: 15px;
     }
@@ -461,6 +461,37 @@
       text-align: center;
       word-break: break-word;
     }
+
+    /* ========================================================
+       橫向樹狀階層圖專用樣式 (左至右展開)
+       ======================================================== */
+    .h-tree-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px;
+      width: 100%;
+    }
+    .h-tree-branch {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin: 8px 0;
+    }
+    .h-tree-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .h-tree-children {
+      display: flex;
+      flex-direction: column;
+      margin-left: 40px;
+      padding-left: 20px;
+      border-left: 2px dashed var(--border-color);
+      gap: 12px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -478,7 +509,7 @@
     </div>
   </div>
 
-  <!-- 分頁頁籤列 (6個分頁) -->
+  <!-- 分頁頁籤列 (7個分頁) -->
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('tab-data-linear')">📝 1. 線性流程資料</button>
     <button class="tab-btn" onclick="switchTab('tab-data-tree')">🌳 2. 樹狀階層資料</button>
@@ -486,6 +517,7 @@
     <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 4. S型橫向貪食蛇</button>
     <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 5. 垂直長條型貪食蛇</button>
     <button class="tab-btn" onclick="switchTab('tab-tree-chart')">🌲 6. 樹狀階層流程圖</button>
+    <button class="tab-btn" onclick="switchTab('tab-h-tree-chart')">🌐 7. 橫向樹狀階層圖</button>
   </div>
 
   <!-- 滿版主內容視窗 -->
@@ -632,6 +664,17 @@
       </div>
     </div>
 
+    <!-- 分頁 7: 橫向樹狀階層圖 (新增) -->
+    <div id="tab-h-tree-chart" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>橫向樹狀階層圖 (Horizontal Tree View)</span>
+          <button class="btn btn-success" id="export-png-btn-5">下載高解析度 PNG</button>
+        </div>
+        <div class="chart-full-area" id="h-tree-chart-target" style="align-items: flex-start; justify-content: flex-start;"></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- JS 邏輯模組 -->
@@ -676,8 +719,6 @@
       { id: "dep3", label: "製造三部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
       { id: "dep5", label: "製造五部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
       { id: "dept_dev", label: "產品開發部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      
-      // 製造一部底下的課 (多個子節點將自動水平並列)
       { id: "EDM", label: "線切割課", parentId: "dep1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" },
       { id: "metal1", label: "金屬一課", parentId: "dep1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" }
     ];
@@ -740,6 +781,7 @@
       document.getElementById("export-png-btn-2").addEventListener("click", () => exportToPNG("snake-chart-target", "S型橫向流程圖.png"));
       document.getElementById("export-png-btn-3").addEventListener("click", () => exportToPNG("v-snake-chart-target", "垂直長條型貪食蛇流程圖.png"));
       document.getElementById("export-png-btn-4").addEventListener("click", () => exportToPNG("tree-chart-target", "樹狀階層流程圖.png"));
+      document.getElementById("export-png-btn-5").addEventListener("click", () => exportToPNG("h-tree-chart-target", "橫向樹狀階層圖.png"));
       
       document.getElementById("snake-cols").addEventListener("change", () => renderSnakeChart());
       document.getElementById("snake-direction").addEventListener("change", () => renderSnakeChart());
@@ -914,7 +956,7 @@
             const movedItem = treeData.splice(draggedIdx, 1)[0];
             treeData.splice(targetIdx, 0, movedItem);
             renderTreeTable();
-            renderTreeChart();
+            renderAllCharts();
             triggerAutoSave();
           }
         });
@@ -927,7 +969,7 @@
           const idx = e.target.dataset.index;
           const field = e.target.dataset.field;
           treeData[idx][field] = e.target.value;
-          renderTreeChart();
+          renderAllCharts();
           triggerAutoSave();
         });
       });
@@ -937,7 +979,7 @@
           const idx = e.target.dataset.index;
           treeData.splice(idx, 1);
           renderTreeTable();
-          renderTreeChart();
+          renderAllCharts();
           triggerAutoSave();
         });
       });
@@ -955,7 +997,7 @@
       const nextNum = treeData.length + 1;
       treeData.push({ id: `node_${nextNum}`, label: "", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" });
       renderTreeTable();
-      renderTreeChart();
+      renderAllCharts();
       triggerAutoSave();
     }
 
@@ -964,6 +1006,7 @@
       renderSnakeChart();
       renderVerticalSnakeChart();
       renderTreeChart();
+      renderHorizontalTreeChart();
     }
 
     function createFlowNode(item) {
@@ -1079,7 +1122,7 @@
       target.appendChild(snakeContainer);
     }
 
-    // 4. 樹狀階層流程圖修正
+    // 4. 樹狀階層流程圖 (垂直向下)
     function renderTreeChart() {
       const target = document.getElementById("tree-chart-target");
       target.innerHTML = "";
@@ -1108,6 +1151,7 @@
           if (newNote !== null) {
             item.note = newNote.trim();
             renderTreeChart();
+            renderHorizontalTreeChart();
             triggerAutoSave();
           }
         });
@@ -1120,7 +1164,7 @@
         if (children.length === 0) return null;
 
         const levelDiv = document.createElement("div");
-        levelDiv.className = "tree-level"; // 水平並列容器
+        levelDiv.className = "tree-level";
 
         children.forEach(childNode => {
           const wrapper = document.createElement("div");
@@ -1155,6 +1199,94 @@
       });
 
       target.appendChild(treeContainer);
+    }
+
+    // 7. 橫向樹狀階層圖 (左至右)
+    function renderHorizontalTreeChart() {
+      const target = document.getElementById("h-tree-chart-target");
+      target.innerHTML = "";
+
+      const container = document.createElement("div");
+      container.className = "h-tree-container";
+
+      const rootNodes = treeData.filter(item => !item.parentId || !treeData.some(p => p.id === item.parentId));
+
+      function createHTermBox(item) {
+        const box = document.createElement("div");
+        box.className = "tree-node-box";
+        box.title = "雙擊此格子可新增/修改備註";
+        box.appendChild(createFlowNode(item));
+
+        if (item.note) {
+          const noteEl = document.createElement("div");
+          noteEl.className = "node-note";
+          noteEl.innerText = `💬 ${item.note}`;
+          box.appendChild(noteEl);
+        }
+
+        box.addEventListener("dblclick", () => {
+          const newNote = prompt(`請輸入節點 [${item.label || item.id}] 的備註：`, item.note || "");
+          if (newNote !== null) {
+            item.note = newNote.trim();
+            renderTreeChart();
+            renderHorizontalTreeChart();
+            triggerAutoSave();
+          }
+        });
+
+        return box;
+      }
+
+      function buildHSubTree(parentId) {
+        const children = treeData.filter(item => item.parentId === parentId);
+        if (children.length === 0) return null;
+
+        const childrenContainer = document.createElement("div");
+        childrenContainer.className = "h-tree-children";
+
+        children.forEach(childNode => {
+          const branch = document.createElement("div");
+          branch.className = "h-tree-branch";
+
+          const row = document.createElement("div");
+          row.className = "h-tree-row";
+
+          const arrow = document.createElement("div");
+          arrow.className = "arrow-right";
+          row.appendChild(arrow);
+
+          row.appendChild(createHTermBox(childNode));
+          branch.appendChild(row);
+
+          const subTree = buildHSubTree(childNode.id);
+          if (subTree) {
+            branch.appendChild(subTree);
+          }
+
+          childrenContainer.appendChild(branch);
+        });
+
+        return childrenContainer;
+      }
+
+      rootNodes.forEach(root => {
+        const branch = document.createElement("div");
+        branch.className = "h-tree-branch";
+
+        const row = document.createElement("div");
+        row.className = "h-tree-row";
+        row.appendChild(createHTermBox(root));
+        branch.appendChild(row);
+
+        const subTree = buildHSubTree(root.id);
+        if (subTree) {
+          branch.appendChild(subTree);
+        }
+
+        container.appendChild(branch);
+      });
+
+      target.appendChild(container);
     }
 
     function exportToExcel() {
@@ -1196,7 +1328,7 @@
           const json2 = XLSX.utils.sheet_to_json(workbook.Sheets["樹狀階層資料"]);
           treeData = json2.map(row => ({
             id: String(row["節點ID"] || row["id"] || "").trim(),
-            label: String(row["節點名稱"] || row["label"] || "").trim(), // 修正此處拼字錯誤 (原本為 節not名稱)
+            label: String(row["節點名稱"] || row["label"] || "").trim(),
             parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
             shape: String(row["形狀"] || row["shape"] || "rect").trim(),
             bgColor: String(row["背景色"] || row["bgColor"] || "#ffffff").trim(),
