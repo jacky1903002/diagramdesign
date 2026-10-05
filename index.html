@@ -126,6 +126,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     /* 按鈕樣式 */
@@ -272,7 +274,7 @@
     }
     .flow-node.shape-round { border-radius: 40px; }
 
-    /* 垂直長條型節點 (分頁 4 專用，支援直向文字書寫) */
+    /* 垂直長條型節點 */
     .vertical-flow-node {
       width: var(--v-node-width);
       height: var(--v-node-height);
@@ -286,7 +288,7 @@
       text-align: center;
       padding: 12px 6px;
       word-break: break-word;
-      writing-mode: vertical-rl; /* 文字改為直向書寫 */
+      writing-mode: vertical-rl;
       text-orientation: upright;
       letter-spacing: 2px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
@@ -358,7 +360,7 @@
       border-right: 8px solid #334155;
     }
 
-    /* 貪食蛇 S 型與垂直長條型佈局容器 */
+    /* 貪食蛇佈局容器 */
     .snake-container {
       display: flex;
       flex-direction: column;
@@ -374,7 +376,7 @@
       flex-direction: row-reverse;
     }
 
-    /* 折返彎道垂直箭頭 */
+    /* 折返彎道垂直箭頭定位 */
     .snake-turn-right {
       align-self: flex-end;
       margin-right: 110px;
@@ -400,7 +402,7 @@
   <div class="header-bar">
     <div>
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 多維度滿版排版管理</p>
+      <p>自動同步 Firebase 雲端資料庫 & 動態方向控制管理</p>
     </div>
     <div>
       <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
@@ -413,7 +415,7 @@
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('tab-data')">📝 1. 資料維護表格</button>
     <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 2. 標準垂直流程圖</button>
-    <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 3. S型貪食蛇流程圖</button>
+    <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 3. S型橫向貪食蛇</button>
     <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 4. 垂直長條型貪食蛇</button>
   </div>
 
@@ -486,11 +488,18 @@
     <div id="tab-snake" class="tab-content">
       <div class="card">
         <div class="card-title">
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <span>S 型貪食蛇橫向折返流程圖 (Snake Flowchart)</span>
+          <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <span>S 型橫向貪食蛇流程圖 (Snake Flowchart)</span>
             <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
               每行步驟數：
               <input type="number" id="snake-cols" value="4" min="2" max="8" style="width: 65px; padding: 4px 8px;">
+            </label>
+            <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+              箭頭方向：
+              <select id="snake-direction" style="padding: 4px 8px;">
+                <option value="clockwise">順時針 (左 ➔ 右)</option>
+                <option value="counter">逆時針 (右 ➔ 左)</option>
+              </select>
             </label>
           </div>
           <button class="btn btn-success" id="export-png-btn-2">下載高解析度 PNG</button>
@@ -505,11 +514,18 @@
     <div id="tab-v-snake" class="tab-content">
       <div class="card">
         <div class="card-title">
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <span>垂直長條型貪食蛇流程圖 (Vertical Column Snake Flowchart)</span>
+          <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <span>垂直長條型貪食蛇流程圖 (Vertical Column Snake)</span>
             <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
               每行步驟數：
               <input type="number" id="v-snake-cols" value="6" min="2" max="12" style="width: 65px; padding: 4px 8px;">
+            </label>
+            <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+              箭頭方向：
+              <select id="v-snake-direction" style="padding: 4px 8px;">
+                <option value="clockwise">順時針 (左 ➔ 右)</option>
+                <option value="counter">逆時針 (右 ➔ 左)</option>
+              </select>
             </label>
           </div>
           <button class="btn btn-success" id="export-png-btn-3">下載高解析度 PNG</button>
@@ -622,7 +638,9 @@
       document.getElementById("export-png-btn-3").addEventListener("click", () => exportToPNG("v-snake-chart-target", "垂直長條型貪食蛇流程圖.png"));
       
       document.getElementById("snake-cols").addEventListener("change", () => renderSnakeChart());
+      document.getElementById("snake-direction").addEventListener("change", () => renderSnakeChart());
       document.getElementById("v-snake-cols").addEventListener("change", () => renderVerticalSnakeChart());
+      document.getElementById("v-snake-direction").addEventListener("change", () => renderVerticalSnakeChart());
     }
 
     function triggerAutoSave() {
@@ -746,7 +764,6 @@
       renderVerticalSnakeChart();
     }
 
-    // 建立標準節點
     function createFlowNode(item) {
       const node = document.createElement("div");
       node.className = `flow-node shape-${item.shape || 'rect'}`;
@@ -756,7 +773,6 @@
       return node;
     }
 
-    // 建立垂直長條型節點 (直向文字書寫)
     function createVerticalFlowNode(item) {
       const node = document.createElement("div");
       node.className = `vertical-flow-node shape-${item.shape || 'rect'}`;
@@ -784,12 +800,13 @@
       });
     }
 
-    // 2. S 型貪食蛇流程圖
+    // 2. S 型貪食蛇流程圖 (支援順/逆時針方向)
     function renderSnakeChart() {
       const target = document.getElementById("snake-chart-target");
       target.innerHTML = "";
 
       const cols = parseInt(document.getElementById("snake-cols").value) || 4;
+      const direction = document.getElementById("snake-direction").value; // clockwise / counter
       const validItems = flowData.filter(item => item.id);
 
       const snakeContainer = document.createElement("div");
@@ -799,7 +816,9 @@
       
       validItems.forEach((item, idx) => {
         const rowIdx = Math.floor(idx / cols);
-        const isReverse = rowIdx % 2 === 1;
+        // direction === 'clockwise': 偶數行正向(左至右)，奇數行反向(右至左)
+        // direction === 'counter': 偶數行反向(右至左)，奇數行正向(左至右)
+        const isReverse = (direction === 'clockwise') ? (rowIdx % 2 === 1) : (rowIdx % 2 === 0);
 
         if (idx % cols === 0) {
           currentRow = document.createElement("div");
@@ -827,12 +846,13 @@
       target.appendChild(snakeContainer);
     }
 
-    // 3. 垂直長條型貪食蛇流程圖 (直向文字)
+    // 3. 垂直長條型貪食蛇流程圖 (支援順/逆時針方向)
     function renderVerticalSnakeChart() {
       const target = document.getElementById("v-snake-chart-target");
       target.innerHTML = "";
 
       const cols = parseInt(document.getElementById("v-snake-cols").value) || 6;
+      const direction = document.getElementById("v-snake-direction").value; // clockwise / counter
       const validItems = flowData.filter(item => item.id);
 
       const snakeContainer = document.createElement("div");
@@ -842,7 +862,7 @@
       
       validItems.forEach((item, idx) => {
         const rowIdx = Math.floor(idx / cols);
-        const isReverse = rowIdx % 2 === 1;
+        const isReverse = (direction === 'clockwise') ? (rowIdx % 2 === 1) : (rowIdx % 2 === 0);
 
         if (idx % cols === 0) {
           currentRow = document.createElement("div");
