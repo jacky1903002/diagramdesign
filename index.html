@@ -170,17 +170,6 @@
       color: var(--text-main);
     }
 
-    input[type="color"] {
-      width: 40px;
-      height: 35px;
-      border: 1.5px solid var(--border-color);
-      border-radius: 6px;
-      cursor: pointer;
-      background: none;
-      padding: 2px;
-      vertical-align: middle;
-    }
-
     textarea.table-textarea {
       width: 100%;
       height: 60px;
@@ -500,7 +489,7 @@
   <div class="header-bar">
     <div>
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 支援組織樹狀圖正確水平並列</p>
+      <p>自動同步 Firebase 雲端資料庫 & 系統自動智慧渲染顏色</p>
     </div>
     <div>
       <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
@@ -552,12 +541,10 @@
           <table id="data-table">
             <thead>
               <tr>
-                <th style="width: 8%;">步驟 ID</th>
-                <th style="width: 32%;">步驟名稱 (Label)</th>
-                <th style="width: 15%;">節點形狀</th>
-                <th style="width: 10%;">格子顏色</th>
-                <th style="width: 10%;">文字顏色</th>
-                <th style="width: 10%;">下一步 ID</th>
+                <th style="width: 10%;">步驟 ID</th>
+                <th style="width: 40%;">步驟名稱 (Label)</th>
+                <th style="width: 20%;">節點形狀</th>
+                <th style="width: 15%;">下一步 ID</th>
                 <th style="width: 10%;">條件標籤</th>
                 <th style="width: 5%;">操作</th>
               </tr>
@@ -579,13 +566,11 @@
           <table id="tree-data-table">
             <thead>
               <tr>
-                <th style="width: 12%;">節點 ID (不可重複)</th>
-                <th style="width: 32%;">節點名稱 (Label)</th>
-                <th style="width: 15%;">父節點 ID</th>
+                <th style="width: 15%;">節點 ID (不可重複)</th>
+                <th style="width: 45%;">節點名稱 (Label)</th>
+                <th style="width: 20%;">父節點 ID</th>
                 <th style="width: 12%;">節點形狀</th>
-                <th style="width: 10%;">格子色</th>
-                <th style="width: 10%;">文字色</th>
-                <th style="width: 9%;">操作</th>
+                <th style="width: 8%;">操作</th>
               </tr>
             </thead>
             <tbody id="tree-table-body"></tbody>
@@ -701,26 +686,26 @@
     const db = getDatabase(app);
 
     let flowData = [
-      { id: "1", label: "Milling", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "2", condition: "" },
-      { id: "2", label: "Grinding", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "3", condition: "" },
-      { id: "3", label: "Milling", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "4", condition: "" },
-      { id: "4", label: "Post Treatment", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "5", condition: "" },
-      { id: "5", label: "Cleaning", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "6", condition: "" },
-      { id: "6", label: "ENP(Withmasking),\n0250-35000 clean", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "7", condition: "" },
-      { id: "7", label: "QC", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "8", condition: "" },
-      { id: "8", label: "Package", shape: "round", bgColor: "#ffffff", textColor: "#0f172a", nextId: "", condition: "" }
+      { id: "1", label: "Milling", shape: "rect", nextId: "2", condition: "" },
+      { id: "2", label: "Grinding", shape: "rect", nextId: "3", condition: "" },
+      { id: "3", label: "Milling", shape: "rect", nextId: "4", condition: "" },
+      { id: "4", label: "Post Treatment", shape: "rect", nextId: "5", condition: "" },
+      { id: "5", label: "Cleaning", shape: "rect", nextId: "6", condition: "" },
+      { id: "6", label: "ENP(Withmasking),\n0250-35000 clean", shape: "rect", nextId: "7", condition: "" },
+      { id: "7", label: "QC", shape: "rect", nextId: "8", condition: "" },
+      { id: "8", label: "Package", shape: "round", nextId: "", condition: "" }
     ];
 
     let treeData = [
-      { id: "root", label: "製造處", parentId: "", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1", note: "廠長: 劉金勳 | 副廠長:蔡儀誠" },
-      { id: "composite", label: "複材課", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "dep1", label: "製造一部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "dep2", label: "製造二部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "dep3", label: "製造三部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "dep5", label: "製造五部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "dept_dev", label: "產品開發部", parentId: "root", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", note: "" },
-      { id: "EDM", label: "線切割課", parentId: "dep1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" },
-      { id: "metal1", label: "金屬一課", parentId: "dep1", shape: "rect", bgColor: "#d1fae5", textColor: "#065f46", note: "" }
+      { id: "root", label: "製造處", parentId: "", shape: "round", note: "廠長: 劉金勳 | 副廠長:蔡儀誠" },
+      { id: "composite", label: "複材課", parentId: "root", shape: "rect", note: "" },
+      { id: "dep1", label: "製造一部", parentId: "root", shape: "rect", note: "" },
+      { id: "dep2", label: "製造二部", parentId: "root", shape: "rect", note: "" },
+      { id: "dep3", label: "製造三部", parentId: "root", shape: "rect", note: "" },
+      { id: "dep5", label: "製造五部", parentId: "root", shape: "rect", note: "" },
+      { id: "dept_dev", label: "產品開發部", parentId: "root", shape: "rect", note: "" },
+      { id: "EDM", label: "線切割課", parentId: "dep1", shape: "rect", note: "" },
+      { id: "metal1", label: "金屬一課", parentId: "dep1", shape: "rect", note: "" }
     ];
 
     let autoSaveTimer = null;
@@ -854,8 +839,6 @@
       flowData.forEach((row, index) => {
         const tr = document.createElement("tr");
         const shape = row.shape || "rect";
-        const bgColor = row.bgColor || "#ffffff";
-        const textColor = row.textColor || "#0f172a";
 
         tr.innerHTML = `
           <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="1"></td>
@@ -867,8 +850,6 @@
               <option value="rhombus" ${shape === 'rhombus' ? 'selected' : ''}>菱形</option>
             </select>
           </td>
-          <td><input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor"></td>
-          <td><input type="color" value="${textColor}" data-index="${index}" data-field="textColor"></td>
           <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" placeholder="2"></td>
           <td><input type="text" value="${row.condition || ''}" data-index="${index}" data-field="condition" placeholder="是/否"></td>
           <td><button class="btn btn-danger btn-outline btn-sm delete-btn" data-index="${index}">刪除</button></td>
@@ -908,8 +889,6 @@
         tr.dataset.index = index;
 
         const shape = row.shape || "rect";
-        const bgColor = row.bgColor || "#ffffff";
-        const textColor = row.textColor || "#0f172a";
 
         tr.innerHTML = `
           <td><span class="drag-handle" title="按住拖曳排序">⠿</span> <input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="ID" style="width: calc(100% - 24px); display: inline-block;"></td>
@@ -921,8 +900,6 @@
               <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形</option>
             </select>
           </td>
-          <td><input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor"></td>
-          <td><input type="color" value="${textColor}" data-index="${index}" data-field="textColor"></td>
           <td>
             <button class="btn btn-danger btn-outline btn-sm delete-tree-btn" data-index="${index}">刪除</button>
           </td>
@@ -987,7 +964,7 @@
 
     function addRow() {
       const nextNum = flowData.length + 1;
-      flowData.push({ id: String(nextNum), label: "", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", nextId: "", condition: "" });
+      flowData.push({ id: String(nextNum), label: "", shape: "rect", nextId: "", condition: "" });
       renderTable();
       renderAllCharts();
       triggerAutoSave();
@@ -995,7 +972,7 @@
 
     function addTreeRow() {
       const nextNum = treeData.length + 1;
-      treeData.push({ id: `node_${nextNum}`, label: "", parentId: "root", shape: "rect", bgColor: "#ffffff", textColor: "#0f172a", note: "" });
+      treeData.push({ id: `node_${nextNum}`, label: "", parentId: "root", shape: "rect", note: "" });
       renderTreeTable();
       renderAllCharts();
       triggerAutoSave();
@@ -1009,12 +986,30 @@
       renderHorizontalTreeChart();
     }
 
-    function createFlowNode(item) {
+    // 系統智慧顏色渲染邏輯
+    function getSystemThemeColors(item, isTree = false) {
+      if (isTree) {
+        if (!item.parentId || item.parentId === "") {
+          return { bg: "#e0f2fe", text: "#0369a1" }; // 根節點：亮藍色系
+        } else if (item.parentId === "root") {
+          return { bg: "#fef3c7", text: "#78350f" }; // 一階子節點：暖黃色系
+        } else {
+          return { bg: "#d1fae5", text: "#065f46" }; // 二階或更深層節點：柔和綠色系
+        }
+      } else {
+        return { bg: "#ffffff", text: "#0f172a" }; // 一般線性流程節點：預設白底深色字
+      }
+    }
+
+    function createFlowNode(item, isTree = false) {
       const node = document.createElement("div");
       node.className = `flow-node shape-${item.shape || 'rect'}`;
       node.innerText = item.label || item.id;
-      if (item.bgColor) node.style.backgroundColor = item.bgColor;
-      if (item.textColor) node.style.color = item.textColor;
+      
+      const colors = getSystemThemeColors(item, isTree);
+      node.style.backgroundColor = colors.bg;
+      node.style.color = colors.text;
+      
       return node;
     }
 
@@ -1022,8 +1017,11 @@
       const node = document.createElement("div");
       node.className = `vertical-flow-node shape-${item.shape || 'rect'}`;
       node.innerText = item.label || item.id;
-      if (item.bgColor) node.style.backgroundColor = item.bgColor;
-      if (item.textColor) node.style.color = item.textColor;
+      
+      const colors = getSystemThemeColors(item, false);
+      node.style.backgroundColor = colors.bg;
+      node.style.color = colors.text;
+
       return node;
     }
 
@@ -1033,7 +1031,7 @@
       target.innerHTML = "";
       flowData.forEach((item, idx) => {
         if (!item.id) return;
-        target.appendChild(createFlowNode(item));
+        target.appendChild(createFlowNode(item, false));
         if (item.nextId && idx < flowData.length - 1) {
           const arrow = document.createElement("div");
           arrow.className = "arrow-down";
@@ -1064,7 +1062,7 @@
           snakeContainer.appendChild(currentRow);
         }
 
-        currentRow.appendChild(createFlowNode(item));
+        currentRow.appendChild(createFlowNode(item, false));
 
         const isLastInRow = (idx % cols === cols - 1) || (idx === validItems.length - 1);
         if (!isLastInRow) {
@@ -1137,7 +1135,7 @@
         box.className = "tree-node-box";
         box.title = "雙擊此格子可新增/修改備註";
 
-        box.appendChild(createFlowNode(item));
+        box.appendChild(createFlowNode(item, true));
 
         if (item.note) {
           const noteEl = document.createElement("div");
@@ -1215,7 +1213,7 @@
         const box = document.createElement("div");
         box.className = "tree-node-box";
         box.title = "雙擊此格子可新增/修改備註";
-        box.appendChild(createFlowNode(item));
+        box.appendChild(createFlowNode(item, true));
 
         if (item.note) {
           const noteEl = document.createElement("div");
@@ -1292,10 +1290,10 @@
     function exportToExcel() {
       const wb = XLSX.utils.book_new();
       const wsLinear = XLSX.utils.json_to_sheet(flowData.map(item => ({
-        "步驟ID": item.id, "步驟名稱": item.label, "形狀": item.shape, "背景色": item.bgColor, "文字顏色": item.textColor, "下一步ID": item.nextId, "條件": item.condition
+        "步驟ID": item.id, "步驟名稱": item.label, "形狀": item.shape, "下一步ID": item.nextId, "條件": item.condition
       })));
       const wsTree = XLSX.utils.json_to_sheet(treeData.map(item => ({
-        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "背景色": item.bgColor, "文字顏色": item.textColor, "備註": item.note || ""
+        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || ""
       })));
       XLSX.utils.book_append_sheet(wb, wsLinear, "線性流程資料");
       XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料");
@@ -1317,8 +1315,6 @@
             id: String(row["步驟ID"] || row["id"] || "").trim(),
             label: String(row["步驟名稱"] || row["label"] || ""),
             shape: String(row["形狀"] || row["shape"] || "rect").trim(),
-            bgColor: String(row["背景色"] || row["bgColor"] || "#ffffff").trim(),
-            textColor: String(row["文字顏色"] || row["textColor"] || "#0f172a").trim(),
             nextId: String(row["下一步ID"] || row["nextId"] || "").trim(),
             condition: String(row["條件"] || row["condition"] || "").trim()
           }));
@@ -1331,8 +1327,6 @@
             label: String(row["節點名稱"] || row["label"] || "").trim(),
             parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
             shape: String(row["形狀"] || row["shape"] || "rect").trim(),
-            bgColor: String(row["背景色"] || row["bgColor"] || "#ffffff").trim(),
-            textColor: String(row["文字顏色"] || row["textColor"] || "#0f172a").trim(),
             note: String(row["備註"] || row["note"] || "").trim()
           }));
         }
