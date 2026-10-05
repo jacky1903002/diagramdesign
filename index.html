@@ -249,22 +249,20 @@
     .error { color: var(--accent-red); font-size: 13px; margin-top: 8px; }
 
     /* ========================================================
-       滿版流程圖視覺區域 (修改：優化為 100% 滿版展開並自動適應)
+       滿版流程圖視覺區域
        ======================================================== */
     .chart-full-area {
       background: #ffffff;
       border: 1.5px solid var(--border-color);
       border-radius: 12px;
-      padding: 24px;
+      padding: 40px;
       overflow: auto;
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      width: 100%;
-      height: 100%;
-      min-height: calc(100vh - 200px);
+      min-height: 600px;
     }
 
     /* 標準方框節點 */
@@ -320,7 +318,7 @@
     /* 箭頭指示器 */
     .arrow-down {
       width: 2px;
-      height: 24px;
+      height: 30px;
       background-color: #2563eb;
       position: relative;
       margin: 4px 0;
@@ -382,16 +380,13 @@
     .snake-container {
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 32px;
       align-items: center;
-      padding: 10px;
-      width: 100%;
+      padding: 20px;
     }
     .snake-row {
       display: flex;
       align-items: center;
-      justify-content: center;
-      width: 100%;
     }
     .snake-row.reverse {
       flex-direction: row-reverse;
@@ -403,16 +398,15 @@
     .v-snake-turn-left { align-self: flex-start; margin-left: 38px; }
 
     /* ========================================================
-       樹狀階層流程圖專用樣式 (修改：改為全螢幕橫向與縱向平鋪展開)
+       樹狀階層流程圖專用樣式 (垂直展開)
        ======================================================== */
     .tree-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 24px;
-      padding: 10px;
+      gap: 40px;
+      padding: 20px;
       width: 100%;
-      min-width: fit-content;
     }
     .tree-node-wrapper {
       display: flex;
@@ -424,10 +418,10 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      gap: 20px;
-      flex-wrap: wrap;
+      gap: 24px;
+      flex-wrap: nowrap;
       width: 100%;
-      margin-top: 10px;
+      margin-top: 15px;
     }
     .tree-node-box {
       display: flex;
@@ -444,13 +438,13 @@
       box-shadow: 0 6px 14px rgba(0,0,0,0.12);
     }
     .node-note {
-      margin-top: 4px;
-      font-size: 11px;
+      margin-top: 6px;
+      font-size: 12px;
       font-weight: 600;
       color: #0284c7;
       background: #e0f2fe;
       border: 1px dashed #0284c7;
-      padding: 2px 6px;
+      padding: 2px 8px;
       border-radius: 4px;
       max-width: 160px;
       text-align: center;
@@ -458,36 +452,34 @@
     }
 
     /* ========================================================
-       橫向樹狀階層圖專用樣式 (修改：滿版左至右延展)
+       橫向樹狀階層圖專用樣式 (左至右展開)
        ======================================================== */
     .h-tree-container {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      padding: 10px;
+      padding: 20px;
       width: 100%;
-      min-width: fit-content;
     }
     .h-tree-branch {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      margin: 6px 0;
-      width: 100%;
+      margin: 8px 0;
     }
     .h-tree-row {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
     }
     .h-tree-children {
       display: flex;
       flex-direction: column;
-      margin-left: 30px;
-      padding-left: 15px;
+      margin-left: 40px;
+      padding-left: 20px;
       border-left: 2px dashed var(--border-color);
-      gap: 10px;
-      margin-top: 8px;
+      gap: 12px;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -646,18 +638,18 @@
       </div>
     </div>
 
-    <!-- 分頁 6: 樹狀階層流程圖 (滿版優化) -->
+    <!-- 分頁 6: 樹狀階層流程圖 (正確水平並列) -->
     <div id="tab-tree-chart" class="tab-content">
       <div class="card">
         <div class="card-title">
           <span>樹狀階層流程圖 (提示：雙擊任意格子可新增或修改備註)</span>
           <button class="btn btn-success" id="export-png-btn-4">下載高解析度 PNG</button>
         </div>
-        <div class="chart-full-area" id="tree-chart-target" style="justify-content: flex-start; align-items: center;"></div>
+        <div class="chart-full-area" id="tree-chart-target" style="justify-content: center;"></div>
       </div>
     </div>
 
-    <!-- 分頁 7: 橫向樹狀階層圖 (滿版優化) -->
+    <!-- 分頁 7: 橫向樹狀階層圖 (新增) -->
     <div id="tab-h-tree-chart" class="tab-content">
       <div class="card">
         <div class="card-title">
