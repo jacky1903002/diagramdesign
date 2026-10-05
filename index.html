@@ -17,17 +17,16 @@
     .btn:hover { background: #0056b3; }
     .btn-success { background: #28a745; }
     .btn-success:hover { background: #218838; }
-    .btn-warning { background: #ffc107; color: #212529; }
-    .btn-warning:hover { background: #e0a800; }
     .btn-danger { background: #dc3545; }
     .btn-danger:hover { background: #c82333; }
-    input[type="email"], input[type="password"], input[type="text"] { padding: 8px; margin-right: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    input[type="email"], input[type="password"], input[type="text"], select { padding: 8px; margin-right: 8px; border: 1px solid #ccc; border-radius: 4px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background-color: #e9ecef; }
     #chart-container { background: white; padding: 20px; text-align: center; overflow-x: auto; min-height: 200px; }
     .error { color: red; margin-top: 5px; font-size: 0.9em; }
-    .status-msg { color: #17a2b8; margin-top: 5px; font-size: 0.9em; }
+    .status-msg { color: #28a745; margin-left: 10px; font-weight: bold; font-size: 0.9em; }
+    .save-time-info { color: #6c757d; font-size: 0.85em; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -56,17 +55,15 @@
     <button class="btn" id="import-btn">匯入 Excel</button>
     <button class="btn btn-success" id="export-excel-btn">匯出 Excel 範本</button>
     <button class="btn" id="add-row-btn">新增一行</button>
-    
-    <!-- 雲端儲存與讀取按鈕 -->
-    <button class="btn btn-warning" id="save-cloud-btn">💾 儲存至 Realtime Database</button>
-    <button class="btn" id="load-cloud-btn" style="background-color: #17a2b8;">☁️ 從雲端重新載入</button>
     <span id="cloud-status" class="status-msg"></span>
+    <div id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</div>
     
     <table id="data-table">
       <thead>
         <tr>
           <th>步驟 ID (ID)</th>
           <th>步驟名稱 (Label)</th>
+          <th>節點形狀 (Shape)</th>
           <th>下一步驟 ID (NextID)</th>
           <th>條件標籤 (Condition)</th>
           <th>操作</th>
@@ -94,10 +91,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    // 引入 Realtime Database 模組
     import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 您的 Firebase 專案設定資訊（若專案位在預設地區外，需確保帶有 databaseURL）
     const firebaseConfig = {
       apiKey: "AIzaSyCeC_I3DnGF8rEr1GVQ3g_u2be2F_eK-_I",
       authDomain: "diagramdesign-93aa1.firebaseapp.com",
@@ -106,25 +101,29 @@
       messagingSenderId: "959107259295",
       appId: "1:959107259295:web:40dfbc4e0e434e6c3abbaa",
       measurementId: "G-57JB2D0M6B",
-      databaseURL: "https://diagramdesign-93aa1-default-rtdb.firebaseio.com" // 若為亞洲/歐洲節點請確認 URL 正確
+      databaseURL: "https://diagramdesign-93aa1-default-rtdb.firebaseio.com"
     };
 
-    // 初始化 Firebase, Analytics, Auth 與 Realtime Database
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
     let flowData = [
-      { id: "A", label: "開始流程", nextId: "B", condition: "" },
-      { id: "B", label: "檢查資料規格", nextId: "C", condition: "合格" },
-      { id: "B", label: "檢查資料規格", nextId: "D", condition: "退回" },
-      { id: "C", label: "執行自動生產", nextId: "E", condition: "" },
-      { id: "D", label: "人工修正資料", nextId: "B", condition: "重新送審" },
-      { id: "E", label: "結案完成", nextId: "", condition: "" }
+      { id: "A", label: "開始", shape: "round", nextId: "B", condition: "" },
+      { id: "B", label: "需求分析", shape: "rect", nextId: "C", condition: "" },
+      { id: "C", label: "UI 設計", shape: "rect", nextId: "D", condition: "" },
+      { id: "D", label: "開發", shape: "rect", nextId: "E", condition: "" },
+      { id: "E", label: "測試", shape: "rect", nextId: "F", condition: "" },
+      { id: "F", label: "測試通過？", shape: "rhombus", nextId: "G", condition: "是" },
+      { id: "F", label: "測試通過？", shape: "rhombus", nextId: "H", condition: "否" },
+      { id: "H", label: "除錯修正", shape: "rect", nextId: "E", condition: "" },
+      { id: "G", label: "上線發布", shape: "rect", nextId: "I", condition: "" },
+      { id: "I", label: "結束", shape: "round", nextId: "", condition: "" }
     ];
 
-    // 初始化 Mermaid 流程圖套件
+    let autoSaveTimer = null;
+
     mermaid.initialize({ startOnLoad: false, theme: 'default' });
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -132,7 +131,6 @@
       generateDiagram();
       setupEventListeners();
 
-      // 監聽登入狀態
       onAuthStateChanged(auth, async (user) => {
         const editControls = document.getElementById("edit-controls");
         const authSection = document.getElementById("auth-section");
@@ -145,7 +143,6 @@
           logoutBtn.style.display = "inline-block";
           userInfo.innerText = `已登入：${user.email}`;
 
-          // 登入後自動從雲端載入最新資料
           await loadFromCloud();
         } else {
           editControls.style.display = "none";
@@ -157,7 +154,6 @@
     });
 
     function setupEventListeners() {
-      // 登入事件
       document.getElementById("login-btn").addEventListener("click", () => {
         const email = document.getElementById("email").value;
         const pass = document.getElementById("password").value;
@@ -170,49 +166,52 @@
           });
       });
 
-      // 登出事件
       document.getElementById("logout-btn").addEventListener("click", () => {
         signOut(auth);
       });
 
-      // 匯入 Excel 觸發按鈕
       document.getElementById("import-btn").addEventListener("click", () => {
         document.getElementById("excel-file").click();
       });
 
-      // 各項按鈕監聽
       document.getElementById("excel-file").addEventListener("change", handleImport);
       document.getElementById("export-excel-btn").addEventListener("click", exportToExcel);
       document.getElementById("add-row-btn").addEventListener("click", addRow);
       document.getElementById("export-png-btn").addEventListener("click", exportToPNG);
-
-      // Realtime Database 儲存與讀取按鈕事件
-      document.getElementById("save-cloud-btn").addEventListener("click", saveToCloud);
-      document.getElementById("load-cloud-btn").addEventListener("click", loadFromCloud);
     }
 
-    // --- Realtime Database 儲存邏輯 ---
+    function triggerAutoSave() {
+      const statusEl = document.getElementById("cloud-status");
+      statusEl.innerText = "變更中...";
+      
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(async () => {
+        await saveToCloud();
+      }, 1000);
+    }
+
     async function saveToCloud() {
       const statusEl = document.getElementById("cloud-status");
-      statusEl.innerText = "正在儲存至 Realtime Database...";
+      statusEl.innerText = "正在自動儲存至雲端...";
+      const nowString = new Date().toLocaleString("zh-TW", { hour12: false });
+
       try {
-        // 將 flowData 陣列儲存至 node "flowcharts/default_chart"
         await set(ref(db, 'flowcharts/default_chart'), {
           data: flowData,
-          updatedAt: new Date().toISOString()
+          updatedAt: nowString
         });
-        statusEl.innerText = "✅ 成功儲存至 Realtime Database！";
-        setTimeout(() => { statusEl.innerText = ""; }, 3000);
+        statusEl.innerText = "✅ 自動儲存成功！";
+        document.getElementById("save-time-display").innerText = `上次儲存時間：${nowString}`;
+        setTimeout(() => { statusEl.innerText = ""; }, 2500);
       } catch (error) {
         console.error("儲存失敗:", error);
-        statusEl.innerText = "❌ 雲端儲存失敗：" + error.message;
+        statusEl.innerText = "❌ 自動儲存失敗：" + error.message;
       }
     }
 
-    // --- Realtime Database 讀取邏輯 ---
     async function loadFromCloud() {
       const statusEl = document.getElementById("cloud-status");
-      statusEl.innerText = "正在讀取 Realtime Database 資料...";
+      statusEl.innerText = "載入雲端資料中...";
       try {
         const dbRef = ref(db);
         const snapshot = await get(child(dbRef, 'flowcharts/default_chart'));
@@ -222,15 +221,18 @@
             flowData = cloudData.data;
             renderTable();
             generateDiagram();
-            statusEl.innerText = "✅ 已成功載入雲端最新資料！";
+            statusEl.innerText = "✅ 已同步雲端最新資料";
+            if (cloudData.updatedAt) {
+              document.getElementById("save-time-display").innerText = `上次儲存時間：${cloudData.updatedAt}`;
+            }
           }
         } else {
-          statusEl.innerText = "ℹ️ 雲端無預設資料，使用本機預設流程圖。";
+          statusEl.innerText = "ℹ️ 雲端無資料，已載入範本。";
         }
-        setTimeout(() => { statusEl.innerText = ""; }, 3000);
+        setTimeout(() => { statusEl.innerText = ""; }, 2500);
       } catch (error) {
         console.error("讀取失敗:", error);
-        statusEl.innerText = "❌ 讀取雲端資料失敗：" + error.message;
+        statusEl.innerText = "❌ 載入失敗：" + error.message;
       }
     }
 
@@ -239,22 +241,31 @@
       tbody.innerHTML = "";
       flowData.forEach((row, index) => {
         const tr = document.createElement("tr");
+        const shape = row.shape || "rect";
         tr.innerHTML = `
-          <td><input type="text" value="${row.id}" data-index="${index}" data-field="id" class="table-input"></td>
-          <td><input type="text" value="${row.label}" data-index="${index}" data-field="label" class="table-input"></td>
-          <td><input type="text" value="${row.nextId}" data-index="${index}" data-field="nextId" class="table-input"></td>
-          <td><input type="text" value="${row.condition}" data-index="${index}" data-field="condition" class="table-input"></td>
+          <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" class="table-input"></td>
+          <td><input type="text" value="${row.label || ''}" data-index="${index}" data-field="label" class="table-input"></td>
+          <td>
+            <select data-index="${index}" data-field="shape" class="table-select">
+              <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形 [步驟]</option>
+              <option value="round" ${shape === 'round' ? 'selected' : ''}>圓角/橢圓 (開始/結束)</option>
+              <option value="rhombus" ${shape === 'rhombus' ? 'selected' : ''}>菱形 {判斷}</option>
+            </select>
+          </td>
+          <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" class="table-input"></td>
+          <td><input type="text" value="${row.condition || ''}" data-index="${index}" data-field="condition" class="table-input"></td>
           <td><button class="btn btn-danger delete-btn" data-index="${index}">刪除</button></td>
         `;
         tbody.appendChild(tr);
       });
 
-      document.querySelectorAll(".table-input").forEach(input => {
+      document.querySelectorAll(".table-input, .table-select").forEach(input => {
         input.addEventListener("change", (e) => {
           const idx = e.target.dataset.index;
           const field = e.target.dataset.field;
           flowData[idx][field] = e.target.value.trim();
           generateDiagram();
+          triggerAutoSave();
         });
       });
 
@@ -264,29 +275,44 @@
           flowData.splice(idx, 1);
           renderTable();
           generateDiagram();
+          triggerAutoSave();
         });
       });
     }
 
     function addRow() {
-      flowData.push({ id: "", label: "", nextId: "", condition: "" });
+      flowData.push({ id: "", label: "", shape: "rect", nextId: "", condition: "" });
       renderTable();
+      triggerAutoSave();
+    }
+
+    function formatNodeText(id, label, shape) {
+      if (!label) return id;
+      switch (shape) {
+        case 'round':
+          return `${id}("${label}")`;
+        case 'rhombus':
+          return `${id}{"${label}"}`;
+        case 'rect':
+        default:
+          return `${id}["${label}"]`;
+      }
     }
 
     async function generateDiagram() {
       let code = "graph TD\n";
-      const nodeLabels = {};
+      const nodeDefs = {};
 
       flowData.forEach(row => {
         if (row.id && row.label) {
-          nodeLabels[row.id] = row.label;
+          nodeDefs[row.id] = formatNodeText(row.id, row.label, row.shape);
         }
       });
 
       flowData.forEach(row => {
         if (row.id && row.nextId) {
-          const fromLabel = nodeLabels[row.id] ? `${row.id}["${nodeLabels[row.id]}"]` : row.id;
-          const toLabel = nodeLabels[row.nextId] ? `${row.nextId}["${nodeLabels[row.nextId]}"]` : row.nextId;
+          const fromLabel = nodeDefs[row.id] || row.id;
+          const toLabel = nodeDefs[row.nextId] || row.nextId;
           
           if (row.condition) {
             code += `    ${fromLabel} -- "${row.condition}" --> ${toLabel}\n`;
@@ -294,7 +320,7 @@
             code += `    ${fromLabel} --> ${toLabel}\n`;
           }
         } else if (row.id && !row.nextId) {
-          const fromLabel = nodeLabels[row.id] ? `${row.id}["${nodeLabels[row.id]}"]` : row.id;
+          const fromLabel = nodeDefs[row.id] || row.id;
           code += `    ${fromLabel}\n`;
         }
       });
@@ -314,6 +340,7 @@
       const worksheet = XLSX.utils.json_to_sheet(flowData.map(item => ({
         "步驟ID": item.id,
         "步驟名稱": item.label,
+        "節點形狀(rect/round/rhombus)": item.shape || "rect",
         "下一步驟ID": item.nextId,
         "條件說明": item.condition
       })));
@@ -337,12 +364,14 @@
         flowData = json.map(row => ({
           id: String(row["步驟ID"] || row["id"] || "").trim(),
           label: String(row["步驟名稱"] || row["label"] || "").trim(),
+          shape: String(row["節點形狀(rect/round/rhombus)"] || row["shape"] || "rect").trim(),
           nextId: String(row["下一步驟ID"] || row["nextId"] || "").trim(),
           condition: String(row["條件說明"] || row["condition"] || "").trim()
         }));
 
         renderTable();
         generateDiagram();
+        triggerAutoSave();
       };
       reader.readAsArrayBuffer(file);
     }
