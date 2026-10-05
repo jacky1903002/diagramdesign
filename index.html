@@ -16,7 +16,7 @@
     :root {
       --primary-color: #2563eb;
       --primary-hover: #1d4ed8;
-      --bg-color: #f1f5f9;
+      --bg-color: #f8fafc;
       --card-bg: #ffffff;
       --text-main: #0f172a;
       --text-muted: #64748b;
@@ -188,109 +188,86 @@
     .error { color: var(--accent-red); font-size: 13px; margin-top: 8px; }
 
     /* ========================================================
-       Mermaid 強制固定框框尺寸 (260px x 60px) 與色彩設定
+       Mermaid 彈性視覺樣式（最小寬度 + 高辨識度色彩）
        ======================================================== */
     
-    /* 1. 外層容器與基礎節點控制 */
-    .mermaid .node {
-      cursor: pointer;
-    }
-
-    /* 強制設定外層形狀 (向量 SVG) 的固定寬高與置中錨點 */
+    /* 基礎形狀樣式：最小寬度 + 質感內襯 */
     .mermaid .node rect,
     .mermaid .node polygon,
     .mermaid .node circle,
     .mermaid .node ellipse {
-      width: 260px !important;
-      height: 60px !important;
-      x: -130px !important;
-      y: -30px !important;
-      stroke-width: 2.5px !important;
-      filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.12));
+      min-width: 160px !important;       /* 設定最小寬度，防止 QC 太短 */
+      stroke-width: 2px !important;
+      filter: drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.06));
       transition: all 0.25s ease;
     }
 
-    /* 2. 強制設定 HTML 文字容器的大小與文字強制換行居中 */
-    .mermaid .node foreignObject {
-      width: 260px !important;
-      height: 60px !important;
-      x: -130px !important;
-      y: -30px !important;
-      overflow: visible !important;
-    }
-
-    .mermaid .node foreignObject div {
-      width: 260px !important;
-      height: 60px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      text-align: center !important;
-      word-break: break-word !important;
-      white-space: normal !important;
-      padding: 0 12px !important;
-      box-sizing: border-box !important;
+    .mermaid .node .label {
       font-family: 'Inter', sans-serif !important;
-      color: #ffffff !important;
-      font-weight: 700 !important;
+      font-weight: 600 !important;
       font-size: 14px !important;
-      line-height: 1.3 !important;
-      text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
+      padding: 8px 16px !important;
     }
 
-    /* 3. 鮮豔色彩主題設定 */
-    
-    /* 開始/結束 (橢圓) - 鮮豔皇家藍 */
+    /* 1. 開始/結束 (橢圓) - 柔和藍色調 */
     .mermaid .node.shape-round rect,
     .mermaid .node.shape-round polygon,
     .mermaid .node.shape-round circle {
-      fill: #2563eb !important;
-      stroke: #1d4ed8 !important;
-      rx: 30px !important;
-      ry: 30px !important;
+      fill: #e0f2fe !important;
+      stroke: #0284c7 !important;
+      rx: 20px !important;
+      ry: 20px !important;
+    }
+    .mermaid .node.shape-round .label {
+      color: #0369a1 !important;
     }
 
-    /* 標準步驟 (矩形) - 活力翡翠綠 */
+    /* 2. 標準步驟 (矩形) - 暖黃/米色調 (同圖片風格加強版) */
     .mermaid .node.shape-rect rect {
-      fill: #10b981 !important;
-      stroke: #047857 !important;
-      rx: 8px !important;
-      ry: 8px !important;
-    }
-
-    /* 條件判斷 (菱形) - 亮眼金黃橘 */
-    .mermaid .node.shape-rhombus polygon {
-      fill: #f59e0b !important;
+      fill: #fef3c7 !important;
       stroke: #d97706 !important;
+      rx: 6px !important;
+      ry: 6px !important;
+    }
+    .mermaid .node.shape-rect .label {
+      color: #78350f !important;
     }
 
-    /* 滑鼠懸停光暈縮放效果 */
+    /* 3. 條件判斷 (菱形) - 薄荷綠色調 */
+    .mermaid .node.shape-rhombus polygon {
+      fill: #d1fae5 !important;
+      stroke: #059669 !important;
+    }
+    .mermaid .node.shape-rhombus .label {
+      color: #065f46 !important;
+    }
+
+    /* 滑鼠懸停效果 */
     .mermaid .node:hover rect,
     .mermaid .node:hover polygon {
-      filter: drop-shadow(0px 6px 14px rgba(0, 0, 0, 0.28));
+      filter: drop-shadow(0px 6px 12px rgba(0, 0, 0, 0.15));
     }
 
-    /* 4. 連接線與箭頭樣式加強 */
+    /* 連接線與箭頭加強 */
     .mermaid .edgePath .path {
-      stroke: #334155 !important;
-      stroke-width: 3px !important;
+      stroke: #1e293b !important;
+      stroke-width: 2.5px !important;
     }
 
     .mermaid .marker {
-      fill: #334155 !important;
-      stroke: #334155 !important;
+      fill: #1e293b !important;
+      stroke: #1e293b !important;
     }
 
-    /* 條件文字氣泡標籤 */
+    /* 條件標籤氣泡 */
     .mermaid .edgeLabel {
       background-color: #ffffff !important;
       color: #0f172a !important;
       padding: 4px 10px !important;
       border-radius: 6px !important;
       border: 1.5px solid #94a3b8 !important;
-      font-size: 13px !important;
+      font-size: 12px !important;
       font-weight: 600 !important;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     }
   </style>
 </head>
@@ -300,7 +277,7 @@
   <div class="header-container">
     <div class="header-title">
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 固定尺寸視覺化</p>
+      <p>自動同步 Firebase 雲端資料庫 & 彈性排版視覺化</p>
     </div>
     <div id="user-status-bar">
       <span id="user-info" class="save-time-info">系統初始化中...</span>
@@ -395,7 +372,7 @@
       { id: "C", label: "Milling", shape: "rect", nextId: "D", condition: "" },
       { id: "D", label: "Post Treatment", shape: "rect", nextId: "E", condition: "" },
       { id: "E", label: "Cleaning", shape: "rect", nextId: "F", condition: "" },
-      { id: "F", label: "ENP (Withmasking), 0250-35000 clean", shape: "rect", nextId: "G", condition: "" },
+      { id: "F", label: "ENP(Withmasking), 0250-35000 clean", shape: "rect", nextId: "G", condition: "" },
       { id: "G", label: "QC", shape: "rect", nextId: "H", condition: "" },
       { id: "H", label: "Package", shape: "round", nextId: "", condition: "" }
     ];
@@ -408,8 +385,8 @@
       flowchart: {
         htmlLabels: true,
         curve: 'linear',
-        nodeSpacing: 50,
-        rankSpacing: 50
+        nodeSpacing: 45,
+        rankSpacing: 45
       }
     });
 
