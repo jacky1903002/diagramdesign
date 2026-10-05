@@ -152,7 +152,7 @@
     }
     .btn-outline:hover { background: #e2e8f0; }
 
-    /* 表單元件與的多行 Textarea 支援 */
+    /* 表單元件 */
     input[type="email"], input[type="password"], input[type="text"], input[type="number"], select, textarea {
       padding: 8px 12px;
       border: 1.5px solid var(--border-color);
@@ -162,6 +162,17 @@
       outline: none;
       background-color: #ffffff;
       color: var(--text-main);
+    }
+
+    input[type="color"] {
+      width: 40px;
+      height: 35px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+      background: none;
+      padding: 2px;
+      vertical-align: middle;
     }
 
     textarea.table-textarea {
@@ -216,7 +227,7 @@
     .error { color: var(--accent-red); font-size: 13px; margin-top: 8px; }
 
     /* ========================================================
-       滿版流程圖視覺區域 (支援文字 Enter 換行)
+       滿版流程圖視覺區域
        ======================================================== */
     .chart-full-area {
       background: #ffffff;
@@ -232,14 +243,12 @@
       min-height: 600px;
     }
 
-    /* 方框節點 */
+    /* 動態方框節點 (支援自訂背景色與文字顏色) */
     .flow-node {
       width: var(--node-width);
       min-height: var(--node-height);
-      background-color: #fef3c7;
-      border: 2.5px solid #d97706;
+      border: 2.5px solid rgba(0, 0, 0, 0.15);
       border-radius: 8px;
-      color: #78350f;
       font-weight: 800;
       font-size: 15px;
       display: flex;
@@ -248,7 +257,7 @@
       text-align: center;
       padding: 12px 16px;
       word-break: break-word;
-      white-space: pre-wrap; /* 支援文字內 Enter 換行 */
+      white-space: pre-wrap;
       line-height: 1.4;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
       position: relative;
@@ -257,16 +266,7 @@
     }
 
     .flow-node.shape-round {
-      background-color: #e0f2fe;
-      border-color: #0284c7;
-      color: #0369a1;
       border-radius: 40px;
-    }
-
-    .flow-node.shape-rhombus {
-      background-color: #d1fae5;
-      border-color: #059669;
-      color: #065f46;
     }
 
     /* 垂直箭頭指示器 */
@@ -328,7 +328,7 @@
       height: 0;
       border-top: 7.5px solid transparent;
       border-bottom: 7.5px solid transparent;
-      border-right: 10px solid #334155;
+      border-right: 8px solid #334155;
     }
 
     /* 貪食蛇 S 型佈局容器 */
@@ -364,7 +364,7 @@
   <div class="header-bar">
     <div>
       <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 三分頁滿版排版管理</p>
+      <p>自動同步 Firebase 雲端資料庫 & 自訂色彩與滿版排版管理</p>
     </div>
     <div>
       <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
@@ -399,7 +399,7 @@
       <!-- 編輯表格卡片 -->
       <div class="card" id="edit-controls" style="display: none;">
         <div class="card-title">
-          <span>流程步驟編輯資料庫 (名稱欄位支援 Enter 換行)</span>
+          <span>流程步驟編輯資料庫 (支援 Enter 換行與自訂色彩)</span>
           <span id="cloud-status" class="status-badge" style="display:none;"></span>
         </div>
 
@@ -414,12 +414,14 @@
           <table id="data-table">
             <thead>
               <tr>
-                <th style="width: 10%;">步驟 ID</th>
-                <th style="width: 40%;">步驟名稱 (Label, 支援 Enter 換行)</th>
-                <th style="width: 18%;">節點外觀形狀</th>
-                <th style="width: 12%;">下一步 ID</th>
-                <th style="width: 12%;">條件標籤</th>
-                <th style="width: 8%;">操作</th>
+                <th style="width: 8%;">步驟 ID</th>
+                <th style="width: 32%;">步驟名稱 (Label)</th>
+                <th style="width: 15%;">節點形狀</th>
+                <th style="width: 10%;">格子顏色</th>
+                <th style="width: 10%;">文字顏色</th>
+                <th style="width: 10%;">下一步 ID</th>
+                <th style="width: 10%;">條件標籤</th>
+                <th style="width: 5%;">操作</th>
               </tr>
             </thead>
             <tbody id="table-body">
@@ -488,20 +490,14 @@
     const db = getDatabase(app);
 
     let flowData = [
-      { id: "1", label: "Milling", shape: "rect", nextId: "2", condition: "" },
-      { id: "2", label: "Grinding", shape: "rect", nextId: "3", condition: "" },
-      { id: "3", label: "Milling", shape: "rect", nextId: "4", condition: "" },
-      { id: "4", label: "Post Treatment", shape: "rect", nextId: "5", condition: "" },
-      { id: "5", label: "Cleaning", shape: "rect", nextId: "6", condition: "" },
-      { id: "6", label: "ENP(Withmasking),\n0250-35000 clean", shape: "rect", nextId: "7", condition: "" },
-      { id: "7", label: "QC", shape: "rect", nextId: "8", condition: "" },
-      { id: "8", label: "Package", shape: "rect", nextId: "9", condition: "" },
-      { id: "9", label: "Inspection", shape: "rect", nextId: "10", condition: "" },
-      { id: "10", label: "Labeling", shape: "rect", nextId: "11", condition: "" },
-      { id: "11", label: "Warehouse", shape: "rect", nextId: "12", condition: "" },
-      { id: "12", label: "Shipping Check", shape: "rect", nextId: "13", condition: "" },
-      { id: "13", label: "Delivery", shape: "rect", nextId: "14", condition: "" },
-      { id: "14", label: "Customer Sign", shape: "round", nextId: "", condition: "" }
+      { id: "1", label: "Milling", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "2", condition: "" },
+      { id: "2", label: "Grinding", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "3", condition: "" },
+      { id: "3", label: "Milling", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "4", condition: "" },
+      { id: "4", label: "Post Treatment", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "5", condition: "" },
+      { id: "5", label: "Cleaning", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "6", condition: "" },
+      { id: "6", label: "ENP(Withmasking),\n0250-35000 clean", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "7", condition: "" },
+      { id: "7", label: "QC", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "8", condition: "" },
+      { id: "8", label: "Package", shape: "round", bgColor: "#e0f2fe", textColor: "#0369a1", nextId: "", condition: "" }
     ];
 
     let autoSaveTimer = null;
@@ -533,7 +529,6 @@
       });
     });
 
-    // 切換三分頁
     window.switchTab = function(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -638,9 +633,12 @@
       flowData.forEach((row, index) => {
         const tr = document.createElement("tr");
         const shape = row.shape || "rect";
+        const bgColor = row.bgColor || "#fef3c7";
+        const textColor = row.textColor || "#78350f";
+
         tr.innerHTML = `
-          <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="例如: 1"></td>
-          <td><textarea data-index="${index}" data-field="label" class="table-textarea" placeholder="步驟描述 (支援 Enter 換行)">${row.label || ''}</textarea></td>
+          <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="1"></td>
+          <td><textarea data-index="${index}" data-field="label" class="table-textarea" placeholder="步驟描述">${row.label || ''}</textarea></td>
           <td>
             <select data-index="${index}" data-field="shape">
               <option value="round" ${shape === 'round' ? 'selected' : ''}>橢圓 (開始/結束)</option>
@@ -648,8 +646,10 @@
               <option value="rhombus" ${shape === 'rhombus' ? 'selected' : ''}>菱形 {條件判斷}</option>
             </select>
           </td>
-          <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" placeholder="例如: 2"></td>
-          <td><input type="text" value="${row.condition || ''}" data-index="${index}" data-field="condition" placeholder="例如: 是/否"></td>
+          <td><input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor" title="選擇格子背景色"></td>
+          <td><input type="color" value="${textColor}" data-index="${index}" data-field="textColor" title="選擇文字顏色"></td>
+          <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" placeholder="2"></td>
+          <td><input type="text" value="${row.condition || ''}" data-index="${index}" data-field="condition" placeholder="是/否"></td>
           <td><button class="btn btn-danger btn-outline delete-btn" data-index="${index}">刪除</button></td>
         `;
         tbody.appendChild(tr);
@@ -678,7 +678,7 @@
 
     function addRow() {
       const nextNum = flowData.length + 1;
-      flowData.push({ id: String(nextNum), label: "", shape: "rect", nextId: "", condition: "" });
+      flowData.push({ id: String(nextNum), label: "", shape: "rect", bgColor: "#fef3c7", textColor: "#78350f", nextId: "", condition: "" });
       renderTable();
       renderAllCharts();
       triggerAutoSave();
@@ -689,6 +689,19 @@
       renderSnakeChart();
     }
 
+    // 建立通用節點 DOM 元素
+    function createFlowNode(item) {
+      const node = document.createElement("div");
+      node.className = `flow-node shape-${item.shape || 'rect'}`;
+      node.innerText = item.label || item.id;
+      
+      // 套用自訂背景色與文字顏色
+      if (item.bgColor) node.style.backgroundColor = item.bgColor;
+      if (item.textColor) node.style.color = item.textColor;
+      
+      return node;
+    }
+
     // 1. 原生垂直流程圖繪製
     function renderVerticalChart() {
       const target = document.getElementById("vertical-chart-target");
@@ -697,9 +710,7 @@
       flowData.forEach((item, idx) => {
         if (!item.id) return;
 
-        const node = document.createElement("div");
-        node.className = `flow-node shape-${item.shape || 'rect'}`;
-        node.innerText = item.label || item.id;
+        const node = createFlowNode(item);
         target.appendChild(node);
 
         if (item.nextId && idx < flowData.length - 1) {
@@ -733,9 +744,7 @@
           snakeContainer.appendChild(currentRow);
         }
 
-        const node = document.createElement("div");
-        node.className = `flow-node shape-${item.shape || 'rect'}`;
-        node.innerText = item.label || item.id;
+        const node = createFlowNode(item);
         currentRow.appendChild(node);
 
         const isLastInRow = (idx % cols === cols - 1) || (idx === validItems.length - 1);
@@ -760,6 +769,8 @@
         "步驟ID": item.id,
         "步驟名稱": item.label,
         "節點形狀(rect/round/rhombus)": item.shape || "rect",
+        "格子背景色": item.bgColor || "#fef3c7",
+        "文字顏色": item.textColor || "#78350f",
         "下一步驟ID": item.nextId,
         "條件說明": item.condition
       })));
@@ -784,6 +795,8 @@
           id: String(row["步驟ID"] || row["id"] || "").trim(),
           label: String(row["步驟名稱"] || row["label"] || ""),
           shape: String(row["節點形狀(rect/round/rhombus)"] || row["shape"] || "rect").trim(),
+          bgColor: String(row["格子背景色"] || row["bgColor"] || "#fef3c7").trim(),
+          textColor: String(row["文字顏色"] || row["textColor"] || "#78350f").trim(),
           nextId: String(row["下一步驟ID"] || row["nextId"] || "").trim(),
           condition: String(row["條件說明"] || row["condition"] || "").trim()
         }));
