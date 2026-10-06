@@ -1063,152 +1063,200 @@
       });
     }
 
-    // 2. S 型貪食蛇流程圖 (修正留白與對齊問題)
-    function renderSnakeChart() {
-      const target = document.getElementById("snake-chart-target");
-      target.innerHTML = "";
-      const cols = parseInt(document.getElementById("snake-cols").value) || 4;
-      const direction = document.getElementById("snake-direction").value;
-      const validItems = flowData.filter(item => item.id);
+   // 2. S 型貪食蛇流程圖 (修正對齊與反向箭頭問題)
+function renderSnakeChart() {
+  const target = document.getElementById("snake-chart-target");
+  target.innerHTML = "";
+  const cols = parseInt(document.getElementById("snake-cols").value) || 4;
+  const direction = document.getElementById("snake-direction").value;
+  const validItems = flowData.filter(item => item.id);
 
-      const snakeContainer = document.createElement("div");
-      snakeContainer.className = "snake-container";
+  const snakeContainer = document.createElement("div");
+  snakeContainer.className = "snake-container";
 
-      // 為了維持對齊，將總數補齊至 cols 的倍數
-      const totalItems = validItems.length;
-      const remainder = totalItems % cols;
-      const paddedTotal = remainder === 0 ? totalItems : totalItems + (cols - remainder);
+  const totalItems = validItems.length;
+  let rowsCount = Math.ceil(totalItems / cols);
 
-      let rowsCount = Math.ceil(totalItems / cols);
+  for (let r = 0; r < rowsCount; r++) {
+    const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
+    const currentRow = document.createElement("div");
+    currentRow.className = "snake-row";
 
-      for (let r = 0; r < rowsCount; r++) {
-        const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
-        const currentRow = document.createElement("div");
-        currentRow.className = `snake-row ${isReverse ? 'reverse' : ''}`;
+    // 取得這一列實際包含的資料索引範圍
+    let startIndex = r * cols;
+    let endIndex = Math.min(startIndex + cols, totalItems);
+    let rowItems = validItems.slice(startIndex, endIndex);
 
-        // 收集這一行的所有節點與箭頭
-        let rowElements = [];
-        for (let c = 0; c < cols; c++) {
-          const itemIdx = r * cols + c;
-          if (itemIdx < totalItems) {
-            rowElements.push({ type: 'node', item: validItems[itemIdx] });
-            if (c < cols - 1) {
-              rowElements.push({ type: 'arrow' });
-            }
-          } else {
-            // 補齊隱形佔位維持版面等寬
-            rowElements.push({ type: 'placeholder' });
-            if (c < cols - 1) {
-              rowElements.push({ type: 'arrow-placeholder' });
-            }
-          }
-        }
-
-        // 如果是 reverse 排列，為了讓佔位符在正確方向，反轉陣列順序
-        if (isReverse) {
-          rowElements.reverse();
-        }
-
-        rowElements.forEach(el => {
-          if (el.type === 'node') {
-            currentRow.appendChild(createFlowNode(el.item, false));
-          } else if (el.type === 'arrow') {
-            const arrow = document.createElement("div");
-            arrow.className = isReverse ? "arrow-left" : "arrow-right";
-            currentRow.appendChild(arrow);
-          } else if (el.type === 'placeholder') {
-            const placeholder = document.createElement("div");
-            placeholder.className = "flow-node-placeholder";
-            currentRow.appendChild(placeholder);
-          } else if (el.type === 'arrow-placeholder') {
-            const arrowPlaceholder = document.createElement("div");
-            arrowPlaceholder.className = "arrow-placeholder";
-            currentRow.appendChild(arrowPlaceholder);
-          }
-        });
-
-        snakeContainer.appendChild(currentRow);
-
-        // 如果還有下一行，加上向下轉折箭頭
-        if (r < rowsCount - 1) {
-          const turnArrow = document.createElement("div");
-          turnArrow.className = `arrow-down ${isReverse ? 'snake-turn-left' : 'snake-turn-right'}`;
-          snakeContainer.appendChild(turnArrow);
-        }
-      }
-
-      target.appendChild(snakeContainer);
+    // 建立長度為 cols 的格子陣列
+    let gridCells = new Array(cols).fill(null);
+    if (!isReverse) {
+      for (let i = 0; i < rowItems.length; i++) gridCells[i] = rowItems[i];
+    } else {
+      for (let i = 0; i < rowItems.length; i++) gridCells[cols - 1 - i] = rowItems[i];
     }
 
-    // 3. 垂直長條型貪食蛇流程圖 (修正留白與對齊問題)
-    function renderVerticalSnakeChart() {
-      const target = document.getElementById("v-snake-chart-target");
-      target.innerHTML = "";
-      const cols = parseInt(document.getElementById("v-snake-cols").value) || 6;
-      const direction = document.getElementById("v-snake-direction").value;
-      const validItems = flowData.filter(item => item.id);
-
-      const snakeContainer = document.createElement("div");
-      snakeContainer.className = "snake-container";
-
-      const totalItems = validItems.length;
-      let rowsCount = Math.ceil(totalItems / cols);
-
-      for (let r = 0; r < rowsCount; r++) {
-        const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
-        const currentRow = document.createElement("div");
-        currentRow.className = `snake-row ${isReverse ? 'reverse' : ''}`;
-
-        let rowElements = [];
-        for (let c = 0; c < cols; c++) {
-          const itemIdx = r * cols + c;
-          if (itemIdx < totalItems) {
-            rowElements.push({ type: 'node', item: validItems[itemIdx] });
-            if (c < cols - 1) {
-              rowElements.push({ type: 'arrow' });
-            }
-          } else {
-            rowElements.push({ type: 'placeholder' });
-            if (c < cols - 1) {
-              rowElements.push({ type: 'arrow-placeholder' });
-            }
-          }
-        }
-
-        if (isReverse) {
-          rowElements.reverse();
-        }
-
-        rowElements.forEach(el => {
-          if (el.type === 'node') {
-            currentRow.appendChild(createVerticalFlowNode(el.item));
-          } else if (el.type === 'arrow') {
-            const arrow = document.createElement("div");
-            arrow.className = isReverse ? "arrow-left" : "arrow-right";
-            currentRow.appendChild(arrow);
-          } else if (el.type === 'placeholder') {
-            const placeholder = document.createElement("div");
-            placeholder.className = "vertical-flow-node-placeholder";
-            currentRow.appendChild(placeholder);
-          } else if (el.type === 'arrow-placeholder') {
-            const arrowPlaceholder = document.createElement("div");
-            arrowPlaceholder.className = "arrow-placeholder";
-            currentRow.appendChild(arrowPlaceholder);
-          }
-        });
-
-        snakeContainer.appendChild(currentRow);
-
-        if (r < rowsCount - 1) {
-          const turnArrow = document.createElement("div");
-          turnArrow.className = `arrow-down ${isReverse ? 'v-snake-turn-left' : 'v-snake-turn-right'}`;
-          snakeContainer.appendChild(turnArrow);
-        }
+    // 渲染列節點與橫向箭頭
+    for (let c = 0; c < cols; c++) {
+      const item = gridCells[c];
+      if (item) {
+        currentRow.appendChild(createFlowNode(item, false));
+      } else {
+        const placeholder = document.createElement("div");
+        placeholder.className = "flow-node-placeholder";
+        currentRow.appendChild(placeholder);
       }
 
-      target.appendChild(snakeContainer);
+      // 處理欄與欄之間的箭頭 (共 cols - 1 個箭頭)
+      if (c < cols - 1) {
+        let hasArrow = false;
+        if (!isReverse) {
+          // 正向：當前格與右格都有內容時顯示右箭頭
+          if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
+        } else {
+          // 反向：當前格與右格都有內容時顯示左箭頭
+          if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
+        }
+
+        if (hasArrow) {
+          const arrow = document.createElement("div");
+          arrow.className = isReverse ? "arrow-left" : "arrow-right";
+          currentRow.appendChild(arrow);
+        } else {
+          const arrowPlaceholder = document.createElement("div");
+          arrowPlaceholder.className = "arrow-placeholder";
+          currentRow.appendChild(arrowPlaceholder);
+        }
+      }
     }
 
+    snakeContainer.appendChild(currentRow);
+
+    // 處理向下轉折箭頭
+    if (r < rowsCount - 1) {
+      const turnRow = document.createElement("div");
+      turnRow.style.display = "flex";
+      turnRow.style.width = "100%";
+      turnRow.style.margin = "4px 0";
+
+      // 建立與 snake-row 結構對應的容器
+      for (let c = 0; c < cols; c++) {
+        const cellWrap = document.createElement("div");
+        cellWrap.style.width = "var(--node-width)";
+        cellWrap.style.display = "flex";
+        cellWrap.style.justifyContent = "center";
+
+        // 判斷轉折箭頭放置的位置
+        const isTurnPos = !isReverse ? (c === cols - 1) : (c === 0);
+        if (isTurnPos) {
+          const arrow = document.createElement("div");
+          arrow.className = "arrow-down";
+          cellWrap.appendChild(arrow);
+        }
+        turnRow.appendChild(cellWrap);
+
+        if (c < cols - 1) {
+          const spacer = document.createElement("div");
+          spacer.style.width = "48px"; // 對應 arrow-right/left + margin 總寬
+          turnRow.appendChild(spacer);
+        }
+      }
+      snakeContainer.appendChild(turnRow);
+    }
+  }
+
+  target.appendChild(snakeContainer);
+}
+
+// 3. 垂直長條型貪食蛇流程圖 (修正對齊與反向箭頭問題)
+function renderVerticalSnakeChart() {
+  const target = document.getElementById("v-snake-chart-target");
+  target.innerHTML = "";
+  const cols = parseInt(document.getElementById("v-snake-cols").value) || 6;
+  const direction = document.getElementById("v-snake-direction").value;
+  const validItems = flowData.filter(item => item.id);
+
+  const snakeContainer = document.createElement("div");
+  snakeContainer.className = "snake-container";
+
+  const totalItems = validItems.length;
+  let rowsCount = Math.ceil(totalItems / cols);
+
+  for (let r = 0; r < rowsCount; r++) {
+    const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
+    const currentRow = document.createElement("div");
+    currentRow.className = "snake-row";
+
+    let startIndex = r * cols;
+    let endIndex = Math.min(startIndex + cols, totalItems);
+    let rowItems = validItems.slice(startIndex, endIndex);
+
+    let gridCells = new Array(cols).fill(null);
+    if (!isReverse) {
+      for (let i = 0; i < rowItems.length; i++) gridCells[i] = rowItems[i];
+    } else {
+      for (let i = 0; i < rowItems.length; i++) gridCells[cols - 1 - i] = rowItems[i];
+    }
+
+    for (let c = 0; c < cols; c++) {
+      const item = gridCells[c];
+      if (item) {
+        currentRow.appendChild(createVerticalFlowNode(item));
+      } else {
+        const placeholder = document.createElement("div");
+        placeholder.className = "vertical-flow-node-placeholder";
+        currentRow.appendChild(placeholder);
+      }
+
+      if (c < cols - 1) {
+        let hasArrow = false;
+        if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
+
+        if (hasArrow) {
+          const arrow = document.createElement("div");
+          arrow.className = isReverse ? "arrow-left" : "arrow-right";
+          currentRow.appendChild(arrow);
+        } else {
+          const arrowPlaceholder = document.createElement("div");
+          arrowPlaceholder.className = "arrow-placeholder";
+          currentRow.appendChild(arrowPlaceholder);
+        }
+      }
+    }
+
+    snakeContainer.appendChild(currentRow);
+
+    if (r < rowsCount - 1) {
+      const turnRow = document.createElement("div");
+      turnRow.style.display = "flex";
+      turnRow.style.width = "100%";
+      turnRow.style.margin = "4px 0";
+
+      for (let c = 0; c < cols; c++) {
+        const cellWrap = document.createElement("div");
+        cellWrap.style.width = "var(--v-node-width)";
+        cellWrap.style.display = "flex";
+        cellWrap.style.justifyContent = "center";
+
+        const isTurnPos = !isReverse ? (c === cols - 1) : (c === 0);
+        if (isTurnPos) {
+          const arrow = document.createElement("div");
+          arrow.className = "arrow-down";
+          cellWrap.appendChild(arrow);
+        }
+        turnRow.appendChild(cellWrap);
+
+        if (c < cols - 1) {
+          const spacer = document.createElement("div");
+          spacer.style.width = "48px";
+          turnRow.appendChild(spacer);
+        }
+      }
+      snakeContainer.appendChild(turnRow);
+    }
+  }
+
+  target.appendChild(snakeContainer);
+}
     // 4. 樹狀階層流程圖 (垂直向下)
     function renderTreeChart() {
       const target = document.getElementById("tree-chart-target");
