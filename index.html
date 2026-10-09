@@ -43,6 +43,88 @@
       flex-direction: column;
     }
 
+    /* 全螢幕入口登入門戶 */
+    .login-portal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .login-portal-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+    .login-portal-card h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      color: var(--text-main);
+      font-size: 22px;
+      font-weight: 800;
+    }
+    .login-portal-card p {
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .portal-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-align: left;
+    }
+    .portal-input-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: -8px;
+    }
+    .portal-input-group input {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .portal-input-group input:focus {
+      border-color: var(--primary-color);
+    }
+    .btn-portal-submit {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 8px;
+      margin-top: 8px;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-portal-submit:hover {
+      background: var(--primary-hover);
+    }
+
+    /* 主應用程式內容容器 (登入前隱藏) */
+    .app-wrapper {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
     /* 頂部 Header Bar */
     .header-bar {
       background: #1e3a8a;
@@ -315,7 +397,7 @@
       color: #0f172a;
     }
 
-    /* 隱形佔位區塊 (用於補齊不滿一行的空間，維持表格對齊) */
+    /* 隱形佔位區塊 */
     .flow-node-placeholder {
       width: var(--node-width);
       min-height: var(--node-height);
@@ -390,7 +472,7 @@
       border-right: 8px solid #2563eb;
     }
 
-    /* 隱形箭頭佔位 (對應隱形節點間距) */
+    /* 隱形箭頭佔位 */
     .arrow-placeholder {
       width: 40px;
       height: 2px;
@@ -411,18 +493,8 @@
       display: flex;
       align-items: center;
     }
-    .snake-row.reverse {
-      flex-direction: row-reverse;
-    }
 
-    .snake-turn-right { align-self: flex-end; margin-right: 110px; }
-    .snake-turn-left { align-self: flex-start; margin-left: 110px; }
-    .v-snake-turn-right { align-self: flex-end; margin-right: 38px; }
-    .v-snake-turn-left { align-self: flex-start; margin-left: 38px; }
-
-    /* ========================================================
-       樹狀階層流程圖專用樣式 (垂直展開)
-       ======================================================== */
+    /* 樹狀階層流程圖專用樣式 */
     .tree-container {
       display: flex;
       flex-direction: column;
@@ -474,9 +546,7 @@
       word-break: break-word;
     }
 
-    /* ========================================================
-       橫向樹狀階層圖專用樣式 (左至右展開)
-       ======================================================== */
+    /* 橫向樹狀階層圖專用樣式 */
     .h-tree-container {
       display: flex;
       flex-direction: column;
@@ -508,181 +578,190 @@
 </head>
 <body>
 
-  <!-- 頂部 Header Bar -->
-  <div class="header-bar">
-    <div>
-      <h2>企業級流程圖自動化管理系統</h2>
-      <p>自動同步 Firebase 雲端資料庫 & 系統自動智慧渲染顏色</p>
-    </div>
-    <div>
-      <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
-      <span id="user-info" class="save-time-info" style="margin-left: 15px;">系統初始化中...</span>
-      <button class="btn btn-danger btn-outline" id="logout-btn" style="display:none; margin-left: 10px;">登出</button>
+  <!-- 全螢幕入口登門戶 (預設顯示) -->
+  <div id="login-portal" class="login-portal-overlay">
+    <div class="login-portal-card">
+      <h2>系統登入</h2>
+      <p>請先輸入 Firebase 帳號密碼存取流程圖管理系統</p>
+      <div class="portal-input-group">
+        <label for="portal-email">電子郵件 (Email)</label>
+        <input type="email" id="portal-email" placeholder="admin@example.com">
+        <label for="portal-password">密碼 (Password)</label>
+        <input type="password" id="portal-password" placeholder="••••••••">
+        <button id="portal-login-btn" class="btn-portal-submit">登入系統</button>
+      </div>
+      <div id="portal-auth-error" class="error"></div>
     </div>
   </div>
 
-  <!-- 分頁頁籤列 (7個分頁) -->
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('tab-data-linear')">📝 1. 線性流程資料</button>
-    <button class="tab-btn" onclick="switchTab('tab-data-tree')">🌳 2. 樹狀階層資料</button>
-    <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 3. 標準垂直流程圖</button>
-    <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 4. S型橫向貪食蛇</button>
-    <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 5. 垂直長條型貪食蛇</button>
-    <button class="tab-btn" onclick="switchTab('tab-tree-chart')">🌲 6. 樹狀階層流程圖</button>
-    <button class="tab-btn" onclick="switchTab('tab-h-tree-chart')">🌐 7. 橫向樹狀階層圖</button>
-  </div>
-
-  <!-- 滿版主內容視窗 -->
-  <div class="main-container">
-
-    <!-- 分頁 1: 線性流程資料維護表格 -->
-    <div id="tab-data-linear" class="tab-content active">
-      <div class="card" id="auth-section" style="flex: none; margin-bottom: 20px;">
-        <div class="card-title">帳號權限驗證</div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <input type="email" id="email" placeholder="企業電子郵件">
-          <input type="password" id="password" placeholder="密碼">
-          <button class="btn" id="login-btn">登入系統</button>
-        </div>
-        <div id="auth-error" class="error"></div>
+  <!-- 主應用程式內容容器 (通過驗證後才顯示) -->
+  <div id="app-wrapper" class="app-wrapper">
+    <!-- 頂部 Header Bar -->
+    <div class="header-bar">
+      <div>
+        <h2>企業級流程圖自動化管理系統</h2>
+        <p>自動同步 Firebase 雲端資料庫 & 系統自動智慧渲染顏色</p>
       </div>
-
-      <div class="card" id="edit-controls" style="display: none;">
-        <div class="card-title">
-          <span>線性流程資料庫 (適用於垂直與貪食蛇流程圖)</span>
-          <span id="cloud-status" class="status-badge" style="display:none;"></span>
-        </div>
-
-        <div style="margin-bottom: 16px;">
-          <button class="btn btn-outline" id="import-btn">匯入 Excel</button>
-          <button class="btn btn-success" id="export-excel-btn">匯出 Excel 範本</button>
-          <button class="btn" id="add-row-btn">＋ 新增步驟</button>
-          <input type="file" id="excel-file" accept=".xlsx, .xls" style="display:none;">
-        </div>
-        
-        <div class="table-container">
-          <table id="data-table">
-            <thead>
-              <tr>
-                <th style="width: 10%;">步驟 ID</th>
-                <th style="width: 40%;">步驟名稱 (Label)</th>
-                <th style="width: 20%;">節點形狀</th>
-                <th style="width: 15%;">下一步 ID</th>
-                <th style="width: 10%;">條件標籤</th>
-                <th style="width: 5%;">操作</th>
-              </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-          </table>
-        </div>
+      <div>
+        <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
+        <span id="user-info" class="save-time-info" style="margin-left: 15px;">已驗證登入</span>
+        <button class="btn btn-danger btn-outline btn-sm" id="logout-btn" style="margin-left: 10px;">登出系統</button>
       </div>
     </div>
 
-    <!-- 分頁 2: 樹狀階層資料維護表格 (支援滑鼠拖曳排序) -->
-    <div id="tab-data-tree" class="tab-content">
-      <div class="card">
-        <div class="card-title">
-          <span>樹狀階層資料庫 (可按住左側 ⠿ 拖曳上下調整順序)</span>
-          <button class="btn btn-success" id="add-tree-row-btn">＋ 新增樹狀節點</button>
-        </div>
-        <div class="table-container">
-          <table id="tree-data-table">
-            <thead>
-              <tr>
-                <th style="width: 15%;">節點 ID (不可重複)</th>
-                <th style="width: 45%;">節點名稱 (Label)</th>
-                <th style="width: 20%;">父節點 ID</th>
-                <th style="width: 12%;">節點形狀</th>
-                <th style="width: 8%;">操作</th>
-              </tr>
-            </thead>
-            <tbody id="tree-table-body"></tbody>
-          </table>
-        </div>
-      </div>
+    <!-- 分頁頁籤列 (7個分頁) -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('tab-data-linear')">📝 1. 線性流程資料</button>
+      <button class="tab-btn" onclick="switchTab('tab-data-tree')">🌳 2. 樹狀階層資料</button>
+      <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 3. 標準垂直流程圖</button>
+      <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 4. S型橫向貪食蛇</button>
+      <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 5. 垂直長條型貪食蛇</button>
+      <button class="tab-btn" onclick="switchTab('tab-tree-chart')">🌲 6. 樹狀階層流程圖</button>
+      <button class="tab-btn" onclick="switchTab('tab-h-tree-chart')">🌐 7. 橫向樹狀階層圖</button>
     </div>
 
-    <!-- 分頁 3: 滿版標準垂直流程圖 -->
-    <div id="tab-vertical" class="tab-content">
-      <div class="card">
-        <div class="card-title">
-          <span>標準垂直流程圖 (Vertical Flowchart)</span>
-          <button class="btn btn-success" id="export-png-btn-1">下載高解析度 PNG</button>
-        </div>
-        <div class="chart-full-area" id="vertical-chart-target"></div>
-      </div>
-    </div>
+    <!-- 滿版主內容視窗 -->
+    <div class="main-container">
 
-    <!-- 分頁 4: 滿版貪食蛇流程圖 -->
-    <div id="tab-snake" class="tab-content">
-      <div class="card">
-        <div class="card-title">
-          <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-            <span>S 型橫向貪食蛇流程圖 (Snake Flowchart)</span>
-            <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
-              每行步驟數：
-              <input type="number" id="snake-cols" value="4" min="2" max="8" style="width: 65px; padding: 4px 8px;">
-            </label>
-            <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
-              箭頭方向：
-              <select id="snake-direction" style="padding: 4px 8px;">
-                <option value="clockwise">順時針 (左 ➔ 右)</option>
-                <option value="counter">逆時針 (右 ➔ 左)</option>
-              </select>
-            </label>
+      <!-- 分頁 1: 線性流程資料維護表格 -->
+      <div id="tab-data-linear" class="tab-content active">
+        <div class="card" id="edit-controls">
+          <div class="card-title">
+            <span>線性流程資料庫 (適用於垂直與貪食蛇流程圖)</span>
+            <span id="cloud-status" class="status-badge" style="display:none;"></span>
           </div>
-          <button class="btn btn-success" id="export-png-btn-2">下載高解析度 PNG</button>
-        </div>
-        <div class="chart-full-area" id="snake-chart-target" style="justify-content: center;"></div>
-      </div>
-    </div>
 
-    <!-- 分頁 5: 垂直長條型貪食蛇流程圖 -->
-    <div id="tab-v-snake" class="tab-content">
-      <div class="card">
-        <div class="card-title">
-          <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-            <span>垂直長條型貪食蛇流程圖 (Vertical Column Snake)</span>
-            <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
-              每行步驟數：
-              <input type="number" id="v-snake-cols" value="6" min="2" max="12" style="width: 65px; padding: 4px 8px;">
-            </label>
-            <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
-              箭頭方向：
-              <select id="v-snake-direction" style="padding: 4px 8px;">
-                <option value="clockwise">順時針 (左 ➔ 右)</option>
-                <option value="counter">逆時針 (右 ➔ 左)</option>
-              </select>
-            </label>
+          <div style="margin-bottom: 16px;">
+            <button class="btn btn-outline" id="import-btn">匯入 Excel</button>
+            <button class="btn btn-success" id="export-excel-btn">匯出 Excel 範本</button>
+            <button class="btn" id="add-row-btn">＋ 新增步驟</button>
+            <input type="file" id="excel-file" accept=".xlsx, .xls" style="display:none;">
           </div>
-          <button class="btn btn-success" id="export-png-btn-3">下載高解析度 PNG</button>
+          
+          <div class="table-container">
+            <table id="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 10%;">步驟 ID</th>
+                  <th style="width: 40%;">步驟名稱 (Label)</th>
+                  <th style="width: 20%;">節點形狀</th>
+                  <th style="width: 15%;">下一步 ID</th>
+                  <th style="width: 10%;">條件標籤</th>
+                  <th style="width: 5%;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="chart-full-area" id="v-snake-chart-target" style="justify-content: center;"></div>
       </div>
-    </div>
 
-    <!-- 分頁 6: 樹狀階層流程圖 (正確水平並列) -->
-    <div id="tab-tree-chart" class="tab-content">
-      <div class="card">
-        <div class="card-title">
-          <span>樹狀階層流程圖 (提示：雙擊任意格子可新增或修改備註)</span>
-          <button class="btn btn-success" id="export-png-btn-4">下載高解析度 PNG</button>
+      <!-- 分頁 2: 樹狀階層資料維護表格 -->
+      <div id="tab-data-tree" class="tab-content">
+        <div class="card">
+          <div class="card-title">
+            <span>樹狀階層資料庫 (可按住左側 ⠿ 拖曳上下調整順序)</span>
+            <button class="btn btn-success" id="add-tree-row-btn">＋ 新增樹狀節點</button>
+          </div>
+          <div class="table-container">
+            <table id="tree-data-table">
+              <thead>
+                <tr>
+                  <th style="width: 15%;">節點 ID (不可重複)</th>
+                  <th style="width: 45%;">節點名稱 (Label)</th>
+                  <th style="width: 20%;">父節點 ID</th>
+                  <th style="width: 12%;">節點形狀</th>
+                  <th style="width: 8%;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tree-table-body"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="chart-full-area" id="tree-chart-target" style="justify-content: center;"></div>
       </div>
-    </div>
 
-    <!-- 分頁 7: 橫向樹狀階層圖 (新增) -->
-    <div id="tab-h-tree-chart" class="tab-content">
-      <div class="card">
-        <div class="card-title">
-          <span>橫向樹狀階層圖 (Horizontal Tree View)</span>
-          <button class="btn btn-success" id="export-png-btn-5">下載高解析度 PNG</button>
+      <!-- 分頁 3: 滿版標準垂直流程圖 -->
+      <div id="tab-vertical" class="tab-content">
+        <div class="card">
+          <div class="card-title">
+            <span>標準垂直流程圖 (Vertical Flowchart)</span>
+            <button class="btn btn-success" id="export-png-btn-1">下載高解析度 PNG</button>
+          </div>
+          <div class="chart-full-area" id="vertical-chart-target"></div>
         </div>
-        <div class="chart-full-area" id="h-tree-chart-target" style="align-items: flex-start; justify-content: flex-start;"></div>
       </div>
-    </div>
 
+      <!-- 分頁 4: 滿版貪食蛇流程圖 -->
+      <div id="tab-snake" class="tab-content">
+        <div class="card">
+          <div class="card-title">
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+              <span>S 型橫向貪食蛇流程圖 (Snake Flowchart)</span>
+              <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+                每行步驟數：
+                <input type="number" id="snake-cols" value="4" min="2" max="8" style="width: 65px; padding: 4px 8px;">
+              </label>
+              <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+                箭頭方向：
+                <select id="snake-direction" style="padding: 4px 8px;">
+                  <option value="clockwise">順時針 (左 ➔ 右)</option>
+                  <option value="counter">逆時針 (右 ➔ 左)</option>
+                </select>
+              </label>
+            </div>
+            <button class="btn btn-success" id="export-png-btn-2">下載高解析度 PNG</button>
+          </div>
+          <div class="chart-full-area" id="snake-chart-target" style="justify-content: center;"></div>
+        </div>
+      </div>
+
+      <!-- 分頁 5: 垂直長條型貪食蛇流程圖 -->
+      <div id="tab-v-snake" class="tab-content">
+        <div class="card">
+          <div class="card-title">
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+              <span>垂直長條型貪食蛇流程圖 (Vertical Column Snake)</span>
+              <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+                每行步驟數：
+                <input type="number" id="v-snake-cols" value="6" min="2" max="12" style="width: 65px; padding: 4px 8px;">
+              </label>
+              <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+                箭頭方向：
+                <select id="v-snake-direction" style="padding: 4px 8px;">
+                  <option value="clockwise">順時針 (左 ➔ 右)</option>
+                  <option value="counter">逆時針 (右 ➔ 左)</option>
+                </select>
+              </label>
+            </div>
+            <button class="btn btn-success" id="export-png-btn-3">下載高解析度 PNG</button>
+          </div>
+          <div class="chart-full-area" id="v-snake-chart-target" style="justify-content: center;"></div>
+        </div>
+      </div>
+
+      <!-- 分頁 6: 樹狀階層流程圖 -->
+      <div id="tab-tree-chart" class="tab-content">
+        <div class="card">
+          <div class="card-title">
+            <span>樹狀階層流程圖 (提示：雙擊任意格子可新增或修改備註)</span>
+            <button class="btn btn-success" id="export-png-btn-4">下載高解析度 PNG</button>
+          </div>
+          <div class="chart-full-area" id="tree-chart-target" style="justify-content: center;"></div>
+        </div>
+      </div>
+
+      <!-- 分頁 7: 橫向樹狀階層圖 -->
+      <div id="tab-h-tree-chart" class="tab-content">
+        <div class="card">
+          <div class="card-title">
+            <span>橫向樹狀階層圖 (Horizontal Tree View)</span>
+            <button class="btn btn-success" id="export-png-btn-5">下載高解析度 PNG</button>
+          </div>
+          <div class="chart-full-area" id="h-tree-chart-target" style="align-items: flex-start; justify-content: flex-start;"></div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <!-- JS 邏輯模組 -->
@@ -739,24 +818,23 @@
       renderAllCharts();
       setupEventListeners();
 
+      // Firebase 登入狀態變更監聽：控制入口全螢幕遮罩
       onAuthStateChanged(auth, async (user) => {
-        const editControls = document.getElementById("edit-controls");
-        const authSection = document.getElementById("auth-section");
+        const loginPortal = document.getElementById("login-portal");
+        const appWrapper = document.getElementById("app-wrapper");
         const userInfo = document.getElementById("user-info");
-        const logoutBtn = document.getElementById("logout-btn");
 
         if (user) {
-          editControls.style.display = "block";
-          authSection.style.display = "none";
-          logoutBtn.style.display = "inline-block";
-          userInfo.innerText = `登入者：${user.email}`;
+          // 已登入：隱藏入口登入頁，顯示主系統內容
+          loginPortal.style.display = "none";
+          appWrapper.style.display = "flex";
+          userInfo.innerText = `使用者：${user.email}`;
 
           await loadFromCloud();
         } else {
-          editControls.style.display = "none";
-          authSection.style.display = "block";
-          logoutBtn.style.display = "none";
-          userInfo.innerText = "目前狀態：未登入（僅檢視模式）";
+          // 未登入：顯示全螢幕登入頁，隱藏主系統內容
+          loginPortal.style.display = "flex";
+          appWrapper.style.display = "none";
         }
       });
     });
@@ -769,16 +847,40 @@
       document.getElementById(tabId).classList.add('active');
     };
 
+    function handlePortalLogin() {
+      const email = document.getElementById("portal-email").value.trim();
+      const pass = document.getElementById("portal-password").value;
+      const errorEl = document.getElementById("portal-auth-error");
+
+      if (!email || !pass) {
+        errorEl.innerText = "請輸入完整的 Email 與密碼！";
+        return;
+      }
+
+      signInWithEmailAndPassword(auth, email, pass)
+        .then(() => {
+          errorEl.innerText = "";
+          document.getElementById("portal-email").value = "";
+          document.getElementById("portal-password").value = "";
+        })
+        .catch(err => {
+          errorEl.innerText = "登入失敗：帳號或密碼錯誤！(" + err.message + ")";
+        });
+    }
+
     function setupEventListeners() {
-      document.getElementById("login-btn").addEventListener("click", () => {
-        const email = document.getElementById("email").value;
-        const pass = document.getElementById("password").value;
-        signInWithEmailAndPassword(auth, email, pass)
-          .then(() => { document.getElementById("auth-error").innerText = ""; })
-          .catch(err => { document.getElementById("auth-error").innerText = "登入失敗：" + err.message; });
+      // 入口 Portal 登入按鈕與 Enter 鍵事件
+      document.getElementById("portal-login-btn").addEventListener("click", handlePortalLogin);
+      document.getElementById("portal-password").addEventListener("keyup", (e) => {
+        if (e.key === "Enter") handlePortalLogin();
       });
 
-      document.getElementById("logout-btn").addEventListener("click", () => signOut(auth));
+      document.getElementById("logout-btn").addEventListener("click", () => {
+        if (confirm("確定要登出系統嗎？")) {
+          signOut(auth);
+        }
+      });
+
       document.getElementById("import-btn").addEventListener("click", () => document.getElementById("excel-file").click());
       document.getElementById("excel-file").addEventListener("change", handleImport);
       document.getElementById("export-excel-btn").addEventListener("click", exportToExcel);
@@ -799,8 +901,10 @@
 
     function triggerAutoSave() {
       const statusEl = document.getElementById("cloud-status");
-      statusEl.style.display = "inline-block";
-      statusEl.innerText = "資料變更中...";
+      if (statusEl) {
+        statusEl.style.display = "inline-block";
+        statusEl.innerText = "資料變更中...";
+      }
       
       clearTimeout(autoSaveTimer);
       autoSaveTimer = setTimeout(async () => { await saveToCloud(); }, 1000);
@@ -808,7 +912,7 @@
 
     async function saveToCloud() {
       const statusEl = document.getElementById("cloud-status");
-      statusEl.innerText = "正在自動同步至雲端...";
+      if (statusEl) statusEl.innerText = "正在自動同步至雲端...";
       const nowString = new Date().toLocaleString("zh-TW", { hour12: false });
 
       try {
@@ -817,19 +921,23 @@
           treeData: treeData,
           updatedAt: nowString
         });
-        statusEl.innerText = "✅ 已自動同步";
+        if (statusEl) {
+          statusEl.innerText = "✅ 已自動同步";
+          setTimeout(() => { statusEl.style.display = "none"; }, 2500);
+        }
         document.getElementById("save-time-display").innerText = `上次儲存時間：${nowString}`;
-        setTimeout(() => { statusEl.style.display = "none"; }, 2500);
       } catch (error) {
         console.error("同步失敗:", error);
-        statusEl.innerText = "❌ 同步失敗：" + error.message;
+        if (statusEl) statusEl.innerText = "❌ 同步失敗：" + error.message;
       }
     }
 
     async function loadFromCloud() {
       const statusEl = document.getElementById("cloud-status");
-      statusEl.style.display = "inline-block";
-      statusEl.innerText = "同步雲端資料中...";
+      if (statusEl) {
+        statusEl.style.display = "inline-block";
+        statusEl.innerText = "同步雲端資料中...";
+      }
       try {
         const dbRef = ref(db);
         const snapshot = await get(child(dbRef, 'flowcharts/default_chart'));
@@ -844,12 +952,12 @@
           renderTable();
           renderTreeTable();
           renderAllCharts();
-          statusEl.innerText = "✅ 載入雲端最新資料成功";
+          if (statusEl) statusEl.innerText = "✅ 載入雲端最新資料成功";
           if (cloudData.updatedAt) {
             document.getElementById("save-time-display").innerText = `上次儲存時間：${cloudData.updatedAt}`;
           }
         }
-        setTimeout(() => { statusEl.style.display = "none"; }, 2500);
+        if (statusEl) setTimeout(() => { statusEl.style.display = "none"; }, 2500);
       } catch (error) {
         console.error("讀取失敗:", error);
       }
@@ -858,6 +966,7 @@
     // 1. 渲染線性流程表格
     function renderTable() {
       const tbody = document.getElementById("table-body");
+      if (!tbody) return;
       tbody.innerHTML = "";
       flowData.forEach((row, index) => {
         const tr = document.createElement("tr");
@@ -901,9 +1010,10 @@
       });
     }
 
-    // 2. 渲染樹狀階層表格 (支援滑鼠拖曳排序)
+    // 2. 渲染樹狀階層表格
     function renderTreeTable() {
       const tbody = document.getElementById("tree-table-body");
+      if (!tbody) return;
       tbody.innerHTML = "";
       treeData.forEach((row, index) => {
         const tr = document.createElement("tr");
@@ -1009,7 +1119,6 @@
       renderHorizontalTreeChart();
     }
 
-    // 系統智慧顏色渲染邏輯
     function getSystemThemeColors(item, isTree = false) {
       if (isTree) {
         if (!item.parentId || item.parentId === "") {
@@ -1048,9 +1157,9 @@
       return node;
     }
 
-    // 1. 標準垂直流程圖
     function renderVerticalChart() {
       const target = document.getElementById("vertical-chart-target");
+      if (!target) return;
       target.innerHTML = "";
       flowData.forEach((item, idx) => {
         if (!item.id) return;
@@ -1063,203 +1172,191 @@
       });
     }
 
-   // 2. S 型貪食蛇流程圖 (修正對齊與反向箭頭問題)
-function renderSnakeChart() {
-  const target = document.getElementById("snake-chart-target");
-  target.innerHTML = "";
-  const cols = parseInt(document.getElementById("snake-cols").value) || 4;
-  const direction = document.getElementById("snake-direction").value;
-  const validItems = flowData.filter(item => item.id);
+    function renderSnakeChart() {
+      const target = document.getElementById("snake-chart-target");
+      if (!target) return;
+      target.innerHTML = "";
+      const cols = parseInt(document.getElementById("snake-cols").value) || 4;
+      const direction = document.getElementById("snake-direction").value;
+      const validItems = flowData.filter(item => item.id);
 
-  const snakeContainer = document.createElement("div");
-  snakeContainer.className = "snake-container";
+      const snakeContainer = document.createElement("div");
+      snakeContainer.className = "snake-container";
 
-  const totalItems = validItems.length;
-  let rowsCount = Math.ceil(totalItems / cols);
+      const totalItems = validItems.length;
+      let rowsCount = Math.ceil(totalItems / cols);
 
-  for (let r = 0; r < rowsCount; r++) {
-    const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
-    const currentRow = document.createElement("div");
-    currentRow.className = "snake-row";
+      for (let r = 0; r < rowsCount; r++) {
+        const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
+        const currentRow = document.createElement("div");
+        currentRow.className = "snake-row";
 
-    // 取得這一列實際包含的資料索引範圍
-    let startIndex = r * cols;
-    let endIndex = Math.min(startIndex + cols, totalItems);
-    let rowItems = validItems.slice(startIndex, endIndex);
+        let startIndex = r * cols;
+        let endIndex = Math.min(startIndex + cols, totalItems);
+        let rowItems = validItems.slice(startIndex, endIndex);
 
-    // 建立長度為 cols 的格子陣列
-    let gridCells = new Array(cols).fill(null);
-    if (!isReverse) {
-      for (let i = 0; i < rowItems.length; i++) gridCells[i] = rowItems[i];
-    } else {
-      for (let i = 0; i < rowItems.length; i++) gridCells[cols - 1 - i] = rowItems[i];
-    }
-
-    // 渲染列節點與橫向箭頭
-    for (let c = 0; c < cols; c++) {
-      const item = gridCells[c];
-      if (item) {
-        currentRow.appendChild(createFlowNode(item, false));
-      } else {
-        const placeholder = document.createElement("div");
-        placeholder.className = "flow-node-placeholder";
-        currentRow.appendChild(placeholder);
-      }
-
-      // 處理欄與欄之間的箭頭 (共 cols - 1 個箭頭)
-      if (c < cols - 1) {
-        let hasArrow = false;
+        let gridCells = new Array(cols).fill(null);
         if (!isReverse) {
-          // 正向：當前格與右格都有內容時顯示右箭頭
-          if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
+          for (let i = 0; i < rowItems.length; i++) gridCells[i] = rowItems[i];
         } else {
-          // 反向：當前格與右格都有內容時顯示左箭頭
-          if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
+          for (let i = 0; i < rowItems.length; i++) gridCells[cols - 1 - i] = rowItems[i];
         }
 
-        if (hasArrow) {
-          const arrow = document.createElement("div");
-          arrow.className = isReverse ? "arrow-left" : "arrow-right";
-          currentRow.appendChild(arrow);
+        for (let c = 0; c < cols; c++) {
+          const item = gridCells[c];
+          if (item) {
+            currentRow.appendChild(createFlowNode(item, false));
+          } else {
+            const placeholder = document.createElement("div");
+            placeholder.className = "flow-node-placeholder";
+            currentRow.appendChild(placeholder);
+          }
+
+          if (c < cols - 1) {
+            let hasArrow = false;
+            if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
+
+            if (hasArrow) {
+              const arrow = document.createElement("div");
+              arrow.className = isReverse ? "arrow-left" : "arrow-right";
+              currentRow.appendChild(arrow);
+            } else {
+              const arrowPlaceholder = document.createElement("div");
+              arrowPlaceholder.className = "arrow-placeholder";
+              currentRow.appendChild(arrowPlaceholder);
+            }
+          }
+        }
+
+        snakeContainer.appendChild(currentRow);
+
+        if (r < rowsCount - 1) {
+          const turnRow = document.createElement("div");
+          turnRow.style.display = "flex";
+          turnRow.style.width = "100%";
+          turnRow.style.margin = "4px 0";
+
+          for (let c = 0; c < cols; c++) {
+            const cellWrap = document.createElement("div");
+            cellWrap.style.width = "var(--node-width)";
+            cellWrap.style.display = "flex";
+            cellWrap.style.justifyContent = "center";
+
+            const isTurnPos = !isReverse ? (c === cols - 1) : (c === 0);
+            if (isTurnPos) {
+              const arrow = document.createElement("div");
+              arrow.className = "arrow-down";
+              cellWrap.appendChild(arrow);
+            }
+            turnRow.appendChild(cellWrap);
+
+            if (c < cols - 1) {
+              const spacer = document.createElement("div");
+              spacer.style.width = "48px";
+              turnRow.appendChild(spacer);
+            }
+          }
+          snakeContainer.appendChild(turnRow);
+        }
+      }
+
+      target.appendChild(snakeContainer);
+    }
+
+    function renderVerticalSnakeChart() {
+      const target = document.getElementById("v-snake-chart-target");
+      if (!target) return;
+      target.innerHTML = "";
+      const cols = parseInt(document.getElementById("v-snake-cols").value) || 6;
+      const direction = document.getElementById("v-snake-direction").value;
+      const validItems = flowData.filter(item => item.id);
+
+      const snakeContainer = document.createElement("div");
+      snakeContainer.className = "snake-container";
+
+      const totalItems = validItems.length;
+      let rowsCount = Math.ceil(totalItems / cols);
+
+      for (let r = 0; r < rowsCount; r++) {
+        const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
+        const currentRow = document.createElement("div");
+        currentRow.className = "snake-row";
+
+        let startIndex = r * cols;
+        let endIndex = Math.min(startIndex + cols, totalItems);
+        let rowItems = validItems.slice(startIndex, endIndex);
+
+        let gridCells = new Array(cols).fill(null);
+        if (!isReverse) {
+          for (let i = 0; i < rowItems.length; i++) gridCells[i] = rowItems[i];
         } else {
-          const arrowPlaceholder = document.createElement("div");
-          arrowPlaceholder.className = "arrow-placeholder";
-          currentRow.appendChild(arrowPlaceholder);
+          for (let i = 0; i < rowItems.length; i++) gridCells[cols - 1 - i] = rowItems[i];
+        }
+
+        for (let c = 0; c < cols; c++) {
+          const item = gridCells[c];
+          if (item) {
+            currentRow.appendChild(createVerticalFlowNode(item));
+          } else {
+            const placeholder = document.createElement("div");
+            placeholder.className = "vertical-flow-node-placeholder";
+            currentRow.appendChild(placeholder);
+          }
+
+          if (c < cols - 1) {
+            let hasArrow = false;
+            if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
+
+            if (hasArrow) {
+              const arrow = document.createElement("div");
+              arrow.className = isReverse ? "arrow-left" : "arrow-right";
+              currentRow.appendChild(arrow);
+            } else {
+              const arrowPlaceholder = document.createElement("div");
+              arrowPlaceholder.className = "arrow-placeholder";
+              currentRow.appendChild(arrowPlaceholder);
+            }
+          }
+        }
+
+        snakeContainer.appendChild(currentRow);
+
+        if (r < rowsCount - 1) {
+          const turnRow = document.createElement("div");
+          turnRow.style.display = "flex";
+          turnRow.style.width = "100%";
+          turnRow.style.margin = "4px 0";
+
+          for (let c = 0; c < cols; c++) {
+            const cellWrap = document.createElement("div");
+            cellWrap.style.width = "var(--v-node-width)";
+            cellWrap.style.display = "flex";
+            cellWrap.style.justifyContent = "center";
+
+            const isTurnPos = !isReverse ? (c === cols - 1) : (c === 0);
+            if (isTurnPos) {
+              const arrow = document.createElement("div");
+              arrow.className = "arrow-down";
+              cellWrap.appendChild(arrow);
+            }
+            turnRow.appendChild(cellWrap);
+
+            if (c < cols - 1) {
+              const spacer = document.createElement("div");
+              spacer.style.width = "48px";
+              turnRow.appendChild(spacer);
+            }
+          }
+          snakeContainer.appendChild(turnRow);
         }
       }
+
+      target.appendChild(snakeContainer);
     }
 
-    snakeContainer.appendChild(currentRow);
-
-    // 處理向下轉折箭頭
-    if (r < rowsCount - 1) {
-      const turnRow = document.createElement("div");
-      turnRow.style.display = "flex";
-      turnRow.style.width = "100%";
-      turnRow.style.margin = "4px 0";
-
-      // 建立與 snake-row 結構對應的容器
-      for (let c = 0; c < cols; c++) {
-        const cellWrap = document.createElement("div");
-        cellWrap.style.width = "var(--node-width)";
-        cellWrap.style.display = "flex";
-        cellWrap.style.justifyContent = "center";
-
-        // 判斷轉折箭頭放置的位置
-        const isTurnPos = !isReverse ? (c === cols - 1) : (c === 0);
-        if (isTurnPos) {
-          const arrow = document.createElement("div");
-          arrow.className = "arrow-down";
-          cellWrap.appendChild(arrow);
-        }
-        turnRow.appendChild(cellWrap);
-
-        if (c < cols - 1) {
-          const spacer = document.createElement("div");
-          spacer.style.width = "48px"; // 對應 arrow-right/left + margin 總寬
-          turnRow.appendChild(spacer);
-        }
-      }
-      snakeContainer.appendChild(turnRow);
-    }
-  }
-
-  target.appendChild(snakeContainer);
-}
-
-// 3. 垂直長條型貪食蛇流程圖 (修正對齊與反向箭頭問題)
-function renderVerticalSnakeChart() {
-  const target = document.getElementById("v-snake-chart-target");
-  target.innerHTML = "";
-  const cols = parseInt(document.getElementById("v-snake-cols").value) || 6;
-  const direction = document.getElementById("v-snake-direction").value;
-  const validItems = flowData.filter(item => item.id);
-
-  const snakeContainer = document.createElement("div");
-  snakeContainer.className = "snake-container";
-
-  const totalItems = validItems.length;
-  let rowsCount = Math.ceil(totalItems / cols);
-
-  for (let r = 0; r < rowsCount; r++) {
-    const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
-    const currentRow = document.createElement("div");
-    currentRow.className = "snake-row";
-
-    let startIndex = r * cols;
-    let endIndex = Math.min(startIndex + cols, totalItems);
-    let rowItems = validItems.slice(startIndex, endIndex);
-
-    let gridCells = new Array(cols).fill(null);
-    if (!isReverse) {
-      for (let i = 0; i < rowItems.length; i++) gridCells[i] = rowItems[i];
-    } else {
-      for (let i = 0; i < rowItems.length; i++) gridCells[cols - 1 - i] = rowItems[i];
-    }
-
-    for (let c = 0; c < cols; c++) {
-      const item = gridCells[c];
-      if (item) {
-        currentRow.appendChild(createVerticalFlowNode(item));
-      } else {
-        const placeholder = document.createElement("div");
-        placeholder.className = "vertical-flow-node-placeholder";
-        currentRow.appendChild(placeholder);
-      }
-
-      if (c < cols - 1) {
-        let hasArrow = false;
-        if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
-
-        if (hasArrow) {
-          const arrow = document.createElement("div");
-          arrow.className = isReverse ? "arrow-left" : "arrow-right";
-          currentRow.appendChild(arrow);
-        } else {
-          const arrowPlaceholder = document.createElement("div");
-          arrowPlaceholder.className = "arrow-placeholder";
-          currentRow.appendChild(arrowPlaceholder);
-        }
-      }
-    }
-
-    snakeContainer.appendChild(currentRow);
-
-    if (r < rowsCount - 1) {
-      const turnRow = document.createElement("div");
-      turnRow.style.display = "flex";
-      turnRow.style.width = "100%";
-      turnRow.style.margin = "4px 0";
-
-      for (let c = 0; c < cols; c++) {
-        const cellWrap = document.createElement("div");
-        cellWrap.style.width = "var(--v-node-width)";
-        cellWrap.style.display = "flex";
-        cellWrap.style.justifyContent = "center";
-
-        const isTurnPos = !isReverse ? (c === cols - 1) : (c === 0);
-        if (isTurnPos) {
-          const arrow = document.createElement("div");
-          arrow.className = "arrow-down";
-          cellWrap.appendChild(arrow);
-        }
-        turnRow.appendChild(cellWrap);
-
-        if (c < cols - 1) {
-          const spacer = document.createElement("div");
-          spacer.style.width = "48px";
-          turnRow.appendChild(spacer);
-        }
-      }
-      snakeContainer.appendChild(turnRow);
-    }
-  }
-
-  target.appendChild(snakeContainer);
-}
-    // 4. 樹狀階層流程圖 (垂直向下)
     function renderTreeChart() {
       const target = document.getElementById("tree-chart-target");
+      if (!target) return;
       target.innerHTML = "";
 
       const treeContainer = document.createElement("div");
@@ -1336,9 +1433,9 @@ function renderVerticalSnakeChart() {
       target.appendChild(treeContainer);
     }
 
-    // 7. 橫向樹狀階層圖 (左至右)
     function renderHorizontalTreeChart() {
       const target = document.getElementById("h-tree-chart-target");
+      if (!target) return;
       target.innerHTML = "";
 
       const container = document.createElement("div");
@@ -1432,7 +1529,7 @@ function renderVerticalSnakeChart() {
       const wsTree = XLSX.utils.json_to_sheet(treeData.map(item => ({
         "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || ""
       })));
-      XLSX.utils.book_append_sheet(wb, wsLinear, "線性流程圖資料");
+      XLSX.utils.book_append_sheet(wb, wsLinear, "線性流程資料");
       XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料");
       XLSX.writeFile(wb, "企業流程圖資料集.xlsx");
     }
