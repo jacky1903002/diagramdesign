@@ -482,7 +482,7 @@
       word-break: break-word;
     }
 
-    /* 修正後的「橫向樹狀階層圖」樣式 (解決斷差與對齊問題) */
+    /* 橫向樹狀階層圖樣式 */
     .h-tree-container {
       display: flex;
       flex-direction: column;
@@ -563,7 +563,7 @@
     <div class="header-bar">
       <div>
         <h2>企業級流程圖自動化管理系統</h2>
-        <p>自動同步 Firebase 雲端資料庫 & 修正橫向樹狀圖斷差與分頁順序</p>
+        <p>自動同步 Firebase 雲端資料庫 & 備註欄位雙向即時連動</p>
       </div>
       <div>
         <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
@@ -572,7 +572,7 @@
       </div>
     </div>
 
-    <!-- 調整後的分頁順序：資料與其對應圖表緊密相接 -->
+    <!-- 分頁選單列 -->
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="switchTab('tab-data-linear')">📝 1. 線性流程資料</button>
       <button class="tab-btn" onclick="switchTab('tab-data-tree')">🌳 2. 樹狀階層資料(To Be)</button>
@@ -636,12 +636,13 @@
             <table id="tree-data-table">
               <thead>
                 <tr>
-                  <th style="width: 15%;">節點 ID</th>
-                  <th style="width: 35%;">節點名稱 (Label)</th>
-                  <th style="width: 15%;">父節點 ID</th>
-                  <th style="width: 12%;">節點形狀</th>
-                  <th style="width: 15%;">自訂背景色</th>
-                  <th style="width: 8%;">操作</th>
+                  <th style="width: 12%;">節點 ID</th>
+                  <th style="width: 30%;">節點名稱 (Label)</th>
+                  <th style="width: 12%;">父節點 ID</th>
+                  <th style="width: 10%;">節點形狀</th>
+                  <th style="width: 22%;">備註 (連動至圖表)</th>
+                  <th style="width: 8%;">自訂背景色</th>
+                  <th style="width: 6%;">操作</th>
                 </tr>
               </thead>
               <tbody id="tree-table-body"></tbody>
@@ -650,22 +651,22 @@
         </div>
       </div>
 
-      <!-- 分頁 3: 樹狀階層流程圖 (To Be) 緊接在 To Be 資料後 -->
+      <!-- 分頁 3: 樹狀階層流程圖 (To Be) -->
       <div id="tab-tree-chart" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>樹狀階層流程圖 (To Be - 連接線無斷口)</span>
+            <span>樹狀階層流程圖 (To Be - 備註即時連動)</span>
             <button class="btn btn-success" id="export-png-btn-4">下載高解析度 PNG</button>
           </div>
           <div class="chart-full-area" id="tree-chart-target" style="justify-content: flex-start;"></div>
         </div>
       </div>
 
-      <!-- 分頁 4: 橫向樹狀階層圖 (To Be) 緊接在 To Be 資料後 -->
+      <!-- 分頁 4: 橫向樹狀階層圖 (To Be) -->
       <div id="tab-h-tree-chart" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>橫向樹狀階層圖 (To Be - 已修正斷差與對齊)</span>
+            <span>橫向樹狀階層圖 (To Be - 備註即時連動)</span>
             <button class="btn btn-success" id="export-png-btn-5">下載高解析度 PNG</button>
           </div>
           <div class="chart-full-area" id="h-tree-chart-target" style="align-items: flex-start; justify-content: flex-start;"></div>
@@ -688,12 +689,13 @@
             <table id="tree-asis-data-table">
               <thead>
                 <tr>
-                  <th style="width: 15%;">節點 ID</th>
-                  <th style="width: 35%;">節點名稱 (Label)</th>
-                  <th style="width: 15%;">父節點 ID</th>
-                  <th style="width: 12%;">節點形狀</th>
-                  <th style="width: 15%;">自訂背景色</th>
-                  <th style="width: 8%;">操作</th>
+                  <th style="width: 12%;">節點 ID</th>
+                  <th style="width: 30%;">節點名稱 (Label)</th>
+                  <th style="width: 12%;">父節點 ID</th>
+                  <th style="width: 10%;">節點形狀</th>
+                  <th style="width: 22%;">備註 (連動至圖表)</th>
+                  <th style="width: 8%;">自訂背景色</th>
+                  <th style="width: 6%;">操作</th>
                 </tr>
               </thead>
               <tbody id="tree-asis-table-body"></tbody>
@@ -702,22 +704,22 @@
         </div>
       </div>
 
-      <!-- 分頁 6: 樹狀階層流程圖 (As Is) 緊接在 As Is 資料後 -->
+      <!-- 分頁 6: 樹狀階層流程圖 (As Is) -->
       <div id="tab-tree-asis-chart" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>樹狀階層流程圖 (As Is - 現況架構)</span>
+            <span>樹狀階層流程圖 (As Is - 現況架構與備註連動)</span>
             <button class="btn btn-success" id="export-png-btn-6">下載高解析度 PNG</button>
           </div>
           <div class="chart-full-area" id="tree-asis-chart-target" style="justify-content: flex-start;"></div>
         </div>
       </div>
 
-      <!-- 分頁 7: 橫向樹狀階層圖 (As Is) 緊接在 As Is 資料後 -->
+      <!-- 分頁 7: 橫向樹狀階層圖 (As Is) -->
       <div id="tab-h-tree-asis-chart" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>橫向樹狀階層圖 (As Is - 現況架構)</span>
+            <span>橫向樹狀階層圖 (As Is - 現況架構與備註連動)</span>
             <button class="btn btn-success" id="export-png-btn-7">下載高解析度 PNG</button>
           </div>
           <div class="chart-full-area" id="h-tree-asis-chart-target" style="align-items: flex-start; justify-content: flex-start;"></div>
@@ -1115,6 +1117,7 @@
               <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形</option>
             </select>
           </td>
+          <td><textarea data-index="${index}" data-field="note" class="table-textarea" placeholder="輸入備註即時連動至圖表">${row.note || ''}</textarea></td>
           <td>
             <input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor" style="width: 45px; height: 32px; padding: 0; cursor: pointer; border: 1px solid var(--border-color); border-radius: 4px;">
           </td>
@@ -1190,6 +1193,7 @@
               <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形</option>
             </select>
           </td>
+          <td><textarea data-index="${index}" data-field="note" class="table-textarea" placeholder="輸入備註即時連動至圖表">${row.note || ''}</textarea></td>
           <td>
             <input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor" style="width: 45px; height: 32px; padding: 0; cursor: pointer; border: 1px solid var(--border-color); border-radius: 4px;">
           </td>
@@ -1644,7 +1648,7 @@
     }
 
     /* ========================================================
-       修正後的橫向樹狀階層圖繪製 (修正斷差問題)
+       橫向樹狀階層圖繪製
        ======================================================== */
     function renderHorizontalTreeStructure(targetId, dataset, typeKey) {
       const target = document.getElementById(targetId);
