@@ -420,7 +420,7 @@
     .snake-row { display: flex; align-items: center; }
 
     /* ========================================================
-       升級：支援標準組織圖橫向連接線的樹狀樣式
+       修正：完全消除上下斷口的樹狀階層樣式
        ======================================================== */
     .tree-container {
       display: flex;
@@ -441,21 +441,23 @@
       position: relative;
     }
 
-    /* 子節點容器層 */
+    /* 子節點容器層 (預留上方連接線空間) */
     .tree-children-container {
       display: flex;
       justify-content: center;
       align-items: flex-start;
       gap: 32px;
       position: relative;
-      padding-top: 30px; /* 為橫線與幹線留出空間 */
+      padding-top: 30px;
     }
 
-    /* 從父節點伸出的垂直幹線 (從父節點底端往延伸) */
+    /* 從父節點底端延伸的垂直幹線 (高度剛好銜接) */
     .tree-parent-stem {
       width: 2px;
       height: 30px;
       background-color: var(--line-color);
+      margin-top: -2px; /* 貼合方框底邊 */
+      margin-bottom: -2px; /* 貼合橫向連線 */
     }
 
     /* 貫穿所有子節點頂部的橫向匯集線 */
@@ -466,12 +468,14 @@
       background-color: var(--line-color);
     }
 
-    /* 從橫向匯集線向下連至子節點頂部的分支垂直線 */
+    /* 從橫向匯集線向下連至子節點頂部的垂直分支線 */
     .tree-child-branch-line {
       width: 2px;
       height: 30px;
       background-color: var(--line-color);
+      margin-top: -30px; /* 完美自頂端銜接上方的橫向連線 */
       margin-bottom: 0;
+      z-index: 1;
     }
 
     .node-note {
@@ -532,7 +536,7 @@
 </head>
 <body>
 
-  <!-- 全螢幕入口登門戶 -->
+  <!-- 全螢幕入口登入門戶 -->
   <div id="login-portal" class="login-portal-overlay">
     <div class="login-portal-card">
       <h2>系統登入</h2>
@@ -553,7 +557,7 @@
     <div class="header-bar">
       <div>
         <h2>企業級流程圖自動化管理系統</h2>
-        <p>自動同步 Firebase 雲端資料庫 & 智慧繪製標準橫向連接線組織圖</p>
+        <p>自動同步 Firebase 雲端資料庫 & 修正連接線斷口問題</p>
       </div>
       <div>
         <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
@@ -732,7 +736,7 @@
       <div id="tab-tree-chart" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>樹狀階層流程圖 (To Be - 具備橫向匯集線與垂直分支線)</span>
+            <span>樹狀階層流程圖 (To Be - 連接線無斷口)</span>
             <button class="btn btn-success" id="export-png-btn-4">下載高解析度 PNG</button>
           </div>
           <div class="chart-full-area" id="tree-chart-target" style="justify-content: flex-start;"></div>
@@ -754,7 +758,7 @@
       <div id="tab-tree-asis-chart" class="tab-content">
         <div class="card" style="margin-bottom: 24px;">
           <div class="card-title">
-            <span>樹狀階層流程圖 (As Is - 附圖組織圖橫線架構)</span>
+            <span>樹狀階層流程圖 (As Is - 無斷口精準對齊)</span>
             <button class="btn btn-success" id="export-png-btn-6">下載垂直高解析度 PNG</button>
           </div>
           <div class="chart-full-area" id="tree-asis-chart-target" style="justify-content: flex-start; min-height: 450px;"></div>
@@ -827,7 +831,6 @@
       { id: "dept_dev", label: "產品開發部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" }
     ];
 
-    // 完全對應附圖的 As Is 資料結構
     let treeAsIsData = [
       { id: "root", label: "製造處", parentId: "", shape: "rect", note: "廠長: 劉金勳", bgColor: "", textColor: "" },
       { id: "dep1_group", label: "製造一部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
@@ -847,7 +850,7 @@
       { id: "clean", label: "一般清洗課", parentId: "dep3_group", shape: "rect", note: "", bgColor: "", textColor: "" },
       { id: "surface", label: "表面處理課", parentId: "dep3_group", shape: "rect", note: "", bgColor: "", textColor: "" },
 
-      { id: "dry1", label: "乾式製程課", parentId: "dep5_group", shape: "rect", note: "", bgColor: "", textColor: "" },
+      { id: "composite_proc", label: "複材加工課", parentId: "dep5_group", shape: "rect", note: "", bgColor: "", textColor: "" },
       { id: "graphite", label: "石墨銑床課", parentId: "dep5_group", shape: "rect", note: "", bgColor: "", textColor: "" },
       { id: "dry2", label: "乾式製程課", parentId: "dep5_group", shape: "rect", note: "", bgColor: "", textColor: "" },
 
@@ -889,7 +892,6 @@
       event.currentTarget.classList.add('active');
       document.getElementById(tabId).classList.add('active');
       
-      // 當切換至樹狀圖分頁時重新計算橫線寬度
       setTimeout(() => {
         renderTreeChart();
         renderTreeAsIsChart();
@@ -1314,17 +1316,7 @@
     }
 
     function getSystemThemeColors(item, isTree = false) {
-      if (isTree) {
-        if (!item.parentId || item.parentId === "") {
-          return { bg: "#ffffff", text: "#0f172a" };
-        } else if (item.parentId === "root") {
-          return { bg: "#ffffff", text: "#0f172a" };
-        } else {
-          return { bg: "#ffffff", text: "#0f172a" };
-        }
-      } else {
-        return { bg: "#ffffff", text: "#0f172a" };
-      }
+      return { bg: "#ffffff", text: "#0f172a" };
     }
 
     function createFlowNode(item, isTree = false, type = 'linear') {
@@ -1541,7 +1533,7 @@
     }
 
     /* ========================================================
-       全新高階樹狀圖繪製 (精確動態計算貫穿橫向匯集線)
+       樹狀階層圖繪製 (完美對齊、無上下斷口)
        ======================================================== */
     function renderVerticalTreeStructure(targetId, dataset, typeKey) {
       const target = document.getElementById(targetId);
@@ -1574,7 +1566,6 @@
         const childrenContainer = document.createElement("div");
         childrenContainer.className = "tree-children-container";
 
-        // 動態計算兩端點以拉出橫向貫穿連線
         const horizontalConnector = document.createElement("div");
         horizontalConnector.className = "tree-children-connector-line";
         childrenContainer.appendChild(horizontalConnector);
@@ -1585,16 +1576,13 @@
           const wrapper = document.createElement("div");
           wrapper.className = "tree-node-wrapper";
 
-          // 從橫線連至子節點的分支垂直線
           const branchLine = document.createElement("div");
           branchLine.className = "tree-child-branch-line";
           wrapper.appendChild(branchLine);
 
-          // 節點本身
           const nodeBox = createBox(childNode);
           wrapper.appendChild(nodeBox);
 
-          // 遞迴繪製更深層子節點
           const grandChildren = buildTreeRecursive(childNode.id);
           if (grandChildren) {
             const stem = document.createElement("div");
@@ -1607,7 +1595,6 @@
           childWrappers.push(wrapper);
         });
 
-        // 畫面繪製完成後精確定位橫線起止點
         setTimeout(() => {
           if (childWrappers.length > 0) {
             const firstChild = childWrappers[0];
