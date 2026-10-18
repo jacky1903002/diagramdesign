@@ -276,6 +276,10 @@
       position: sticky;
       top: 0;
       z-index: 10;
+      cursor: pointer;
+    }
+    th:hover {
+      background-color: #e2e8f0;
     }
     td {
       padding: 8px 12px;
@@ -525,7 +529,6 @@
       gap: 12px;
       position: relative;
     }
-    /* 補齊主幹與分支斷口的連線偽元素 */
     .h-tree-branch::before {
       content: '';
       position: absolute;
@@ -908,29 +911,26 @@
         </div>
       </div>
 
-      <!-- 分頁 11: 堆疊區域圖 (新增) -->
+      <!-- 分頁 11: 堆疊區域圖 (支援雙擊修改欄位名稱與圖表序列文字標籤) -->
       <div id="tab-stacked-area" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>堆疊區域圖數據與對應圖表</span>
+            <span>堆疊區域圖數據與動態序列管理 (提示：雙擊表頭可更改欄位名稱)</span>
             <div>
+              <button class="btn btn-outline" id="stacked-import-btn">📂 匯入 Excel</button>
+              <button class="btn btn-success" id="stacked-export-excel-btn">💾 匯出 Excel</button>
               <button class="btn btn-success" id="add-stacked-row-btn">＋ 新增數據列</button>
+              <button class="btn" id="add-stacked-series-btn">＋ 新增序列</button>
+              <button class="btn btn-danger btn-outline" id="remove-stacked-series-btn">🗑️ 刪除序列</button>
               <button class="btn btn-outline" onclick="openFullscreen('stacked-chart-target', '堆疊區域圖')">🔍 全螢幕檢視</button>
               <button class="btn btn-success" id="export-png-btn-8">下載高解析度 PNG</button>
+              <input type="file" id="stacked-excel-file" accept=".xlsx, .xls" style="display:none;">
             </div>
           </div>
           <div style="display: flex; gap: 24px; flex-wrap: wrap; flex: 1; align-items: stretch;">
-            <div class="table-container" style="flex: 1; min-width: 350px;">
+            <div class="table-container" style="flex: 1; min-width: 420px;">
               <table id="stacked-data-table">
-                <thead>
-                  <tr>
-                    <th style="width: 25%;">日期</th>
-                    <th style="width: 25%;">序列 1 值</th>
-                    <th style="width: 25%;">序列 2 值</th>
-                    <th style="width: 15%;">總計</th>
-                    <th style="width: 10%;">操作</th>
-                  </tr>
-                </thead>
+                <thead id="stacked-table-head"></thead>
                 <tbody id="stacked-table-body"></tbody>
               </table>
             </div>
@@ -998,6 +998,16 @@
       { name: "薄荷綠", bg: "#a7f3d0", text: "#064e3b" }
     ];
 
+    const STACKED_PALETTE = [
+      { fill: "rgba(37, 99, 235, 0.85)", stroke: "#2563eb" },   // 藍
+      { fill: "rgba(249, 115, 22, 0.85)", stroke: "#f97316" },  // 橘
+      { fill: "rgba(16, 185, 129, 0.85)", stroke: "#10b981" },  // 綠
+      { fill: "rgba(139, 92, 246, 0.85)", stroke: "#8b5cf6" },  // 紫
+      { fill: "rgba(239, 68, 68, 0.85)", stroke: "#ef4444" },   // 紅
+      { fill: "rgba(14, 165, 233, 0.85)", stroke: "#0ea5e9" },  // 青
+      { fill: "rgba(234, 179, 8, 0.85)", stroke: "#eab308" }    // 黃
+    ];
+
     let flowData = [
       { id: "1", label: "Milling", shape: "rect", nextId: "2", condition: "", bgColor: "", textColor: "" },
       { id: "2", label: "Grinding", shape: "rect", nextId: "3", condition: "", bgColor: "", textColor: "" },
@@ -1046,17 +1056,23 @@
       { id: "grinder", label: "磨床組", parentId: "dry2", shape: "rect", note: "", bgColor: "", textColor: "" }
     ];
 
-    // 新增：堆疊區域圖預設資料
+    // 堆疊區域圖動態數據結構 (支援自訂欄位名稱與多序列)
+    let stackedHeaders = {
+      date: "日期",
+      series: { series1: "序列 1", series2: "序列 2" },
+      total: "總計"
+    };
+
+    let stackedSeries = ["series1", "series2"];
     let stackedData = [
-      { date: "1/5/2002", series1: 32, series2: 12 },
-      { date: "1/6/2002", series1: 32, series2: 12 },
-      { date: "1/7/2002", series1: 28, series2: 12 },
-      { date: "1/8/2002", series1: 12, series2: 20 },
-      { date: "1/9/2002", series1: 15, series2: 28 }
+      { date: "1/5/2002", values: { series1: 32, series2: 12 } },
+      { date: "1/6/2002", values: { series1: 32, series2: 12 } },
+      { date: "1/7/2002", values: { series1: 28, series2: 12 } },
+      { date: "1/8/2002", values: { series1: 12, series2: 20 } },
+      { date: "1/9/2002", values: { series1: 15, series2: 28 } }
     ];
 
     let autoSaveTimer = null;
-
     let currentFsTargetId = null;
     let fsScale = 1;
     let fsPanX = 0;
@@ -1162,11 +1178,7 @@
       if (targetId === 'stacked-chart-target') {
         setTimeout(() => {
           const fsCanvas = fsInner.querySelector('canvas');
-          if (fsCanvas) {
-            const ctx = fsCanvas.getContext('2d');
-            // Re-render chart inside fullscreen canvas if needed
-            renderStackedAreaChartToCanvas(fsCanvas);
-          }
+          if (fsCanvas) renderStackedAreaChartToCanvas(fsCanvas);
         }, 50);
       }
 
@@ -1174,7 +1186,6 @@
       fsPanX = 0;
       fsPanY = 0;
       fsInner.style.transform = `translate(0px, 0px) scale(1)`;
-
       document.getElementById("fullscreen-modal").classList.add("active");
     };
 
@@ -1273,6 +1284,11 @@
       document.getElementById("add-tree-asis-row-btn").addEventListener("click", addTreeAsIsRow);
 
       document.getElementById("add-stacked-row-btn").addEventListener("click", addStackedRow);
+      document.getElementById("add-stacked-series-btn").addEventListener("click", addStackedSeries);
+      document.getElementById("remove-stacked-series-btn").addEventListener("click", removeStackedSeries);
+      document.getElementById("stacked-import-btn").addEventListener("click", () => document.getElementById("stacked-excel-file").click());
+      document.getElementById("stacked-excel-file").addEventListener("change", handleStackedImport);
+      document.getElementById("stacked-export-excel-btn").addEventListener("click", exportStackedToExcel);
 
       document.getElementById("export-png-btn-1").addEventListener("click", () => exportToPNG("vertical-chart-target", "垂直流程圖.png"));
       document.getElementById("export-png-btn-2").addEventListener("click", () => exportToPNG("snake-chart-target", "S型橫向流程圖.png"));
@@ -1314,6 +1330,8 @@
           data: flowData,
           treeData: treeData,
           treeAsIsData: treeAsIsData,
+          stackedHeaders: stackedHeaders,
+          stackedSeries: stackedSeries,
           stackedData: stackedData,
           updatedAt: nowString
         });
@@ -1342,6 +1360,8 @@
           if (cloudData.data && Array.isArray(cloudData.data)) flowData = cloudData.data;
           if (cloudData.treeData && Array.isArray(cloudData.treeData)) treeData = cloudData.treeData;
           if (cloudData.treeAsIsData && Array.isArray(cloudData.treeAsIsData)) treeAsIsData = cloudData.treeAsIsData;
+          if (cloudData.stackedHeaders) stackedHeaders = cloudData.stackedHeaders;
+          if (cloudData.stackedSeries && Array.isArray(cloudData.stackedSeries)) stackedSeries = cloudData.stackedSeries;
           if (cloudData.stackedData && Array.isArray(cloudData.stackedData)) stackedData = cloudData.stackedData;
           
           renderTable();
@@ -1565,40 +1585,109 @@
       });
     }
 
-    // 新增：堆疊區域圖表格渲染與事件綁定
+    // 動態堆疊區域圖表格渲染與「雙擊更改表頭名稱」功能
     function renderStackedTable() {
+      const thead = document.getElementById("stacked-table-head");
       const tbody = document.getElementById("stacked-table-body");
-      if (!tbody) return;
+      if (!thead || !tbody) return;
+
+      // 建立動態表頭並綁定雙擊事件
+      let headHTML = `<tr><th style="width: 25%;" id="th-date" title="雙擊可修改名稱">${stackedHeaders.date} ✏️</th>`;
+      stackedSeries.forEach((s, i) => {
+        const titleName = stackedHeaders.series[s] || `序列 ${i + 1}`;
+        headHTML += `<th style="width: ${50 / stackedSeries.length}%;" class="th-series" data-series="${s}" title="雙擊可修改名稱">${titleName} ✏️</th>`;
+      });
+      headHTML += `<th style="width: 15%;" id="th-total" title="雙擊可修改名稱">${stackedHeaders.total} ✏️</th><th style="width: 10%;">操作</th></tr>`;
+      thead.innerHTML = headHTML;
+
+      // 綁定表頭雙擊更改名稱事件
+      document.getElementById("th-date").addEventListener("dblclick", () => {
+        const newName = prompt("請輸入新的日期欄位名稱：", stackedHeaders.date);
+        if (newName !== null && newName.trim() !== "") {
+          stackedHeaders.date = newName.trim();
+          renderStackedTable();
+          renderStackedAreaChart();
+          triggerAutoSave();
+        }
+      });
+
+      document.getElementById("th-total").addEventListener("dblclick", () => {
+        const newName = prompt("請輸入新的總計欄位名稱：", stackedHeaders.total);
+        if (newName !== null && newName.trim() !== "") {
+          stackedHeaders.total = newName.trim();
+          renderStackedTable();
+          renderStackedAreaChart();
+          triggerAutoSave();
+        }
+      });
+
+      document.querySelectorAll(".th-series").forEach(th => {
+        th.addEventListener("dblclick", (e) => {
+          const sKey = th.dataset.series;
+          const currentName = stackedHeaders.series[sKey] || sKey;
+          const newName = prompt("請輸入新的序列欄位名稱：", currentName);
+          if (newName !== null && newName.trim() !== "") {
+            stackedHeaders.series[sKey] = newName.trim();
+            renderStackedTable();
+            renderStackedAreaChart();
+            triggerAutoSave();
+          }
+        });
+      });
+
+      // 建立動態表格內容
       tbody.innerHTML = "";
       stackedData.forEach((row, index) => {
+        if (!row.values) row.values = {};
         const tr = document.createElement("tr");
-        const total = (Number(row.series1) || 0) + (Number(row.series2) || 0);
 
-        tr.innerHTML = `
-          <td><input type="text" value="${row.date || ''}" data-index="${index}" data-field="date" placeholder="1/5/2002"></td>
-          <td><input type="number" value="${row.series1 ?? ''}" data-index="${index}" data-field="series1" style="width:100%;"></td>
-          <td><input type="number" value="${row.series2 ?? ''}" data-index="${index}" data-field="series2" style="width:100%;"></td>
-          <td style="font-weight: 700; text-align: center; background: #f1f5f9;" id="stacked-total-${index}">${total}</td>
-          <td><button class="btn btn-danger btn-outline btn-sm delete-stacked-btn" data-index="${index}">刪除</button></td>
-        `;
+        let total = 0;
+        stackedSeries.forEach(s => {
+          total += Number(row.values[s]) || 0;
+        });
+
+        let rowHTML = `<td><input type="text" value="${row.date || ''}" data-index="${index}" data-field="date" placeholder="1/5/2002"></td>`;
+        stackedSeries.forEach(s => {
+          const val = row.values[s] ?? 0;
+          rowHTML += `<td><input type="number" value="${val}" data-index="${index}" data-series="${s}" class="stacked-val-input" style="width:100%;"></td>`;
+        });
+        rowHTML += `<td style="font-weight: 700; text-align: center; background: #f1f5f9;" id="stacked-total-${index}">${total}</td>`;
+        rowHTML += `<td><button class="btn btn-danger btn-outline btn-sm delete-stacked-btn" data-index="${index}">刪除</button></td>`;
+        
+        tr.innerHTML = rowHTML;
         tbody.appendChild(tr);
       });
 
-      document.querySelectorAll("#stacked-data-table input").forEach(input => {
+      // 綁定日期輸入事件
+      document.querySelectorAll("#stacked-data-table input[data-field='date']").forEach(input => {
         input.addEventListener("input", (e) => {
           const idx = e.target.dataset.index;
-          const field = e.target.dataset.field;
-          stackedData[idx][field] = e.target.value;
-          
-          const s1 = Number(stackedData[idx].series1) || 0;
-          const s2 = Number(stackedData[idx].series2) || 0;
-          document.getElementById(`stacked-total-${idx}`).innerText = s1 + s2;
+          stackedData[idx].date = e.target.value;
+          renderStackedAreaChart();
+          triggerAutoSave();
+        });
+      });
+
+      // 綁定數值輸入事件
+      document.querySelectorAll(".stacked-val-input").forEach(input => {
+        input.addEventListener("input", (e) => {
+          const idx = e.target.dataset.index;
+          const s = e.target.dataset.series;
+          if (!stackedData[idx].values) stackedData[idx].values = {};
+          stackedData[idx].values[s] = e.target.value;
+
+          let newTotal = 0;
+          stackedSeries.forEach(ser => {
+            newTotal += Number(stackedData[idx].values[ser]) || 0;
+          });
+          document.getElementById(`stacked-total-${idx}`).innerText = newTotal;
 
           renderStackedAreaChart();
           triggerAutoSave();
         });
       });
 
+      // 綁定刪除列事件
       document.querySelectorAll("#stacked-data-table .delete-stacked-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
           const idx = e.target.dataset.index;
@@ -1626,7 +1715,37 @@
     }
 
     function addStackedRow() {
-      stackedData.push({ date: "1/10/2002", series1: 20, series2: 20 });
+      const newValues = {};
+      stackedSeries.forEach(s => { newValues[s] = 10; });
+      stackedData.push({ date: "1/10/2002", values: newValues });
+      renderStackedTable();
+      renderStackedAreaChart();
+      triggerAutoSave();
+    }
+
+    function addStackedSeries() {
+      const newSeriesKey = `series${stackedSeries.length + 1}`;
+      stackedSeries.push(newSeriesKey);
+      stackedHeaders.series[newSeriesKey] = `序列 ${stackedSeries.length}`;
+      stackedData.forEach(row => {
+        if (!row.values) row.values = {};
+        row.values[newSeriesKey] = 15;
+      });
+      renderStackedTable();
+      renderStackedAreaChart();
+      triggerAutoSave();
+    }
+
+    function removeStackedSeries() {
+      if (stackedSeries.length <= 1) {
+        alert("至少須保留一個序列！");
+        return;
+      }
+      const removedKey = stackedSeries.pop();
+      delete stackedHeaders.series[removedKey];
+      stackedData.forEach(row => {
+        if (row.values) delete row.values[removedKey];
+      });
       renderStackedTable();
       renderStackedAreaChart();
       triggerAutoSave();
@@ -2087,7 +2206,7 @@
     function renderTreeAsIsChart() { renderVerticalTreeStructure("tree-asis-chart-target", treeAsIsData, 'treeAsIs'); }
     function renderHorizontalTreeAsIsChart() { renderHorizontalTreeStructure("h-tree-asis-chart-target", treeAsIsData, 'treeAsIs'); }
 
-    // 新增：繪製堆疊區域圖到 Canvas 的共用核心函式
+    // 動態多序列堆疊區域圖繪製 (含序列文字標籤)
     function renderStackedAreaChartToCanvas(canvas) {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
@@ -2103,7 +2222,7 @@
       ctx.font = "bold 16px Inter, sans-serif";
       ctx.fillStyle = "#0f172a";
       ctx.textAlign = "center";
-      ctx.fillText("圖表標題：堆疊區域圖範例", width / 2, 28);
+      ctx.fillText(`圖表標題：堆疊區域圖 (${Object.values(stackedHeaders.series).join(' / ')})`, width / 2, 28);
 
       const paddingLeft = 55;
       const paddingRight = 30;
@@ -2112,10 +2231,14 @@
       const chartWidth = width - paddingLeft - paddingRight;
       const chartHeight = height - paddingTop - paddingBottom;
 
-      const maxY = 50;
-      const ySteps = 5;
+      let maxTotal = 60;
+      stackedData.forEach(d => {
+        let sum = 0;
+        stackedSeries.forEach(s => { sum += Number(d.values?.[s]) || 0; });
+        if (sum > maxTotal) maxTotal = Math.ceil(sum * 1.2 / 10) * 10;
+      });
 
-      // Y-axis grid lines
+      const ySteps = 5;
       ctx.strokeStyle = "#cbd5e1";
       ctx.lineWidth = 1;
       ctx.fillStyle = "#64748b";
@@ -2123,7 +2246,7 @@
       ctx.textAlign = "right";
 
       for (let i = 0; i <= ySteps; i++) {
-        const val = (maxY / ySteps) * i;
+        const val = Math.round((maxTotal / ySteps) * i);
         const y = paddingTop + chartHeight - (chartHeight / ySteps) * i;
         ctx.beginPath();
         ctx.moveTo(paddingLeft, y);
@@ -2138,67 +2261,88 @@
 
       const points = stackedData.map((d, i) => {
         const x = paddingLeft + i * stepX;
-        const s1 = Number(d.series1) || 0;
-        const s2 = Number(d.series2) || 0;
-        const total = s1 + s2;
-        return {
-          x,
-          s1,
-          s2,
-          total,
-          yBottom: paddingTop + chartHeight,
-          yS1: paddingTop + chartHeight - (s1 / maxY) * chartHeight,
-          yTotal: paddingTop + chartHeight - (total / maxY) * chartHeight,
-          date: d.date
-        };
+        let cumSum = 0;
+        const layers = stackedSeries.map(s => {
+          const val = Number(d.values?.[s]) || 0;
+          cumSum += val;
+          return {
+            series: s,
+            val,
+            yBottom: 0,
+            yTop: paddingTop + chartHeight - (cumSum / maxTotal) * chartHeight
+          };
+        });
+
+        for (let j = 0; j < layers.length; j++) {
+          if (j === 0) layers[j].yBottom = paddingTop + chartHeight;
+          else layers[j].yBottom = layers[j - 1].yTop;
+        }
+
+        return { x, date: d.date, layers };
       });
 
-      // Series 2 (Top Layer - Orange)
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].yS1);
-      points.forEach(p => ctx.lineTo(p.x, p.yTotal));
-      for (let i = points.length - 1; i >= 0; i--) {
-        ctx.lineTo(points[i].x, points[i].yS1);
-      }
-      ctx.closePath();
-      ctx.fillStyle = "rgba(249, 115, 22, 0.85)";
-      ctx.fill();
+      // 繪製堆疊區域與數值文字標籤
+      for (let j = stackedSeries.length - 1; j >= 0; j--) {
+        const palette = STACKED_PALETTE[j % STACKED_PALETTE.length];
+        
+        ctx.beginPath();
+        points.forEach((p, idx) => {
+          const layer = p.layers[j];
+          if (idx === 0) ctx.moveTo(p.x, layer.yTop);
+          else ctx.lineTo(p.x, layer.yTop);
+        });
+        for (let idx = points.length - 1; idx >= 0; idx--) {
+          const layer = points[idx].layers[j];
+          ctx.lineTo(points[idx].x, layer.yBottom);
+        }
+        ctx.closePath();
+        ctx.fillStyle = palette.fill;
+        ctx.fill();
 
-      // Series 1 (Bottom Layer - Blue)
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].yBottom);
-      points.forEach(p => ctx.lineTo(p.x, p.yS1));
-      points.forEach((p, i) => {
-        if (i === points.length - 1) ctx.lineTo(p.x, p.yBottom);
-      });
-      for (let i = points.length - 1; i >= 0; i--) {
-        ctx.lineTo(points[i].x, points[i].yBottom);
-      }
-      ctx.closePath();
-      ctx.fillStyle = "rgba(37, 99, 235, 0.85)";
-      ctx.fill();
+        ctx.beginPath();
+        points.forEach((p, idx) => {
+          const layer = p.layers[j];
+          if (idx === 0) ctx.moveTo(p.x, layer.yTop);
+          else ctx.lineTo(p.x, layer.yTop);
+        });
+        ctx.strokeStyle = palette.stroke;
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-      // X-axis labels
+        // 帶上文字標籤於點上方
+        ctx.font = "11px Inter, sans-serif";
+        ctx.fillStyle = "#1e293b";
+        ctx.textAlign = "center";
+        points.forEach(p => {
+          const layer = p.layers[j];
+          if (layer.val > 0) {
+            ctx.fillText(layer.val, p.x, (layer.yTop + layer.yBottom) / 2 + 4);
+          }
+        });
+      }
+
+      // X 軸標籤
       ctx.textAlign = "center";
       ctx.fillStyle = "#64748b";
       points.forEach(p => {
         ctx.fillText(p.date, p.x, paddingTop + chartHeight + 25);
       });
 
-      // Legend
-      const legendY = height - 15;
-      const legendCenterX = width / 2;
+      // 圖例 (Legend) 帶文字標籤
+      const legendY = height - 12;
+      const totalLegendWidth = stackedSeries.length * 90;
+      let startLegendX = (width - totalLegendWidth) / 2;
 
-      ctx.fillStyle = "#2563eb";
-      ctx.fillRect(legendCenterX - 70, legendY - 8, 12, 12);
-      ctx.fillStyle = "#0f172a";
-      ctx.textAlign = "left";
-      ctx.fillText("系列1", legendCenterX - 52, legendY + 2);
-
-      ctx.fillStyle = "#f97316";
-      ctx.fillRect(legendCenterX + 10, legendY - 8, 12, 12);
-      ctx.fillStyle = "#0f172a";
-      ctx.fillText("系列2", legendCenterX + 28, legendY + 2);
+      stackedSeries.forEach((s, j) => {
+        const palette = STACKED_PALETTE[j % STACKED_PALETTE.length];
+        const seriesName = stackedHeaders.series[s] || `序列 ${j + 1}`;
+        ctx.fillStyle = palette.stroke;
+        ctx.fillRect(startLegendX, legendY - 8, 12, 12);
+        ctx.fillStyle = "#0f172a";
+        ctx.textAlign = "left";
+        ctx.fillText(seriesName, startLegendX + 18, legendY + 2);
+        startLegendX += 90;
+      });
     }
 
     function renderStackedAreaChart() {
@@ -2206,6 +2350,7 @@
       renderStackedAreaChartToCanvas(canvas);
     }
 
+    // Excel 匯出 (包含自訂標頭與堆疊動態序列)
     function exportToExcel() {
       const wb = XLSX.utils.book_new();
       const wsLinear = XLSX.utils.json_to_sheet(flowData.map(item => ({
@@ -2214,31 +2359,80 @@
       const wsTree = XLSX.utils.json_to_sheet(treeData.map(item => ({
         "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || "", "背景色": item.bgColor || "", "文字色": item.textColor || ""
       })));
-      const wsStacked = XLSX.utils.json_to_sheet(stackedData.map(item => ({
-        "日期": item.date, "序列1值": item.series1, "序列2值": item.series2
-      })));
+
+      const stackedExportRows = stackedData.map(row => {
+        const obj = { [stackedHeaders.date]: row.date };
+        stackedSeries.forEach((s) => {
+          const colName = stackedHeaders.series[s] || s;
+          obj[colName] = row.values?.[s] || 0;
+        });
+        return obj;
+      });
+      const wsStacked = XLSX.utils.json_to_sheet(stackedExportRows);
+
       XLSX.utils.book_append_sheet(wb, wsLinear, "線性流程資料");
       XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料");
       XLSX.utils.book_append_sheet(wb, wsStacked, "堆疊區域圖數據");
       XLSX.writeFile(wb, "企業流程圖資料集.xlsx");
     }
 
-    function exportTreeToExcel() {
+    function exportStackedToExcel() {
       const wb = XLSX.utils.book_new();
-      const wsTree = XLSX.utils.json_to_sheet(treeData.map(item => ({
-        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || "", "背景色": item.bgColor || "", "文字色": item.textColor || ""
-      })));
-      XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料_ToBe");
-      XLSX.writeFile(wb, "組織樹狀階層資料_ToBe.xlsx");
+      const stackedExportRows = stackedData.map(row => {
+        const obj = { [stackedHeaders.date]: row.date };
+        stackedSeries.forEach((s) => {
+          const colName = stackedHeaders.series[s] || s;
+          obj[colName] = row.values?.[s] || 0;
+        });
+        return obj;
+      });
+      const wsStacked = XLSX.utils.json_to_sheet(stackedExportRows);
+      XLSX.utils.book_append_sheet(wb, wsStacked, "堆疊區域圖數據");
+      XLSX.writeFile(wb, "堆疊區域圖數據報表.xlsx");
     }
 
-    function exportTreeAsIsToExcel() {
-      const wb = XLSX.utils.book_new();
-      const wsTree = XLSX.utils.json_to_sheet(treeAsIsData.map(item => ({
-        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || "", "背景色": item.bgColor || "", "文字色": item.textColor || ""
-      })));
-      XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料_AsIs");
-      XLSX.writeFile(wb, "組織樹狀階層資料_AsIs.xlsx");
+    function handleStackedImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames.includes("堆疊區域圖數據") ? "堆疊區域圖數據" : workbook.SheetNames[0];
+        
+        if (sheetName) {
+          const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+          if (json.length > 0) {
+            const firstRow = json[0];
+            const keys = Object.keys(firstRow);
+            const dateKey = keys[0];
+            stackedHeaders.date = dateKey;
+
+            const seriesKeys = keys.slice(1);
+            stackedSeries = seriesKeys.map((sk, idx) => `series${idx + 1}`);
+            stackedHeaders.series = {};
+            seriesKeys.forEach((sk, idx) => {
+              stackedHeaders.series[`series${idx + 1}`] = sk;
+            });
+
+            stackedData = json.map(row => {
+              const dateVal = row[dateKey] || "1/1/2002";
+              const values = {};
+              seriesKeys.forEach((sk, idx) => {
+                values[`series${idx + 1}`] = Number(row[sk]) || 0;
+              });
+              return { date: String(dateVal), values };
+            });
+          }
+        }
+
+        renderStackedTable();
+        renderStackedAreaChart();
+        triggerAutoSave();
+        e.target.value = "";
+      };
+      reader.readAsArrayBuffer ? reader.readAsArrayBuffer(file) : reader.readAsBinaryString(file);
     }
 
     function handleImport(e) {
