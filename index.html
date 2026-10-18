@@ -1056,7 +1056,6 @@
       { id: "grinder", label: "磨床組", parentId: "dry2", shape: "rect", note: "", bgColor: "", textColor: "" }
     ];
 
-    // 堆疊區域圖動態數據結構 (支援自訂欄位名稱與多序列)
     let stackedHeaders = {
       date: "日期",
       series: { series1: "序列 1", series2: "序列 2" },
@@ -2350,7 +2349,7 @@
       renderStackedAreaChartToCanvas(canvas);
     }
 
-    // Excel 匯出 (包含自訂標頭與堆疊動態序列)
+    // Excel 匯出定義
     function exportToExcel() {
       const wb = XLSX.utils.book_new();
       const wsLinear = XLSX.utils.json_to_sheet(flowData.map(item => ({
@@ -2374,6 +2373,24 @@
       XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料");
       XLSX.utils.book_append_sheet(wb, wsStacked, "堆疊區域圖數據");
       XLSX.writeFile(wb, "企業流程圖資料集.xlsx");
+    }
+
+    function exportTreeToExcel() {
+      const wb = XLSX.utils.book_new();
+      const wsTree = XLSX.utils.json_to_sheet(treeData.map(item => ({
+        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || "", "背景色": item.bgColor || "", "文字色": item.textColor || ""
+      })));
+      XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料_ToBe");
+      XLSX.writeFile(wb, "組織樹狀階層資料_ToBe.xlsx");
+    }
+
+    function exportTreeAsIsToExcel() {
+      const wb = XLSX.utils.book_new();
+      const wsTree = XLSX.utils.json_to_sheet(treeAsIsData.map(item => ({
+        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || "", "背景色": item.bgColor || "", "文字色": item.textColor || ""
+      })));
+      XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料_AsIs");
+      XLSX.writeFile(wb, "組織樹狀階層資料_AsIs.xlsx");
     }
 
     function exportStackedToExcel() {
