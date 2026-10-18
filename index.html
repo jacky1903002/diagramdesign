@@ -2359,8 +2359,9 @@
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.font = "11px Inter, sans-serif";
-        ctx.fillStyle = "#ffffff";
+        // 標籤字體改成深黑粗體 (改動處)
+        ctx.font = "bold 12px Inter, sans-serif";
+        ctx.fillStyle = "#0f172a";
         ctx.textAlign = "center";
         
         const targetPointIndex = Math.floor(points.length / 2);
