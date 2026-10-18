@@ -503,7 +503,7 @@
       word-break: break-word;
     }
 
-    /* 橫向樹狀階層圖樣式 */
+    /* 橫向樹狀階層圖樣式 (已補齊所有斷口) */
     .h-tree-container {
       display: flex;
       flex-direction: column;
@@ -517,11 +517,26 @@
       align-items: flex-start;
       margin: 6px 0;
       width: 100%;
+      position: relative;
     }
     .h-tree-row {
       display: flex;
       align-items: center;
       gap: 12px;
+      position: relative;
+    }
+    /* 補齊主幹與分支斷口的連線偽元素 */
+    .h-tree-branch::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -20px;
+      width: 20px;
+      height: 2px;
+      background-color: var(--line-color);
+    }
+    .h-tree-container > .h-tree-branch > .h-tree-row::before {
+      display: none;
     }
     .h-tree-children {
       display: flex;
@@ -531,6 +546,7 @@
       border-left: 2px solid var(--line-color);
       gap: 10px;
       margin-top: 8px;
+      position: relative;
     }
 
     /* 全螢幕燈箱 Modal 樣式 */
@@ -655,6 +671,7 @@
       <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 8. 標準垂直流程圖</button>
       <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 9. S型橫向貪食蛇</button>
       <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 10. 垂直長條貪食蛇</button>
+      <button class="tab-btn" onclick="switchTab('tab-stacked-area')">📈 11. 堆疊區域圖</button>
     </div>
 
     <div class="main-container">
@@ -891,6 +908,41 @@
         </div>
       </div>
 
+      <!-- 分頁 11: 堆疊區域圖 (新增) -->
+      <div id="tab-stacked-area" class="tab-content">
+        <div class="card">
+          <div class="card-title">
+            <span>堆疊區域圖數據與對應圖表</span>
+            <div>
+              <button class="btn btn-success" id="add-stacked-row-btn">＋ 新增數據列</button>
+              <button class="btn btn-outline" onclick="openFullscreen('stacked-chart-target', '堆疊區域圖')">🔍 全螢幕檢視</button>
+              <button class="btn btn-success" id="export-png-btn-8">下載高解析度 PNG</button>
+            </div>
+          </div>
+          <div style="display: flex; gap: 24px; flex-wrap: wrap; flex: 1; align-items: stretch;">
+            <div class="table-container" style="flex: 1; min-width: 350px;">
+              <table id="stacked-data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 25%;">日期</th>
+                    <th style="width: 25%;">序列 1 值</th>
+                    <th style="width: 25%;">序列 2 值</th>
+                    <th style="width: 15%;">總計</th>
+                    <th style="width: 10%;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="stacked-table-body"></tbody>
+              </table>
+            </div>
+            <div class="chart-full-area" style="flex: 1; min-width: 400px; min-height: 450px;" id="stacked-chart-container">
+              <div class="chart-inner-canvas" id="stacked-chart-target" style="width: 100%; height: 100%; position: relative;">
+                <canvas id="stackedAreaCanvas" style="width: 100%; height: 380px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -994,9 +1046,17 @@
       { id: "grinder", label: "磨床組", parentId: "dry2", shape: "rect", note: "", bgColor: "", textColor: "" }
     ];
 
+    // 新增：堆疊區域圖預設資料
+    let stackedData = [
+      { date: "1/5/2002", series1: 32, series2: 12 },
+      { date: "1/6/2002", series1: 32, series2: 12 },
+      { date: "1/7/2002", series1: 28, series2: 12 },
+      { date: "1/8/2002", series1: 12, series2: 20 },
+      { date: "1/9/2002", series1: 15, series2: 28 }
+    ];
+
     let autoSaveTimer = null;
 
-    // 讓全域可以存取全螢幕功能
     let currentFsTargetId = null;
     let fsScale = 1;
     let fsPanX = 0;
@@ -1009,6 +1069,7 @@
       renderTable();
       renderTreeTable();
       renderTreeAsIsTable();
+      renderStackedTable();
       renderAllCharts();
       setupEventListeners();
       setupPanAndZoomContainers();
@@ -1042,10 +1103,10 @@
         renderHorizontalTreeChart();
         renderTreeAsIsChart();
         renderHorizontalTreeAsIsChart();
+        renderStackedAreaChart();
       }, 50);
     };
 
-    // 設定未全螢幕前的小手平移功能 (Pan & Drag)
     function setupPanAndZoomContainers() {
       const containers = document.querySelectorAll('.chart-full-area');
       containers.forEach(container => {
@@ -1077,7 +1138,6 @@
           container.style.cursor = 'grab';
         });
 
-        // 滑鼠滾輪縮放
         container.addEventListener('wheel', (e) => {
           e.preventDefault();
           const zoomFactor = 0.1;
@@ -1091,7 +1151,6 @@
       });
     }
 
-    // 全螢幕檢視邏輯
     window.openFullscreen = function(targetId, titleText) {
       currentFsTargetId = targetId;
       document.getElementById("fs-modal-title").innerText = `🔍 全螢幕檢視：${titleText}`;
@@ -1100,10 +1159,16 @@
       const fsInner = document.getElementById("fs-inner-canvas");
       fsInner.innerHTML = sourceEl.innerHTML;
 
-      // 重新綁定全螢幕中節點的色卡事件
-      fsInner.querySelectorAll('.flow-node, .vertical-flow-node').forEach((node, idx) => {
-        // 從原對應資料中找尋並綁定對應的互動
-      });
+      if (targetId === 'stacked-chart-target') {
+        setTimeout(() => {
+          const fsCanvas = fsInner.querySelector('canvas');
+          if (fsCanvas) {
+            const ctx = fsCanvas.getContext('2d');
+            // Re-render chart inside fullscreen canvas if needed
+            renderStackedAreaChartToCanvas(fsCanvas);
+          }
+        }, 50);
+      }
 
       fsScale = 1;
       fsPanX = 0;
@@ -1132,7 +1197,6 @@
       fsInner.style.transform = `translate(0px, 0px) scale(1)`;
     };
 
-    // 全螢幕燈箱內的拖曳平移
     document.addEventListener("DOMContentLoaded", () => {
       const fsArea = document.getElementById("fs-content-area");
       const fsInner = document.getElementById("fs-inner-canvas");
@@ -1208,6 +1272,8 @@
       document.getElementById("tree-asis-export-excel-btn").addEventListener("click", exportTreeAsIsToExcel);
       document.getElementById("add-tree-asis-row-btn").addEventListener("click", addTreeAsIsRow);
 
+      document.getElementById("add-stacked-row-btn").addEventListener("click", addStackedRow);
+
       document.getElementById("export-png-btn-1").addEventListener("click", () => exportToPNG("vertical-chart-target", "垂直流程圖.png"));
       document.getElementById("export-png-btn-2").addEventListener("click", () => exportToPNG("snake-chart-target", "S型橫向流程圖.png"));
       document.getElementById("export-png-btn-3").addEventListener("click", () => exportToPNG("v-snake-chart-target", "垂直長條型貪食蛇流程圖.png"));
@@ -1215,6 +1281,7 @@
       document.getElementById("export-png-btn-5").addEventListener("click", () => exportToPNG("h-tree-chart-target", "橫向樹狀階層圖_ToBe.png"));
       document.getElementById("export-png-btn-6").addEventListener("click", () => exportToPNG("tree-asis-chart-target", "樹狀階層流程圖_AsIs.png"));
       document.getElementById("export-png-btn-7").addEventListener("click", () => exportToPNG("h-tree-asis-chart-target", "橫向樹狀階層圖_AsIs.png"));
+      document.getElementById("export-png-btn-8").addEventListener("click", () => exportToPNG("stacked-chart-container", "堆疊區域圖.png"));
       
       document.getElementById("snake-cols").addEventListener("change", () => renderSnakeChart());
       document.getElementById("snake-direction").addEventListener("change", () => renderSnakeChart());
@@ -1247,6 +1314,7 @@
           data: flowData,
           treeData: treeData,
           treeAsIsData: treeAsIsData,
+          stackedData: stackedData,
           updatedAt: nowString
         });
         if (statusEl) {
@@ -1274,10 +1342,12 @@
           if (cloudData.data && Array.isArray(cloudData.data)) flowData = cloudData.data;
           if (cloudData.treeData && Array.isArray(cloudData.treeData)) treeData = cloudData.treeData;
           if (cloudData.treeAsIsData && Array.isArray(cloudData.treeAsIsData)) treeAsIsData = cloudData.treeAsIsData;
+          if (cloudData.stackedData && Array.isArray(cloudData.stackedData)) stackedData = cloudData.stackedData;
           
           renderTable();
           renderTreeTable();
           renderTreeAsIsTable();
+          renderStackedTable();
           renderAllCharts();
           if (statusEl) statusEl.innerText = "✅ 載入雲端最新資料成功";
           if (cloudData.updatedAt) {
@@ -1495,6 +1565,51 @@
       });
     }
 
+    // 新增：堆疊區域圖表格渲染與事件綁定
+    function renderStackedTable() {
+      const tbody = document.getElementById("stacked-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      stackedData.forEach((row, index) => {
+        const tr = document.createElement("tr");
+        const total = (Number(row.series1) || 0) + (Number(row.series2) || 0);
+
+        tr.innerHTML = `
+          <td><input type="text" value="${row.date || ''}" data-index="${index}" data-field="date" placeholder="1/5/2002"></td>
+          <td><input type="number" value="${row.series1 ?? ''}" data-index="${index}" data-field="series1" style="width:100%;"></td>
+          <td><input type="number" value="${row.series2 ?? ''}" data-index="${index}" data-field="series2" style="width:100%;"></td>
+          <td style="font-weight: 700; text-align: center; background: #f1f5f9;" id="stacked-total-${index}">${total}</td>
+          <td><button class="btn btn-danger btn-outline btn-sm delete-stacked-btn" data-index="${index}">刪除</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll("#stacked-data-table input").forEach(input => {
+        input.addEventListener("input", (e) => {
+          const idx = e.target.dataset.index;
+          const field = e.target.dataset.field;
+          stackedData[idx][field] = e.target.value;
+          
+          const s1 = Number(stackedData[idx].series1) || 0;
+          const s2 = Number(stackedData[idx].series2) || 0;
+          document.getElementById(`stacked-total-${idx}`).innerText = s1 + s2;
+
+          renderStackedAreaChart();
+          triggerAutoSave();
+        });
+      });
+
+      document.querySelectorAll("#stacked-data-table .delete-stacked-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const idx = e.target.dataset.index;
+          stackedData.splice(idx, 1);
+          renderStackedTable();
+          renderStackedAreaChart();
+          triggerAutoSave();
+        });
+      });
+    }
+
     function addRow() {
       flowData.push({ id: String(flowData.length + 1), label: "", shape: "rect", nextId: "", condition: "", bgColor: "", textColor: "" });
       renderTable(); renderAllCharts(); triggerAutoSave();
@@ -1510,6 +1625,13 @@
       renderTreeAsIsTable(); renderAllCharts(); triggerAutoSave();
     }
 
+    function addStackedRow() {
+      stackedData.push({ date: "1/10/2002", series1: 20, series2: 20 });
+      renderStackedTable();
+      renderStackedAreaChart();
+      triggerAutoSave();
+    }
+
     function renderAllCharts() {
       renderVerticalChart();
       renderSnakeChart();
@@ -1518,6 +1640,7 @@
       renderHorizontalTreeChart();
       renderTreeAsIsChart();
       renderHorizontalTreeAsIsChart();
+      renderStackedAreaChart();
     }
 
     function applyNodeStylingAndEvents(node, item, collectionType) {
@@ -1964,6 +2087,125 @@
     function renderTreeAsIsChart() { renderVerticalTreeStructure("tree-asis-chart-target", treeAsIsData, 'treeAsIs'); }
     function renderHorizontalTreeAsIsChart() { renderHorizontalTreeStructure("h-tree-asis-chart-target", treeAsIsData, 'treeAsIs'); }
 
+    // 新增：繪製堆疊區域圖到 Canvas 的共用核心函式
+    function renderStackedAreaChartToCanvas(canvas) {
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const width = canvas.parentElement.clientWidth || 500;
+      const height = 380;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Title
+      ctx.font = "bold 16px Inter, sans-serif";
+      ctx.fillStyle = "#0f172a";
+      ctx.textAlign = "center";
+      ctx.fillText("圖表標題：堆疊區域圖範例", width / 2, 28);
+
+      const paddingLeft = 55;
+      const paddingRight = 30;
+      const paddingTop = 50;
+      const paddingBottom = 60;
+      const chartWidth = width - paddingLeft - paddingRight;
+      const chartHeight = height - paddingTop - paddingBottom;
+
+      const maxY = 50;
+      const ySteps = 5;
+
+      // Y-axis grid lines
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#64748b";
+      ctx.font = "12px Inter, sans-serif";
+      ctx.textAlign = "right";
+
+      for (let i = 0; i <= ySteps; i++) {
+        const val = (maxY / ySteps) * i;
+        const y = paddingTop + chartHeight - (chartHeight / ySteps) * i;
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, y);
+        ctx.lineTo(width - paddingRight, y);
+        ctx.stroke();
+        ctx.fillText(val, paddingLeft - 10, y + 4);
+      }
+
+      if (stackedData.length === 0) return;
+
+      const stepX = chartWidth / (stackedData.length - 1 || 1);
+
+      const points = stackedData.map((d, i) => {
+        const x = paddingLeft + i * stepX;
+        const s1 = Number(d.series1) || 0;
+        const s2 = Number(d.series2) || 0;
+        const total = s1 + s2;
+        return {
+          x,
+          s1,
+          s2,
+          total,
+          yBottom: paddingTop + chartHeight,
+          yS1: paddingTop + chartHeight - (s1 / maxY) * chartHeight,
+          yTotal: paddingTop + chartHeight - (total / maxY) * chartHeight,
+          date: d.date
+        };
+      });
+
+      // Series 2 (Top Layer - Orange)
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].yS1);
+      points.forEach(p => ctx.lineTo(p.x, p.yTotal));
+      for (let i = points.length - 1; i >= 0; i--) {
+        ctx.lineTo(points[i].x, points[i].yS1);
+      }
+      ctx.closePath();
+      ctx.fillStyle = "rgba(249, 115, 22, 0.85)";
+      ctx.fill();
+
+      // Series 1 (Bottom Layer - Blue)
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].yBottom);
+      points.forEach(p => ctx.lineTo(p.x, p.yS1));
+      points.forEach((p, i) => {
+        if (i === points.length - 1) ctx.lineTo(p.x, p.yBottom);
+      });
+      for (let i = points.length - 1; i >= 0; i--) {
+        ctx.lineTo(points[i].x, points[i].yBottom);
+      }
+      ctx.closePath();
+      ctx.fillStyle = "rgba(37, 99, 235, 0.85)";
+      ctx.fill();
+
+      // X-axis labels
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#64748b";
+      points.forEach(p => {
+        ctx.fillText(p.date, p.x, paddingTop + chartHeight + 25);
+      });
+
+      // Legend
+      const legendY = height - 15;
+      const legendCenterX = width / 2;
+
+      ctx.fillStyle = "#2563eb";
+      ctx.fillRect(legendCenterX - 70, legendY - 8, 12, 12);
+      ctx.fillStyle = "#0f172a";
+      ctx.textAlign = "left";
+      ctx.fillText("系列1", legendCenterX - 52, legendY + 2);
+
+      ctx.fillStyle = "#f97316";
+      ctx.fillRect(legendCenterX + 10, legendY - 8, 12, 12);
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText("系列2", legendCenterX + 28, legendY + 2);
+    }
+
+    function renderStackedAreaChart() {
+      const canvas = document.getElementById("stackedAreaCanvas");
+      renderStackedAreaChartToCanvas(canvas);
+    }
+
     function exportToExcel() {
       const wb = XLSX.utils.book_new();
       const wsLinear = XLSX.utils.json_to_sheet(flowData.map(item => ({
@@ -1972,8 +2214,12 @@
       const wsTree = XLSX.utils.json_to_sheet(treeData.map(item => ({
         "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || "", "背景色": item.bgColor || "", "文字色": item.textColor || ""
       })));
+      const wsStacked = XLSX.utils.json_to_sheet(stackedData.map(item => ({
+        "日期": item.date, "序列1值": item.series1, "序列2值": item.series2
+      })));
       XLSX.utils.book_append_sheet(wb, wsLinear, "線性流程資料");
       XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料");
+      XLSX.utils.book_append_sheet(wb, wsStacked, "堆疊區域圖數據");
       XLSX.writeFile(wb, "企業流程圖資料集.xlsx");
     }
 
