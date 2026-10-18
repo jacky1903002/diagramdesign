@@ -1057,18 +1057,16 @@
     ];
 
     let stackedHeaders = {
-      date: "日期",
-      series: { series1: "序列 1", series2: "序列 2" },
+      date: "YYMM",
+      series: { series1: "Graphite", series2: "G3(Back)", series3: "AIBT(+)", series4: "Varian(+)" },
       total: "總計"
     };
 
-    let stackedSeries = ["series1", "series2"];
+    let stackedSeries = ["series1", "series2", "series3", "series4"];
     let stackedData = [
-      { date: "1/5/2002", values: { series1: 32, series2: 12 } },
-      { date: "1/6/2002", values: { series1: 32, series2: 12 } },
-      { date: "1/7/2002", values: { series1: 28, series2: 12 } },
-      { date: "1/8/2002", values: { series1: 12, series2: 20 } },
-      { date: "1/9/2002", values: { series1: 15, series2: 28 } }
+      { date: "Jan-25", values: { series1: 5286.18, series2: 0, series3: 0, series4: 0 } },
+      { date: "Feb-25", values: { series1: 7585.49, series2: 0, series3: 0, series4: 0 } },
+      { date: "Mar-25", values: { series1: 7781.09, series2: 0, series3: 0, series4: 0 } }
     ];
 
     let autoSaveTimer = null;
@@ -1716,7 +1714,7 @@
     function addStackedRow() {
       const newValues = {};
       stackedSeries.forEach(s => { newValues[s] = 10; });
-      stackedData.push({ date: "1/10/2002", values: newValues });
+      stackedData.push({ date: "Jan-29", values: newValues });
       renderStackedTable();
       renderStackedAreaChart();
       triggerAutoSave();
@@ -2205,7 +2203,21 @@
     function renderTreeAsIsChart() { renderVerticalTreeStructure("tree-asis-chart-target", treeAsIsData, 'treeAsIs'); }
     function renderHorizontalTreeAsIsChart() { renderHorizontalTreeStructure("h-tree-asis-chart-target", treeAsIsData, 'treeAsIs'); }
 
-    // 動態多序列堆疊區域圖繪製 (含序列文字標籤)
+    // Excel 序列日期數字轉字串輔助函式
+    function excelDateToString(serial) {
+      if (!isNaN(serial) && typeof serial === 'number') {
+        const utc_days = Math.floor(serial - 25569);
+        const utc_value = utc_days * 86400;
+        const date_info = new Date(utc_value * 1000);
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const m = months[date_info.getUTCMonth()];
+        const y = String(date_info.getUTCFullYear()).slice(-2);
+        return `${m}-${y}`;
+      }
+      return String(serial || "");
+    }
+
+    // 動態多序列堆疊區域圖繪製 (支援多欄位序列與文字標籤)
     function renderStackedAreaChartToCanvas(canvas) {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
@@ -2230,11 +2242,11 @@
       const chartWidth = width - paddingLeft - paddingRight;
       const chartHeight = height - paddingTop - paddingBottom;
 
-      let maxTotal = 60;
+      let maxTotal = 100;
       stackedData.forEach(d => {
         let sum = 0;
         stackedSeries.forEach(s => { sum += Number(d.values?.[s]) || 0; });
-        if (sum > maxTotal) maxTotal = Math.ceil(sum * 1.2 / 10) * 10;
+        if (sum > maxTotal) maxTotal = Math.ceil(sum * 1.2 / 1000) * 1000;
       });
 
       const ySteps = 5;
@@ -2308,8 +2320,8 @@
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // 帶上文字標籤於點上方
-        ctx.font = "11px Inter, sans-serif";
+        // 數值文字標籤（數值大於 0 時繪製）
+        ctx.font = "10px Inter, sans-serif";
         ctx.fillStyle = "#1e293b";
         ctx.textAlign = "center";
         points.forEach(p => {
@@ -2320,16 +2332,21 @@
         });
       }
 
-      // X 軸標籤
+      // X 軸標籤 (YYMM)
       ctx.textAlign = "center";
       ctx.fillStyle = "#64748b";
+      ctx.font = "11px Inter, sans-serif";
       points.forEach(p => {
-        ctx.fillText(p.date, p.x, paddingTop + chartHeight + 25);
+        ctx.save();
+        ctx.translate(p.x, paddingTop + chartHeight + 15);
+        ctx.rotate(-Math.PI / 4);
+        ctx.fillText(p.date, 0, 0);
+        ctx.restore();
       });
 
       // 圖例 (Legend) 帶文字標籤
-      const legendY = height - 12;
-      const totalLegendWidth = stackedSeries.length * 90;
+      const legendY = height - 10;
+      const totalLegendWidth = stackedSeries.length * 100;
       let startLegendX = (width - totalLegendWidth) / 2;
 
       stackedSeries.forEach((s, j) => {
@@ -2340,7 +2357,7 @@
         ctx.fillStyle = "#0f172a";
         ctx.textAlign = "left";
         ctx.fillText(seriesName, startLegendX + 18, legendY + 2);
-        startLegendX += 90;
+        startLegendX += 105;
       });
     }
 
@@ -2408,6 +2425,7 @@
       XLSX.writeFile(wb, "堆疊區域圖數據報表.xlsx");
     }
 
+    // 支援多欄位序列與日期轉換的 Excel 匯入模組
     function handleStackedImport(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -2434,12 +2452,13 @@
             });
 
             stackedData = json.map(row => {
-              const dateVal = row[dateKey] || "1/1/2002";
+              const rawDate = row[dateKey];
+              const dateVal = excelDateToString(rawDate);
               const values = {};
               seriesKeys.forEach((sk, idx) => {
                 values[`series${idx + 1}`] = Number(row[sk]) || 0;
               });
-              return { date: String(dateVal), values };
+              return { date: dateVal, values };
             });
           }
         }
