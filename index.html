@@ -1,2623 +1,5411 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
+
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>企業級流程圖自動化管理系統</title>
+
   
+
   <!-- 載入必要套件 -->
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <!-- Google Fonts 字型 -->
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+
+
   <style>
+
     :root {
+
       --primary-color: #2563eb;
+
       --primary-hover: #1d4ed8;
+
       --bg-color: #f8fafc;
+
       --card-bg: #ffffff;
+
       --text-main: #0f172a;
+
       --text-muted: #64748b;
+
       --border-color: #cbd5e1;
+
       --accent-green: #10b981;
+
       --accent-red: #ef4444;
+
       
+
       --node-width: 160px;
+
       --node-height: 70px;
+
       --v-node-width: 75px;
+
       --v-node-height: 220px;
+
       --line-color: #1e3a8a;
+
     }
+
+
 
     * { box-sizing: border-box; }
 
+
+
     body {
+
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+
       margin: 0;
+
       padding: 0;
+
       background-color: var(--bg-color);
+
       color: var(--text-main);
+
       -webkit-font-smoothing: antialiased;
+
       min-height: 100vh;
+
       display: flex;
+
       flex-direction: column;
+
     }
+
+
 
     /* 全螢幕入口登入門戶 */
+
     .login-portal-overlay {
+
       position: fixed;
+
       top: 0;
+
       left: 0;
+
       width: 100vw;
+
       height: 100vh;
+
       background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+
       display: flex;
+
       justify-content: center;
+
       align-items: center;
+
       z-index: 9999;
+
     }
+
     .login-portal-card {
+
       background: #ffffff;
+
       border-radius: 16px;
+
       padding: 40px;
+
       width: 100%;
+
       max-width: 420px;
+
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+
       text-align: center;
+
     }
+
     .login-portal-card h2 {
+
       margin-top: 0;
+
       margin-bottom: 8px;
+
       color: var(--text-main);
+
       font-size: 22px;
+
       font-weight: 800;
+
     }
+
     .login-portal-card p {
+
       margin-top: 0;
+
       margin-bottom: 24px;
+
       color: var(--text-muted);
+
       font-size: 14px;
+
     }
+
     .portal-input-group {
+
       display: flex;
+
       flex-direction: column;
+
       gap: 14px;
+
       text-align: left;
+
     }
+
     .portal-input-group label {
+
       font-size: 13px;
+
       font-weight: 600;
+
       color: var(--text-main);
+
       margin-bottom: -8px;
+
     }
+
     .portal-input-group input {
+
       padding: 10px 14px;
+
       border: 1.5px solid var(--border-color);
+
       border-radius: 8px;
+
       font-size: 14px;
+
       outline: none;
+
       transition: border-color 0.2s;
+
     }
+
     .portal-input-group input:focus {
+
       border-color: var(--primary-color);
+
     }
+
     .btn-portal-submit {
+
       width: 100%;
+
       padding: 12px;
+
       font-size: 15px;
+
       font-weight: 700;
+
       border-radius: 8px;
+
       margin-top: 8px;
+
       background: var(--primary-color);
+
       color: #fff;
+
       border: none;
+
       cursor: pointer;
+
       transition: background-color 0.2s;
+
     }
+
     .btn-portal-submit:hover {
+
       background: var(--primary-hover);
+
     }
+
+
 
     /* 主應用程式內容容器 */
+
     .app-wrapper {
+
       display: none;
+
       flex-direction: column;
+
       min-height: 100vh;
+
     }
+
+
 
     /* 頂部 Header Bar */
+
     .header-bar {
+
       background: #1e3a8a;
+
       color: #ffffff;
+
       padding: 16px 30px;
+
       display: flex;
+
       justify-content: space-between;
+
       align-items: center;
+
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+
     }
+
     .header-bar h2 { margin: 0; font-size: 22px; font-weight: 700; }
+
     .header-bar p { margin: 2px 0 0 0; font-size: 13px; color: #93c5fd; }
 
+
+
     /* 分頁頁籤列 */
+
     .nav-tabs {
+
       background: #ffffff;
+
       border-bottom: 2px solid var(--border-color);
+
       display: flex;
+
       padding: 0 30px;
+
       gap: 6px;
+
       overflow-x: auto;
+
     }
+
     .tab-btn {
+
       padding: 14px 16px;
+
       font-size: 13px;
+
       font-weight: 700;
+
       color: var(--text-muted);
+
       border: none;
+
       background: transparent;
+
       cursor: pointer;
+
       border-bottom: 3px solid transparent;
+
       transition: all 0.2s ease;
+
       white-space: nowrap;
+
     }
+
     .tab-btn:hover { color: var(--primary-color); }
+
     .tab-btn.active {
+
       color: var(--primary-color);
+
       border-bottom-color: var(--primary-color);
+
       background-color: #eff6ff;
+
     }
+
+
 
     .main-container {
+
       flex: 1;
+
       padding: 24px 30px;
+
       display: flex;
+
       flex-direction: column;
+
     }
+
+
 
     .tab-content {
+
       display: none;
+
       flex: 1;
+
       flex-direction: column;
+
     }
+
     .tab-content.active {
+
       display: flex;
+
     }
+
+
 
     .card {
+
       background: var(--card-bg);
+
       padding: 24px;
+
       border-radius: 12px;
+
       border: 1px solid var(--border-color);
+
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
       flex: 1;
+
       display: flex;
+
       flex-direction: column;
+
     }
+
+
 
     .card-title {
+
       font-size: 17px;
+
       font-weight: 700;
+
       margin-top: 0;
+
       margin-bottom: 16px;
+
       color: var(--text-main);
+
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
+
       flex-wrap: wrap;
+
       gap: 12px;
+
       cursor: default;
+
     }
+
     .card-title span[data-editable="true"]:hover {
+
       background-color: #eff6ff;
+
       border-radius: 4px;
+
       padding: 2px 6px;
+
       cursor: pointer;
+
     }
+
+
 
     .btn {
+
       display: inline-flex;
+
       align-items: center;
+
       justify-content: center;
+
       background: var(--primary-color);
+
       color: white;
+
       border: none;
+
       padding: 9px 18px;
+
       font-size: 14px;
+
       font-weight: 600;
+
       border-radius: 8px;
+
       cursor: pointer;
+
       transition: all 0.2s ease;
+
       box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+
       margin-right: 6px;
+
     }
+
     .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
     .btn-success { background: var(--accent-green); box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+
     .btn-success:hover { background: #047857; }
+
     .btn-danger { background: var(--accent-red); box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
+
     .btn-danger:hover { background: #b91c1c; }
+
     .btn-sm { padding: 5px 10px; font-size: 12px; }
+
     .btn-outline {
+
       background: transparent;
+
       color: var(--text-main);
+
       border: 1.5px solid var(--border-color);
+
       box-shadow: none;
+
     }
+
     .btn-outline:hover { background: #e2e8f0; }
 
+
+
     input[type="email"], input[type="password"], input[type="text"], input[type="number"], select, textarea {
+
       padding: 8px 12px;
+
       border: 1.5px solid var(--border-color);
+
       border-radius: 6px;
+
       font-size: 14px;
+
       font-family: inherit;
+
       outline: none;
+
       background-color: #ffffff;
+
       color: var(--text-main);
+
     }
+
+
 
     textarea.table-textarea {
+
       width: 100%;
+
       height: 60px;
+
       resize: vertical;
+
       line-height: 1.4;
+
     }
+
+
 
     .table-container {
+
       overflow-x: auto;
+
       flex: 1;
+
       margin-top: 12px;
+
     }
+
     table {
+
       width: 100%;
+
       border-collapse: separate;
+
       border-spacing: 0;
+
       font-size: 14px;
+
     }
+
     th {
+
       background-color: #f8fafc;
+
       color: #334155;
+
       font-weight: 700;
+
       padding: 12px 16px;
+
       text-align: left;
+
       border-bottom: 2px solid var(--border-color);
+
       position: sticky;
+
       top: 0;
+
       z-index: 10;
+
       cursor: pointer;
+
     }
+
     th:hover {
+
       background-color: #e2e8f0;
+
     }
+
     td {
+
       padding: 8px 12px;
+
       border-bottom: 1px solid var(--border-color);
+
       vertical-align: middle;
+
     }
+
     table input[type="text"], table select {
+
       width: 100%;
+
     }
+
+
 
     .draggable-row {
+
       cursor: grab;
+
       transition: background-color 0.2s;
+
     }
+
     .draggable-row:active { cursor: grabbing; }
+
     .draggable-row.dragging { opacity: 0.4; background: #e2e8f0; }
+
     .draggable-row.drag-over { border-top: 2px solid var(--primary-color); background-color: #eff6ff; }
+
     .drag-handle {
+
       cursor: grab;
+
       color: var(--text-muted);
+
       font-weight: bold;
+
       user-select: none;
+
       padding-right: 6px;
+
       font-size: 16px;
+
       display: inline-block;
+
       vertical-align: middle;
+
     }
+
+
 
     .status-badge {
+
       display: inline-block;
+
       padding: 4px 12px;
+
       font-size: 12px;
+
       font-weight: 600;
+
       border-radius: 20px;
+
       background: #dbeafe;
+
       color: #1e40af;
+
     }
+
     .save-time-info { color: #93c5fd; font-size: 13px; font-weight: 500; }
+
     .error { color: var(--accent-red); font-size: 13px; margin-top: 8px; }
 
+
+
     /* 滿版流程圖視覺區域 (具備小手托拉平移) */
+
     .chart-full-area {
+
       background: #ffffff;
+
       border: 1.5px solid var(--border-color);
+
       border-radius: 12px;
+
       padding: 40px;
+
       overflow: hidden;
+
       flex: 1;
+
       display: flex;
+
       flex-direction: column;
+
       align-items: center;
+
       justify-content: flex-start;
+
       min-height: 600px;
+
       cursor: grab;
+
       position: relative;
+
       user-select: none;
+
     }
+
     .chart-full-area:active {
+
       cursor: grabbing;
+
     }
+
+
 
     /* 圖表內部實際內容容器 (用於平移與縮放) */
+
     .chart-inner-canvas {
+
       display: flex;
+
       flex-direction: column;
+
       align-items: center;
+
       justify-content: flex-start;
+
       transform-origin: 0 0;
+
       transition: transform 0.05s linear;
+
       position: absolute;
+
       top: 40px;
+
       left: 40px;
+
       min-width: 100%;
+
       min-height: 100%;
+
     }
+
+
 
     .flow-node {
+
       width: var(--node-width);
+
       min-height: var(--node-height);
+
       border: 2px solid var(--line-color);
+
       border-radius: 2px;
+
       font-weight: 700;
+
       font-size: 14px;
+
       display: flex;
+
       align-items: center;
+
       justify-content: center;
+
       text-align: center;
+
       padding: 10px 12px;
+
       word-break: break-word;
+
       white-space: pre-wrap;
+
       line-height: 1.4;
+
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
       position: relative;
+
       z-index: 2;
+
       flex-shrink: 0;
+
       background-color: #ffffff;
+
       color: #0f172a;
+
       cursor: pointer;
+
       transition: transform 0.15s ease, box-shadow 0.15s ease;
+
     }
+
     .flow-node:hover {
+
       transform: translateY(-2px);
+
       box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+
     }
+
     .flow-node.shape-round { border-radius: 30px; }
 
+
+
     .vertical-flow-node {
+
       width: var(--v-node-width);
+
       height: var(--v-node-height);
+
       border: 2px solid var(--line-color);
+
       border-radius: 2px;
+
       font-weight: 700;
+
       font-size: 14px;
+
       display: flex;
+
       align-items: center;
+
       justify-content: center;
+
       text-align: center;
+
       padding: 12px 6px;
+
       word-break: break-word;
+
       writing-mode: vertical-rl;
+
       text-orientation: upright;
+
       letter-spacing: 2px;
+
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
       position: relative;
+
       z-index: 2;
+
       flex-shrink: 0;
+
       background-color: #ffffff;
+
       color: #0f172a;
+
       cursor: pointer;
+
       transition: transform 0.15s ease, box-shadow 0.15s ease;
+
     }
+
+
 
     .flow-node-placeholder { width: var(--node-width); min-height: var(--node-height); visibility: hidden; flex-shrink: 0; }
+
     .vertical-flow-node-placeholder { width: var(--v-node-width); height: var(--v-node-height); visibility: hidden; flex-shrink: 0; }
 
+
+
     .arrow-down {
+
       width: 2px;
+
       height: 30px;
+
       background-color: var(--line-color);
+
       position: relative;
+
       margin: 0 auto;
+
       flex-shrink: 0;
+
     }
+
     .arrow-right {
+
       width: 40px;
+
       height: 2px;
+
       background-color: var(--line-color);
+
       position: relative;
+
       margin: 0 4px;
+
       flex-shrink: 0;
+
     }
+
     .arrow-left {
+
       width: 40px;
+
       height: 2px;
+
       background-color: var(--line-color);
+
       position: relative;
+
       margin: 0 4px;
+
       flex-shrink: 0;
+
     }
+
     .arrow-placeholder { width: 40px; height: 2px; visibility: hidden; margin: 0 4px; flex-shrink: 0; }
 
+
+
     .snake-container { display: flex; flex-direction: column; gap: 32px; align-items: center; padding: 20px; }
+
     .snake-row { display: flex; align-items: center; }
 
+
+
     /* 樹狀階層圖樣式 (無斷口) */
+
     .tree-container {
+
       display: flex;
+
       flex-direction: column;
+
       align-items: center;
+
       padding: 20px;
+
       width: 100%;
+
     }
+
     .tree-node-wrapper {
+
       display: flex;
+
       flex-direction: column;
+
       align-items: center;
+
     }
+
     .tree-node-box {
+
       display: flex;
+
       flex-direction: column;
+
       align-items: center;
+
       position: relative;
+
     }
+
     .tree-children-container {
+
       display: flex;
+
       justify-content: center;
+
       align-items: flex-start;
+
       gap: 32px;
+
       position: relative;
+
       padding-top: 30px;
+
     }
+
     .tree-parent-stem {
+
       width: 2px;
+
       height: 30px;
+
       background-color: var(--line-color);
+
       margin-top: -2px;
+
       margin-bottom: -2px;
+
     }
+
     .tree-children-connector-line {
+
       position: absolute;
+
       top: 0;
+
       height: 2px;
+
       background-color: var(--line-color);
+
     }
+
     .tree-child-branch-line {
+
       width: 2px;
+
       height: 30px;
+
       background-color: var(--line-color);
+
       margin-top: -30px;
+
       margin-bottom: 0;
+
       z-index: 1;
+
     }
+
+
 
     .node-note {
+
       margin-top: 6px;
+
       font-size: 12px;
+
       font-weight: 600;
+
       color: #0284c7;
+
       background: #e0f2fe;
+
       border: 1px dashed #0284c7;
+
       padding: 2px 8px;
+
       border-radius: 4px;
+
       max-width: 160px;
+
       text-align: center;
+
       word-break: break-word;
+
     }
+
+
 
     /* 橫向樹狀階層圖樣式 (已補齊所有斷口) */
+
     .h-tree-container {
+
       display: flex;
+
       flex-direction: column;
+
       align-items: flex-start;
+
       padding: 20px;
+
       width: 100%;
+
     }
+
     .h-tree-branch {
+
       display: flex;
+
       flex-direction: column;
+
       align-items: flex-start;
+
       margin: 6px 0;
+
       width: 100%;
+
       position: relative;
+
     }
+
     .h-tree-row {
+
       display: flex;
+
       align-items: center;
+
       gap: 12px;
+
       position: relative;
+
     }
+
     .h-tree-branch::before {
+
       content: '';
+
       position: absolute;
+
       top: 50%;
+
       left: -20px;
+
       width: 20px;
+
       height: 2px;
+
       background-color: var(--line-color);
+
     }
+
     .h-tree-container > .h-tree-branch > .h-tree-row::before {
+
       display: none;
+
     }
+
     .h-tree-children {
+
       display: flex;
+
       flex-direction: column;
+
       margin-left: 36px;
+
       padding-left: 20px;
+
       border-left: 2px solid var(--line-color);
+
       gap: 10px;
+
       margin-top: 8px;
+
       position: relative;
+
     }
+
+
 
     /* 全螢幕燈箱 Modal 樣式 */
+
     .fullscreen-modal {
+
       position: fixed;
+
       top: 0;
+
       left: 0;
+
       width: 100vw;
+
       height: 100vh;
+
       background: rgba(15, 23, 42, 0.85);
+
       z-index: 99999;
+
       display: none;
+
       flex-direction: column;
+
       padding: 20px;
+
     }
+
     .fullscreen-modal.active {
+
       display: flex;
+
     }
+
     .fullscreen-toolbar {
+
       background: #ffffff;
+
       padding: 12px 20px;
+
       border-radius: 10px;
+
       display: flex;
+
       justify-content: space-between;
+
       align-items: center;
+
       margin-bottom: 12px;
+
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
     }
+
     .fullscreen-content-area {
+
       flex: 1;
+
       background: #ffffff;
+
       border-radius: 10px;
+
       overflow: hidden;
+
       position: relative;
+
       cursor: grab;
+
       display: flex;
+
       justify-content: center;
+
       align-items: center;
+
     }
+
     .fullscreen-content-area:active {
+
       cursor: grabbing;
+
     }
+
     .fullscreen-inner-canvas {
+
       position: absolute;
+
       transform-origin: 0 0;
+
       display: flex;
+
       flex-direction: column;
+
       align-items: center;
+
       justify-content: flex-start;
+
       padding: 50px;
+
     }
+
+
 
     /* 10色下拉式選單彈窗 */
+
     .color-picker-popup {
+
       position: fixed;
+
       background: #ffffff;
+
       border: 1px solid var(--border-color);
+
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+
       border-radius: 10px;
+
       padding: 12px;
+
       z-index: 10000;
+
       display: grid;
+
       grid-template-columns: repeat(5, 1fr);
+
       gap: 8px;
+
       width: 220px;
+
     }
+
     .color-option {
+
       width: 32px;
+
       height: 32px;
+
       border-radius: 6px;
+
       cursor: pointer;
+
       border: 2px solid rgba(0,0,0,0.1);
+
       transition: transform 0.1s;
+
     }
+
     .color-option:hover {
+
       transform: scale(1.1);
+
       border-color: var(--primary-color);
+
     }
+
   </style>
+
 </head>
+
 <body>
 
+
+
   <!-- 全螢幕入口登入門戶 -->
+
   <div id="login-portal" class="login-portal-overlay">
+
     <div class="login-portal-card">
+
       <h2>系統登入</h2>
+
       <p>請先輸入 Firebase 帳號密碼存取流程圖管理系統</p>
+
       <div class="portal-input-group">
+
         <label for="portal-email">電子郵件 (Email)</label>
+
         <input type="email" id="portal-email" placeholder="admin@example.com">
+
         <label for="portal-password">密碼 (Password)</label>
+
         <input type="password" id="portal-password" placeholder="••••••••">
+
         <button id="portal-login-btn" class="btn-portal-submit">登入系統</button>
+
       </div>
+
       <div id="portal-auth-error" class="error"></div>
+
     </div>
+
   </div>
 
+
+
   <!-- 主應用程式內容容器 -->
+
   <div id="app-wrapper" class="app-wrapper">
+
     <div class="header-bar">
+
       <div>
+
         <h2>企業級流程圖自動化管理系統</h2>
+
         <p>自動同步 Firebase 雲端資料庫 & 備註欄位雙向即時連動</p>
+
       </div>
+
       <div>
+
         <span id="save-time-display" class="save-time-info">上次儲存時間：尚未同步</span>
+
         <span id="user-info" class="save-time-info" style="margin-left: 15px;">已驗證登入</span>
+
         <button class="btn btn-danger btn-outline btn-sm" id="logout-btn" style="margin-left: 10px;">登出系統</button>
+
       </div>
+
     </div>
 
+
+
     <!-- 分頁選單列 -->
+
     <div class="nav-tabs">
+
       <button class="tab-btn active" onclick="switchTab('tab-data-linear')">📝 1. 線性流程資料</button>
+
       <button class="tab-btn" onclick="switchTab('tab-data-tree')">🌳 2. 樹狀階層資料(To Be)</button>
+
       <button class="tab-btn" onclick="switchTab('tab-tree-chart')">🌲 3. 樹狀階層圖(To Be)</button>
+
       <button class="tab-btn" onclick="switchTab('tab-h-tree-chart')">🌐 4. 橫向樹狀圖(To Be)</button>
+
       <button class="tab-btn" onclick="switchTab('tab-data-tree-asis')">📂 5. 樹狀階層資料(As Is)</button>
+
       <button class="tab-btn" onclick="switchTab('tab-tree-asis-chart')">🏢 6. 樹狀階層圖(As Is)</button>
+
       <button class="tab-btn" onclick="switchTab('tab-h-tree-asis-chart')">🔗 7. 橫向樹狀圖(As Is)</button>
+
       <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 8. 標準垂直流程圖</button>
+
       <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 9. S型橫向貪食蛇</button>
+
       <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 10. 垂直長條貪食蛇</button>
-      <button class="tab-btn" onclick="switchTab('tab-data-stacked')">📁 11. 堆疊區域資料</button>
-      <button class="tab-btn" onclick="switchTab('tab-stacked-chart')">📈 12. 堆疊區域圖</button>
+
+      <button class="tab-btn" onclick="switchTab('tab-data-stacked')">📁 11. 雙軸圖表資料(堆疊+折線)</button>
+
+      <button class="tab-btn" onclick="switchTab('tab-stacked-chart')">📈 12. 雙軸圖表(堆疊區域+折線)</button>
+
     </div>
+
+
 
     <div class="main-container">
 
+
+
       <!-- 分頁 1: 線性流程資料表格 -->
+
       <div id="tab-data-linear" class="tab-content active">
+
         <div class="card" id="edit-controls">
+
           <div class="card-title">
+
             <span>線性流程資料庫 (適用於垂直與貪食蛇流程圖)</span>
+
             <span id="cloud-status" class="status-badge" style="display:none;"></span>
+
           </div>
+
           <div style="margin-bottom: 16px;">
+
             <button class="btn btn-outline" id="import-btn">匯入 Excel</button>
+
             <button class="btn btn-success" id="export-excel-btn">匯出 Excel 範本</button>
+
             <button class="btn" id="add-row-btn">＋ 新增步驟</button>
+
             <input type="file" id="excel-file" accept=".xlsx, .xls" style="display:none;">
+
           </div>
+
           <div class="table-container">
+
             <table id="data-table">
+
               <thead>
+
                 <tr>
+
                   <th style="width: 10%;">步驟 ID</th>
+
                   <th style="width: 35%;">步驟名稱 (Label)</th>
+
                   <th style="width: 20%;">節點形狀</th>
+
                   <th style="width: 15%;">下一步 ID</th>
+
                   <th style="width: 10%;">條件標籤</th>
+
                   <th style="width: 10%;">自訂顏色</th>
+
                   <th style="width: 5%;">操作</th>
+
                 </tr>
+
               </thead>
+
               <tbody id="table-body"></tbody>
+
             </table>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- 分頁 2: 樹狀階層資料表格 (To Be) -->
+
       <div id="tab-data-tree" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
+
             <span>樹狀階層資料庫 (To Be - 可拖曳上下調整順序)</span>
+
             <div>
+
               <button class="btn btn-outline" id="tree-import-btn">匯入 Excel</button>
+
               <button class="btn btn-success" id="tree-export-excel-btn">匯出 Excel</button>
+
               <button class="btn btn-success" id="add-tree-row-btn">＋ 新增樹狀節點</button>
+
               <input type="file" id="tree-excel-file" accept=".xlsx, .xls" style="display:none;">
+
             </div>
+
           </div>
+
           <div class="table-container">
+
             <table id="tree-data-table">
+
               <thead>
+
                 <tr>
+
                   <th style="width: 12%;">節點 ID</th>
+
                   <th style="width: 30%;">節點名稱 (Label)</th>
+
                   <th style="width: 12%;">父節點 ID</th>
+
                   <th style="width: 10%;">節點形狀</th>
+
                   <th style="width: 22%;">備註 (連動至圖表)</th>
+
                   <th style="width: 8%;">自訂背景色</th>
+
                   <th style="width: 6%;">操作</th>
+
                 </tr>
+
               </thead>
+
               <tbody id="tree-table-body"></tbody>
+
             </table>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- 分頁 3: 樹狀階層流程圖 (To Be) -->
+
       <div id="tab-tree-chart" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
+
             <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">樹狀階層流程圖 (To Be - 備註即時連動)</span>
+
             <div>
+
               <button class="btn btn-outline" onclick="openFullscreen('tree-chart-target', '樹狀階層流程圖 (To Be)')">🔍 全螢幕檢視</button>
+
               <button class="btn btn-success" id="export-png-btn-4">下載高解析度 PNG</button>
+
             </div>
+
           </div>
+
           <div class="chart-full-area" id="tree-chart-container">
+
             <div class="chart-inner-canvas" id="tree-chart-target" style="justify-content: flex-start;"></div>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- 分頁 4: 橫向樹狀階層圖 (To Be) -->
+
       <div id="tab-h-tree-chart" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
+
             <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">橫向樹狀階層圖 (To Be - 備註即時連動)</span>
+
             <div>
+
               <button class="btn btn-outline" onclick="openFullscreen('h-tree-chart-target', '橫向樹狀階層圖 (To Be)')">🔍 全螢幕檢視</button>
+
               <button class="btn btn-success" id="export-png-btn-5">下載高解析度 PNG</button>
+
             </div>
+
           </div>
+
           <div class="chart-full-area" id="h-tree-chart-container">
+
             <div class="chart-inner-canvas" id="h-tree-chart-target" style="align-items: flex-start; justify-content: flex-start;"></div>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- 分頁 5: 樹狀階層資料表格 (As Is) -->
+
       <div id="tab-data-tree-asis" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
+
             <span>樹狀階層資料庫 (As Is - 現況組織架構)</span>
+
             <div>
+
               <button class="btn btn-outline" id="tree-asis-import-btn">匯入 Excel</button>
+
               <button class="btn btn-success" id="tree-asis-export-excel-btn">匯出 Excel</button>
+
               <button class="btn btn-success" id="add-tree-asis-row-btn">＋ 新增 As Is 節點</button>
+
               <input type="file" id="tree-asis-excel-file" accept=".xlsx, .xls" style="display:none;">
+
             </div>
+
           </div>
+
           <div class="table-container">
+
             <table id="tree-asis-data-table">
+
               <thead>
+
                 <tr>
+
                   <th style="width: 12%;">節點 ID</th>
+
                   <th style="width: 30%;">節點名稱 (Label)</th>
+
                   <th style="width: 12%;">父節點 ID</th>
+
                   <th style="width: 10%;">節點形狀</th>
+
                   <th style="width: 22%;">備註 (連動至圖表)</th>
+
                   <th style="width: 8%;">自訂背景色</th>
+
                   <th style="width: 6%;">操作</th>
+
                 </tr>
+
               </thead>
+
               <tbody id="tree-asis-table-body"></tbody>
+
             </table>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- 分頁 6: 樹狀階層流程圖 (As Is) -->
+
       <div id="tab-tree-asis-chart" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
+
             <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">樹狀階層流程圖 (As Is - 現況架構與備註連動)</span>
+
             <div>
+
               <button class="btn btn-outline" onclick="openFullscreen('tree-asis-chart-target', '樹狀階層流程圖 (As Is)')">🔍 全螢幕檢視</button>
+
               <button class="btn btn-success" id="export-png-btn-6">下載高解析度 PNG</button>
+
             </div>
+
           </div>
+
           <div class="chart-full-area" id="tree-asis-chart-container">
+
             <div class="chart-inner-canvas" id="tree-asis-chart-target" style="justify-content: flex-start;"></div>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- 分頁 7: 橫向樹狀階層圖 (As Is) -->
+
       <div id="tab-h-tree-asis-chart" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
+
             <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">橫向樹狀階層圖 (As Is - 現況架構與備註連動)</span>
+
             <div>
+
               <button class="btn btn-outline" onclick="openFullscreen('h-tree-asis-chart-target', '橫向樹狀階層圖 (As Is)')">🔍 全螢幕檢視</button>
+
               <button class="btn btn-success" id="export-png-btn-7">下載高解析度 PNG</button>
+
             </div>
+
           </div>
+
           <div class="chart-full-area" id="h-tree-asis-chart-container">
+
             <div class="chart-inner-canvas" id="h-tree-asis-chart-target" style="align-items: flex-start; justify-content: flex-start;"></div>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- 分頁 8: 標準垂直流程圖 -->
+
       <div id="tab-vertical" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
+
             <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">標準垂直流程圖 (提示：雙擊格子可開啟 10 色選單)</span>
+
             <div>
+
               <button class="btn btn-outline" onclick="openFullscreen('vertical-chart-target', '標準垂直流程圖')">🔍 全螢幕檢視</button>
+
               <button class="btn btn-success" id="export-png-btn-1">下載高解析度 PNG</button>
+
             </div>
+
           </div>
+
           <div class="chart-full-area" id="vertical-chart-container">
+
             <div class="chart-inner-canvas" id="vertical-chart-target"></div>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- 分頁 9: S型橫向貪食蛇 -->
+
       <div id="tab-snake" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
+
             <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+
               <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">S 型橫向貪食蛇流程圖</span>
+
               <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+
                 每行步驟數：
+
                 <input type="number" id="snake-cols" value="4" min="2" max="8" style="width: 65px; padding: 4px 8px;">
+
               </label>
+
               <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+
                 箭頭方向：
+
                 <select id="snake-direction" style="padding: 4px 8px;">
+
                   <option value="clockwise">順時針 (左 ➔ 右)</option>
+
                   <option value="counter">逆時針 (右 ➔ 左)</option>
+
                 </select>
+
               </label>
+
             </div>
+
             <div>
+
               <button class="btn btn-outline" onclick="openFullscreen('snake-chart-target', 'S型橫向貪食蛇流程圖')">🔍 全螢幕檢視</button>
+
               <button class="btn btn-success" id="export-png-btn-2">下載高解析度 PNG</button>
+
             </div>
+
           </div>
+
           <div class="chart-full-area" id="snake-chart-container">
+
             <div class="chart-inner-canvas" id="snake-chart-target" style="justify-content: center;"></div>
+
           </div>
+
         </div>
+
       </div>
+
+
 
       <!-- 分頁 10: 垂直長條貪食蛇 -->
+
       <div id="tab-v-snake" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
+
             <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+
               <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">垂直長條型貪食蛇流程圖</span>
+
               <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+
                 每行步驟數：
+
                 <input type="number" id="v-snake-cols" value="6" min="2" max="12" style="width: 65px; padding: 4px 8px;">
+
               </label>
+
               <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
+
                 箭頭方向：
+
                 <select id="v-snake-direction" style="padding: 4px 8px;">
+
                   <option value="clockwise">順時針 (左 ➔ 右)</option>
+
                   <option value="counter">逆時針 (右 ➔ 左)</option>
+
                 </select>
+
               </label>
+
             </div>
+
             <div>
+
               <button class="btn btn-outline" onclick="openFullscreen('v-snake-chart-target', '垂直長條型貪食蛇流程圖')">🔍 全螢幕檢視</button>
+
               <button class="btn btn-success" id="export-png-btn-3">下載高解析度 PNG</button>
+
             </div>
+
           </div>
+
           <div class="chart-full-area" id="v-snake-chart-container">
+
             <div class="chart-inner-canvas" id="v-snake-chart-target" style="justify-content: center;"></div>
+
           </div>
+
         </div>
+
       </div>
 
-      <!-- 分頁 11: 堆疊區域資料 (獨立資料管理分頁) -->
+
+
+      <!-- 分頁 11: 雙軸圖表資料 (堆疊區域 + 折線圖) -->
+
       <div id="tab-data-stacked" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
-            <span>堆疊區域圖數據與動態序列管理 (提示：雙擊表頭可更改欄位名稱)</span>
+
+            <span>雙軸圖表數據管理 (支援堆疊區域圖 ＋ 右軸折線圖，雙擊表頭可更改欄位名稱)</span>
+
             <div>
+
               <button class="btn btn-outline" id="stacked-import-btn">📂 匯入 Excel</button>
+
               <button class="btn btn-success" id="stacked-export-excel-btn">💾 匯出 Excel</button>
+
               <button class="btn btn-success" id="add-stacked-row-btn">＋ 新增數據列</button>
-              <button class="btn" id="add-stacked-series-btn">＋ 新增序列</button>
+
+              <button class="btn" id="add-stacked-series-btn">＋ 新增堆疊序列</button>
+
+              <button class="btn" id="add-line-series-btn" style="background-color: #8b5cf6;">＋ 新增折線序列</button>
+
               <button class="btn btn-danger btn-outline" id="remove-stacked-series-btn">🗑️ 刪除序列</button>
+
               <input type="file" id="stacked-excel-file" accept=".xlsx, .xls" style="display:none;">
+
             </div>
+
           </div>
+
           <div class="table-container">
+
             <table id="stacked-data-table">
+
               <thead id="stacked-table-head"></thead>
+
               <tbody id="stacked-table-body"></tbody>
+
             </table>
+
           </div>
+
         </div>
+
       </div>
 
-      <!-- 分頁 12: 堆疊區域圖 (獨立滿版全螢幕圖表分頁) -->
+
+
+      <!-- 分頁 12: 雙軸圖表 (堆疊區域 + 折線圖) -->
+
       <div id="tab-stacked-chart" class="tab-content">
+
         <div class="card">
+
           <div class="card-title">
-            <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">堆疊區域圖 (支援平移、縮放與圖表序列檢視)</span>
+
+            <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">雙軸圖表：堆疊區域圖 (左軸) ＋ 折線圖 (右軸)</span>
+
             <div>
-              <button class="btn btn-outline" onclick="openFullscreen('stacked-chart-target', '堆疊區域圖')">🔍 全螢幕檢視</button>
+
+              <button class="btn btn-outline" onclick="openFullscreen('stacked-chart-target', '雙軸圖表：堆疊區域＋折線')">🔍 全螢幕檢視</button>
+
               <button class="btn btn-success" id="export-png-btn-8">下載高解析度 PNG</button>
+
             </div>
+
           </div>
+
           <div class="chart-full-area" id="stacked-chart-container">
+
             <div class="chart-inner-canvas" id="stacked-chart-target" style="width: 100%; height: 100%; position: relative; min-height: 500px;">
+
               <canvas id="stackedAreaCanvas" style="width: 100%; height: 480px;"></canvas>
+
             </div>
+
           </div>
+
         </div>
+
       </div>
+
+
 
     </div>
+
   </div>
+
+
 
   <!-- 全螢幕互動燈箱 Modal -->
+
   <div id="fullscreen-modal" class="fullscreen-modal">
+
     <div class="fullscreen-toolbar">
+
       <h3 id="fs-modal-title" style="margin: 0; font-size: 18px; color: var(--text-main);">全螢幕檢視</h3>
+
       <div style="display: flex; gap: 8px; align-items: center;">
+
         <button class="btn btn-outline btn-sm" onclick="zoomFsContent(0.15)">放大 ➕</button>
+
         <button class="btn btn-outline btn-sm" onclick="zoomFsContent(-0.15)">縮小 ➖</button>
+
         <button class="btn btn-outline btn-sm" onclick="resetFsZoom()">重設比例 ↺</button>
+
         <button class="btn btn-danger btn-sm" onclick="closeFullscreen()">關閉全螢幕 ✕</button>
+
       </div>
+
     </div>
+
     <div class="fullscreen-content-area" id="fs-content-area">
+
       <div class="fullscreen-inner-canvas" id="fs-inner-canvas"></div>
+
     </div>
+
   </div>
 
+
+
   <!-- JS 邏輯模組 -->
+
   <script type="module">
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
     import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+
+
     const firebaseConfig = {
+
       apiKey: "AIzaSyCeC_I3DnGF8rEr1GVQ3g_u2be2F_eK-_I",
+
       authDomain: "diagramdesign-93aa1.firebaseapp.com",
+
       projectId: "diagramdesign-93aa1",
+
       storageBucket: "diagramdesign-93aa1.firebasestorage.app",
+
       messagingSenderId: "959107259295",
+
       appId: "1:959107259295:web:40dfbc4e0e434e6c3abbaa",
+
       measurementId: "G-57JB2D0M6B",
+
       databaseURL: "https://diagramdesign-93aa1-default-rtdb.firebaseio.com"
+
     };
+
+
 
     const app = initializeApp(firebaseConfig);
+
     const analytics = getAnalytics(app);
+
     const auth = getAuth(app);
+
     const db = getDatabase(app);
 
+
+
     const PRESET_COLORS = [
+
       { name: "預設白", bg: "#ffffff", text: "#0f172a" },
+
       { name: "企業深藍", bg: "#1e3a8a", text: "#ffffff" },
+
       { name: "科技淺藍", bg: "#e0f2fe", text: "#0369a1" },
+
       { name: "翡翠綠", bg: "#d1fae5", text: "#065f46" },
+
       { name: "琥珀黃", bg: "#fef3c7", text: "#78350f" },
+
       { name: "珊瑚紅", bg: "#fee2e2", text: "#991b1b" },
+
       { name: "石墨灰", bg: "#e2e8f0", text: "#1e293b" },
+
       { name: "薰衣草紫", bg: "#ede9fe", text: "#5b21b6" },
+
       { name: "玫瑰粉", bg: "#fce7f3", text: "#9d174d" },
+
       { name: "薄荷綠", bg: "#a7f3d0", text: "#064e3b" }
+
     ];
+
+
 
     const STACKED_PALETTE = [
+
       { fill: "rgba(37, 99, 235, 0.85)", stroke: "#2563eb" },   // 藍
+
       { fill: "rgba(249, 115, 22, 0.85)", stroke: "#f97316" },  // 橘
+
       { fill: "rgba(16, 185, 129, 0.85)", stroke: "#10b981" },  // 綠
+
       { fill: "rgba(139, 92, 246, 0.85)", stroke: "#8b5cf6" },  // 紫
+
       { fill: "rgba(239, 68, 68, 0.85)", stroke: "#ef4444" },   // 紅
+
       { fill: "rgba(14, 165, 233, 0.85)", stroke: "#0ea5e9" },  // 青
+
       { fill: "rgba(234, 179, 8, 0.85)", stroke: "#eab308" }    // 黃
+
     ];
+
+
 
     let flowData = [
+
       { id: "1", label: "Milling", shape: "rect", nextId: "2", condition: "", bgColor: "", textColor: "" },
+
       { id: "2", label: "Grinding", shape: "rect", nextId: "3", condition: "", bgColor: "", textColor: "" },
+
       { id: "3", label: "Milling", shape: "rect", nextId: "4", condition: "", bgColor: "", textColor: "" },
+
       { id: "4", label: "Post Treatment", shape: "rect", nextId: "5", condition: "", bgColor: "", textColor: "" },
+
       { id: "5", label: "Cleaning", shape: "rect", nextId: "6", condition: "", bgColor: "", textColor: "" },
+
       { id: "6", label: "ENP(Withmasking),\n0250-35000 clean", shape: "rect", nextId: "7", condition: "", bgColor: "", textColor: "" },
+
       { id: "7", label: "QC", shape: "rect", nextId: "8", condition: "", bgColor: "", textColor: "" },
+
       { id: "8", label: "Package", shape: "round", nextId: "", condition: "", bgColor: "", textColor: "" }
+
     ];
+
+
 
     let treeData = [
+
       { id: "root", label: "製造處", parentId: "", shape: "rect", note: "廠長: 劉金勳", bgColor: "", textColor: "" },
+
       { id: "dep1_group", label: "製造一部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "dep2_group", label: "製造二部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "dep3_group", label: "製造三部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "dep5_group", label: "製造五部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "dept_dev", label: "產品開發部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" }
+
     ];
+
+
 
     let treeAsIsData = [
+
       { id: "root", label: "製造處", parentId: "", shape: "rect", note: "廠長: 劉金勳", bgColor: "", textColor: "" },
+
       { id: "dep1_group", label: "製造一部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "dep2_group", label: "製造二部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "dep3_group", label: "製造三部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "dep5_group", label: "製造五部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "dept_dev", label: "產品開發部", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       
+
       { id: "EDM", label: "線切割課", parentId: "dep1_group", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "metal1", label: "金屬一課", parentId: "dep1_group", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "lathe", label: "車床課", parentId: "dep1_group", shape: "rect", note: "", bgColor: "", textColor: "" },
 
+
+
       { id: "metal3", label: "金屬三課", parentId: "dep2_group", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "metal2", label: "金屬二課", parentId: "dep2_group", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "post_proc", label: "後處理課", parentId: "dep2_group", shape: "rect", note: "", bgColor: "", textColor: "" },
 
+
+
       { id: "clean", label: "一般清洗課", parentId: "dep3_group", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "surface", label: "表面處理課", parentId: "dep3_group", shape: "rect", note: "", bgColor: "", textColor: "" },
 
+
+
       { id: "composite_proc", label: "複材加工課", parentId: "dep5_group", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "graphite", label: "石墨銑床課", parentId: "dep5_group", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "dry2", label: "乾式製程課", parentId: "dep5_group", shape: "rect", note: "", bgColor: "", textColor: "" },
 
+
+
       { id: "assembly", label: "組裝組", parentId: "dry2", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "filament", label: "燈絲組", parentId: "dry2", shape: "rect", note: "", bgColor: "", textColor: "" },
+
       { id: "grinder", label: "磨床組", parentId: "dry2", shape: "rect", note: "", bgColor: "", textColor: "" }
+
     ];
+
+
 
     let stackedHeaders = {
+
       date: "YYMM",
-      series: { series1: "Graphite", series2: "G3(Back)", series3: "AIBT(+)", series4: "Varian(+)" },
+
+      series: { series1: "Graphite", series2: "G3(Back)", series3: "AIBT(+)", series4: "Varian(+)", line1: "達成率 %" },
+
       total: "總計",
-      chartTitle: "堆疊區域圖數據趨勢"
+
+      chartTitle: "雙軸圖表趨勢分析"
+
     };
+
+
 
     let stackedSeries = ["series1", "series2", "series3", "series4"];
+
+    let lineSeries = ["line1"]; // 雙軸中的折線圖序列 (對應右軸)
+
+
+
     let stackedData = [
-      { date: "Jan-25", values: { series1: 5286.18, series2: 0, series3: 0, series4: 0 } },
-      { date: "Feb-25", values: { series1: 7585.49, series2: 0, series3: 0, series4: 0 } },
-      { date: "Mar-25", values: { series1: 7781.09, series2: 0, series3: 0, series4: 0 } }
+
+      { date: "Jan-25", values: { series1: 5286.18, series2: 0, series3: 0, series4: 0, line1: 92.5 } },
+
+      { date: "Feb-25", values: { series1: 7585.49, series2: 0, series3: 0, series4: 0, line1: 95.0 } },
+
+      { date: "Mar-25", values: { series1: 7781.09, series2: 0, series3: 0, series4: 0, line1: 98.2 } }
+
     ];
 
+
+
     let autoSaveTimer = null;
+
     let currentFsTargetId = null;
+
     let fsScale = 1;
+
     let fsPanX = 0;
+
     let fsPanY = 0;
+
     let isFsDragging = false;
+
     let fsStartX = 0;
+
     let fsStartY = 0;
 
+
+
     document.addEventListener("DOMContentLoaded", () => {
+
       renderTable();
+
       renderTreeTable();
+
       renderTreeAsIsTable();
+
       renderStackedTable();
+
       renderAllCharts();
+
       setupEventListeners();
+
       setupPanAndZoomContainers();
+
       setupEditableChartTitles();
 
+
+
       onAuthStateChanged(auth, async (user) => {
+
         const loginPortal = document.getElementById("login-portal");
+
         const appWrapper = document.getElementById("app-wrapper");
+
         const userInfo = document.getElementById("user-info");
 
+
+
         if (user) {
+
           loginPortal.style.display = "none";
+
           appWrapper.style.display = "flex";
+
           userInfo.innerText = `使用者：${user.email}`;
+
           await loadFromCloud();
+
         } else {
+
           loginPortal.style.display = "flex";
+
           appWrapper.style.display = "none";
+
         }
+
       });
+
     });
+
+
 
     window.switchTab = function(tabId) {
+
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
+
+
       event.currentTarget.classList.add('active');
+
       document.getElementById(tabId).classList.add('active');
+
       
+
       setTimeout(() => {
+
         renderTreeChart();
+
         renderHorizontalTreeChart();
+
         renderTreeAsIsChart();
+
         renderHorizontalTreeAsIsChart();
+
         renderStackedAreaChart();
+
       }, 50);
+
     };
+
+
 
     function setupEditableChartTitles() {
+
       document.querySelectorAll('.editable-chart-title').forEach(titleEl => {
+
         titleEl.addEventListener('dblclick', () => {
+
           const currentText = titleEl.innerText;
+
           const newTitle = prompt("請輸入新的圖表標題名稱：", currentText);
+
           if (newTitle !== null && newTitle.trim() !== "") {
+
             titleEl.innerText = newTitle.trim();
+
           }
+
         });
+
       });
+
     }
+
+
 
     function setupPanAndZoomContainers() {
+
       const containers = document.querySelectorAll('.chart-full-area');
+
       containers.forEach(container => {
+
         const inner = container.querySelector('.chart-inner-canvas');
+
         if (!inner) return;
 
+
+
         let isDragging = false;
+
         let startX = 0, startY = 0;
+
         let posX = 0, posY = 0;
+
         let scale = 1;
 
+
+
         container.addEventListener('mousedown', (e) => {
+
           if (e.target.closest('.flow-node') || e.target.closest('textarea') || e.target.closest('input')) return;
+
           isDragging = true;
+
           startX = e.clientX - posX;
+
           startY = e.clientY - posY;
+
           container.style.cursor = 'grabbing';
+
         });
+
+
 
         window.addEventListener('mousemove', (e) => {
+
           if (!isDragging) return;
+
           posX = e.clientX - startX;
+
           posY = e.clientY - startY;
+
           inner.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+
         });
+
+
 
         window.addEventListener('mouseup', () => {
+
           isDragging = false;
+
           container.style.cursor = 'grab';
+
         });
+
+
 
         container.addEventListener('wheel', (e) => {
+
           e.preventDefault();
+
           const zoomFactor = 0.1;
+
           if (e.deltaY < 0) {
+
             scale = Math.min(scale + zoomFactor, 3);
+
           } else {
+
             scale = Math.max(scale - zoomFactor, 0.3);
+
           }
+
           inner.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+
         }, { passive: false });
+
       });
+
     }
+
+
 
     window.openFullscreen = function(targetId, titleText) {
+
       currentFsTargetId = targetId;
+
       document.getElementById("fs-modal-title").innerText = `🔍 全螢幕檢視：${titleText}`;
+
       
+
       const sourceEl = document.getElementById(targetId);
+
       const fsInner = document.getElementById("fs-inner-canvas");
+
       fsInner.innerHTML = sourceEl.innerHTML;
 
+
+
       if (targetId === 'stacked-chart-target') {
+
         setTimeout(() => {
+
           const fsCanvas = fsInner.querySelector('canvas');
+
           if (fsCanvas) renderStackedAreaChartToCanvas(fsCanvas);
+
         }, 50);
+
       }
 
+
+
       fsScale = 1;
+
       fsPanX = 0;
+
       fsPanY = 0;
+
       fsInner.style.transform = `translate(0px, 0px) scale(1)`;
+
       document.getElementById("fullscreen-modal").classList.add("active");
+
     };
+
+
 
     window.closeFullscreen = function() {
+
       document.getElementById("fullscreen-modal").classList.remove("active");
+
       currentFsTargetId = null;
+
     };
+
+
 
     window.zoomFsContent = function(delta) {
+
       fsScale = Math.min(Math.max(fsScale + delta, 0.2), 4);
+
       const fsInner = document.getElementById("fs-inner-canvas");
+
       fsInner.style.transform = `translate(${fsPanX}px, ${fsPanY}px) scale(${fsScale})`;
+
     };
+
+
 
     window.resetFsZoom = function() {
+
       fsScale = 1;
+
       fsPanX = 0;
+
       fsPanY = 0;
+
       const fsInner = document.getElementById("fs-inner-canvas");
+
       fsInner.style.transform = `translate(0px, 0px) scale(1)`;
+
     };
 
+
+
     document.addEventListener("DOMContentLoaded", () => {
+
       const fsArea = document.getElementById("fs-content-area");
+
       const fsInner = document.getElementById("fs-inner-canvas");
 
+
+
       fsArea.addEventListener("mousedown", (e) => {
+
         isFsDragging = true;
+
         fsStartX = e.clientX - fsPanX;
+
         fsStartY = e.clientY - fsPanY;
+
       });
+
+
 
       window.addEventListener("mousemove", (e) => {
+
         if (!isFsDragging) return;
+
         fsPanX = e.clientX - fsStartX;
+
         fsPanY = e.clientY - fsStartY;
+
         fsInner.style.transform = `translate(${fsPanX}px, ${fsPanY}px) scale(${fsScale})`;
+
       });
+
+
 
       window.addEventListener("mouseup", () => {
+
         isFsDragging = false;
+
       });
+
+
 
       fsArea.addEventListener("wheel", (e) => {
+
         e.preventDefault();
+
         const delta = e.deltaY < 0 ? 0.15 : -0.15;
+
         fsScale = Math.min(Math.max(fsScale + delta, 0.2), 4);
+
         fsInner.style.transform = `translate(${fsPanX}px, ${fsPanY}px) scale(${fsScale})`;
+
       }, { passive: false });
+
     });
 
+
+
     function handlePortalLogin() {
+
       const email = document.getElementById("portal-email").value.trim();
+
       const pass = document.getElementById("portal-password").value;
+
       const errorEl = document.getElementById("portal-auth-error");
 
+
+
       if (!email || !pass) {
+
         errorEl.innerText = "請輸入完整的 Email 與密碼！";
+
         return;
+
       }
+
+
 
       signInWithEmailAndPassword(auth, email, pass)
+
         .then(() => {
+
           errorEl.innerText = "";
+
           document.getElementById("portal-email").value = "";
+
           document.getElementById("portal-password").value = "";
+
         })
+
         .catch(err => {
+
           errorEl.innerText = "登入失敗：" + (err.code === 'auth/invalid-credential' ? '帳號或密碼錯誤' : err.message);
+
         });
+
     }
+
+
 
     function setupEventListeners() {
+
       document.getElementById("portal-login-btn").addEventListener("click", handlePortalLogin);
+
       document.getElementById("portal-password").addEventListener("keyup", (e) => {
+
         if (e.key === "Enter") handlePortalLogin();
+
       });
+
+
 
       document.getElementById("logout-btn").addEventListener("click", () => {
+
         if (confirm("確定要登出系統嗎？")) signOut(auth);
+
       });
+
+
 
       document.getElementById("import-btn").addEventListener("click", () => document.getElementById("excel-file").click());
+
       document.getElementById("excel-file").addEventListener("change", handleImport);
+
       document.getElementById("export-excel-btn").addEventListener("click", exportToExcel);
+
       document.getElementById("add-row-btn").addEventListener("click", addRow);
 
+
+
       document.getElementById("tree-import-btn").addEventListener("click", () => document.getElementById("tree-excel-file").click());
+
       document.getElementById("tree-excel-file").addEventListener("change", handleTreeImport);
+
       document.getElementById("tree-export-excel-btn").addEventListener("click", exportTreeToExcel);
+
       document.getElementById("add-tree-row-btn").addEventListener("click", addTreeRow);
 
+
+
       document.getElementById("tree-asis-import-btn").addEventListener("click", () => document.getElementById("tree-asis-excel-file").click());
+
       document.getElementById("tree-asis-excel-file").addEventListener("change", handleTreeAsIsImport);
+
       document.getElementById("tree-asis-export-excel-btn").addEventListener("click", exportTreeAsIsToExcel);
+
       document.getElementById("add-tree-asis-row-btn").addEventListener("click", addTreeAsIsRow);
 
+
+
       document.getElementById("add-stacked-row-btn").addEventListener("click", addStackedRow);
+
       document.getElementById("add-stacked-series-btn").addEventListener("click", addStackedSeries);
+
+      document.getElementById("add-line-series-btn").addEventListener("click", addLineSeries);
+
       document.getElementById("remove-stacked-series-btn").addEventListener("click", removeStackedSeries);
+
       document.getElementById("stacked-import-btn").addEventListener("click", () => document.getElementById("stacked-excel-file").click());
+
       document.getElementById("stacked-excel-file").addEventListener("change", handleStackedImport);
+
       document.getElementById("stacked-export-excel-btn").addEventListener("click", exportStackedToExcel);
 
+
+
       document.getElementById("export-png-btn-1").addEventListener("click", () => exportToPNG("vertical-chart-target", "垂直流程圖.png"));
+
       document.getElementById("export-png-btn-2").addEventListener("click", () => exportToPNG("snake-chart-target", "S型橫向流程圖.png"));
+
       document.getElementById("export-png-btn-3").addEventListener("click", () => exportToPNG("v-snake-chart-target", "垂直長條型貪食蛇流程圖.png"));
+
       document.getElementById("export-png-btn-4").addEventListener("click", () => exportToPNG("tree-chart-target", "樹狀階層流程圖_ToBe.png"));
+
       document.getElementById("export-png-btn-5").addEventListener("click", () => exportToPNG("h-tree-chart-target", "橫向樹狀階層圖_ToBe.png"));
+
       document.getElementById("export-png-btn-6").addEventListener("click", () => exportToPNG("tree-asis-chart-target", "樹狀階層流程圖_AsIs.png"));
+
       document.getElementById("export-png-btn-7").addEventListener("click", () => exportToPNG("h-tree-asis-chart-target", "橫向樹狀階層圖_AsIs.png"));
-      document.getElementById("export-png-btn-8").addEventListener("click", () => exportToPNG("stacked-chart-container", "堆疊區域圖.png"));
+
+      document.getElementById("export-png-btn-8").addEventListener("click", () => exportToPNG("stacked-chart-container", "雙軸圖表.png"));
+
       
+
       document.getElementById("snake-cols").addEventListener("change", () => renderSnakeChart());
+
       document.getElementById("snake-direction").addEventListener("change", () => renderSnakeChart());
+
       document.getElementById("v-snake-cols").addEventListener("change", () => renderVerticalSnakeChart());
+
       document.getElementById("v-snake-direction").addEventListener("change", () => renderVerticalSnakeChart());
 
+
+
       const stackedCanvas = document.getElementById("stackedAreaCanvas");
+
       if (stackedCanvas) {
+
         stackedCanvas.addEventListener("dblclick", () => {
-          const newTitle = prompt("請輸入新的堆疊區域圖標題：", stackedHeaders.chartTitle);
+
+          const newTitle = prompt("請輸入新的雙軸圖表標題：", stackedHeaders.chartTitle);
+
           if (newTitle !== null && newTitle.trim() !== "") {
+
             stackedHeaders.chartTitle = newTitle.trim();
+
             renderStackedAreaChart();
+
             triggerAutoSave();
+
           }
+
         });
+
       }
+
+
 
       document.addEventListener("click", () => {
+
         const existingPopup = document.getElementById("color-picker-popup");
+
         if (existingPopup) existingPopup.remove();
+
       });
+
     }
+
+
 
     function triggerAutoSave() {
+
       const statusEl = document.getElementById("cloud-status");
+
       if (statusEl) {
+
         statusEl.style.display = "inline-block";
+
         statusEl.innerText = "資料變更中...";
+
       }
+
       clearTimeout(autoSaveTimer);
+
       autoSaveTimer = setTimeout(async () => { await saveToCloud(); }, 1000);
+
     }
+
+
 
     async function saveToCloud() {
+
       const statusEl = document.getElementById("cloud-status");
+
       if (statusEl) statusEl.innerText = "正在自動同步至雲端...";
+
       const nowString = new Date().toLocaleString("zh-TW", { hour12: false });
 
+
+
       try {
+
         await set(ref(db, 'flowcharts/default_chart'), {
+
           data: flowData,
+
           treeData: treeData,
+
           treeAsIsData: treeAsIsData,
+
           stackedHeaders: stackedHeaders,
+
           stackedSeries: stackedSeries,
+
+          lineSeries: lineSeries,
+
           stackedData: stackedData,
+
           updatedAt: nowString
+
         });
+
         if (statusEl) {
+
           statusEl.innerText = "✅ 已自動同步";
+
           setTimeout(() => { statusEl.style.display = "none"; }, 2500);
+
         }
+
         document.getElementById("save-time-display").innerText = `上次儲存時間：${nowString}`;
+
       } catch (error) {
+
         console.error("同步失敗:", error);
+
         if (statusEl) statusEl.innerText = "❌ 同步失敗：" + error.message;
+
       }
+
     }
+
+
 
     async function loadFromCloud() {
+
       const statusEl = document.getElementById("cloud-status");
+
       if (statusEl) {
+
         statusEl.style.display = "inline-block";
+
         statusEl.innerText = "同步雲端資料中...";
+
       }
+
       try {
+
         const dbRef = ref(db);
+
         const snapshot = await get(child(dbRef, 'flowcharts/default_chart'));
+
         if (snapshot.exists()) {
+
           const cloudData = snapshot.val();
+
           if (cloudData.data && Array.isArray(cloudData.data)) flowData = cloudData.data;
+
           if (cloudData.treeData && Array.isArray(cloudData.treeData)) treeData = cloudData.treeData;
+
           if (cloudData.treeAsIsData && Array.isArray(cloudData.treeAsIsData)) treeAsIsData = cloudData.treeAsIsData;
+
           if (cloudData.stackedHeaders) stackedHeaders = cloudData.stackedHeaders;
+
           if (cloudData.stackedSeries && Array.isArray(cloudData.stackedSeries)) stackedSeries = cloudData.stackedSeries;
+
+          if (cloudData.lineSeries && Array.isArray(cloudData.lineSeries)) lineSeries = cloudData.lineSeries;
+
           if (cloudData.stackedData && Array.isArray(cloudData.stackedData)) stackedData = cloudData.stackedData;
+
           
+
           renderTable();
+
           renderTreeTable();
+
           renderTreeAsIsTable();
+
           renderStackedTable();
+
           renderAllCharts();
+
           if (statusEl) statusEl.innerText = "✅ 載入雲端最新資料成功";
+
           if (cloudData.updatedAt) {
+
             document.getElementById("save-time-display").innerText = `上次儲存時間：${cloudData.updatedAt}`;
+
           }
+
         }
+
         if (statusEl) setTimeout(() => { statusEl.style.display = "none"; }, 2500);
+
       } catch (error) {
+
         console.error("讀取失敗:", error);
+
       }
+
     }
+
+
 
     function renderTable() {
+
       const tbody = document.getElementById("table-body");
+
       if (!tbody) return;
+
       tbody.innerHTML = "";
+
       flowData.forEach((row, index) => {
+
         const tr = document.createElement("tr");
+
         const shape = row.shape || "rect";
+
         const bgColor = row.bgColor || "#ffffff";
 
+
+
         tr.innerHTML = `
+
           <td><input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="1"></td>
+
           <td><textarea data-index="${index}" data-field="label" class="table-textarea" placeholder="步驟描述">${row.label || ''}</textarea></td>
+
           <td>
+
             <select data-index="${index}" data-field="shape">
+
               <option value="round" ${shape === 'round' ? 'selected' : ''}>橢圓</option>
+
               <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形</option>
+
               <option value="rhombus" ${shape === 'rhombus' ? 'selected' : ''}>菱形</option>
+
             </select>
+
           </td>
+
           <td><input type="text" value="${row.nextId || ''}" data-index="${index}" data-field="nextId" placeholder="2"></td>
+
           <td><input type="text" value="${row.condition || ''}" data-index="${index}" data-field="condition" placeholder="是/否"></td>
+
           <td>
+
             <input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor" style="width: 45px; height: 32px; padding: 0; cursor: pointer; border: 1px solid var(--border-color); border-radius: 4px;">
+
           </td>
+
           <td><button class="btn btn-danger btn-outline btn-sm delete-btn" data-index="${index}">刪除</button></td>
+
         `;
+
         tbody.appendChild(tr);
+
       });
+
+
 
       document.querySelectorAll("#data-table input, #data-table select, #data-table textarea").forEach(input => {
+
         input.addEventListener("change", (e) => {
+
           const idx = e.target.dataset.index;
+
           const field = e.target.dataset.field;
+
           flowData[idx][field] = e.target.value;
+
           if (field === 'bgColor') {
+
             flowData[idx]['textColor'] = isDarkColor(e.target.value) ? '#ffffff' : '#0f172a';
+
           }
+
           renderAllCharts();
+
           triggerAutoSave();
+
         });
+
       });
+
+
 
       document.querySelectorAll("#data-table .delete-btn").forEach(btn => {
+
         btn.addEventListener("click", (e) => {
+
           const idx = e.target.dataset.index;
+
           flowData.splice(idx, 1);
+
           renderTable();
+
           renderAllCharts();
+
           triggerAutoSave();
+
         });
+
       });
+
     }
+
+
 
     function renderTreeTable() {
+
       const tbody = document.getElementById("tree-table-body");
+
       if (!tbody) return;
+
       tbody.innerHTML = "";
+
       treeData.forEach((row, index) => {
+
         const tr = document.createElement("tr");
+
         tr.className = "draggable-row";
+
         tr.setAttribute("draggable", "true");
+
         tr.dataset.index = index;
 
+
+
         const shape = row.shape || "rect";
+
         const bgColor = row.bgColor || "#ffffff";
 
+
+
         tr.innerHTML = `
+
           <td><span class="drag-handle" title="按住拖曳排序">⠿</span> <input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="ID" style="width: calc(100% - 24px); display: inline-block;"></td>
+
           <td><textarea data-index="${index}" data-field="label" class="table-textarea" placeholder="節點名稱">${row.label || ''}</textarea></td>
+
           <td><input type="text" value="${row.parentId || ''}" data-index="${index}" data-field="parentId" placeholder="父ID"></td>
+
           <td>
+
             <select data-index="${index}" data-field="shape">
+
               <option value="round" ${shape === 'round' ? 'selected' : ''}>橢圓</option>
+
               <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形</option>
+
             </select>
+
           </td>
+
           <td><textarea data-index="${index}" data-field="note" class="table-textarea" placeholder="輸入備註即時連動至圖表">${row.note || ''}</textarea></td>
+
           <td>
+
             <input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor" style="width: 45px; height: 32px; padding: 0; cursor: pointer; border: 1px solid var(--border-color); border-radius: 4px;">
+
           </td>
+
           <td>
+
             <button class="btn btn-danger btn-outline btn-sm delete-tree-btn" data-index="${index}">刪除</button>
+
           </td>
+
         `;
 
+
+
         tr.addEventListener("dragstart", (e) => { e.dataTransfer.setData("text/plain", index); tr.classList.add("dragging"); });
+
         tr.addEventListener("dragend", () => { tr.classList.remove("dragging"); document.querySelectorAll("#tree-data-table .draggable-row").forEach(r => r.classList.remove("drag-over")); });
+
         tr.addEventListener("dragover", (e) => { e.preventDefault(); tr.classList.add("drag-over"); });
+
         tr.addEventListener("dragleave", () => { tr.classList.remove("drag-over"); });
+
         tr.addEventListener("drop", (e) => {
+
           e.preventDefault();
+
           const draggedIdx = parseInt(e.dataTransfer.getData("text/plain"));
+
           const targetIdx = parseInt(tr.dataset.index);
+
           if (!isNaN(draggedIdx) && draggedIdx !== targetIdx) {
+
             const movedItem = treeData.splice(draggedIdx, 1)[0];
+
             treeData.splice(targetIdx, 0, movedItem);
+
             renderTreeTable();
+
             renderAllCharts();
+
             triggerAutoSave();
+
           }
+
         });
 
+
+
         tbody.appendChild(tr);
+
       });
+
+
 
       document.querySelectorAll("#tree-data-table input, #tree-data-table select, #tree-data-table textarea").forEach(input => {
+
         input.addEventListener("change", (e) => {
+
           const idx = e.target.dataset.index;
+
           const field = e.target.dataset.field;
+
           treeData[idx][field] = e.target.value;
+
           if (field === 'bgColor') {
+
             treeData[idx]['textColor'] = isDarkColor(e.target.value) ? '#ffffff' : '#0f172a';
+
           }
+
           renderAllCharts();
+
           triggerAutoSave();
+
         });
+
       });
+
+
 
       document.querySelectorAll("#tree-data-table .delete-tree-btn").forEach(btn => {
+
         btn.addEventListener("click", (e) => {
+
           const idx = e.target.dataset.index;
+
           treeData.splice(idx, 1);
+
           renderTreeTable();
+
           renderAllCharts();
+
           triggerAutoSave();
+
         });
+
       });
+
     }
+
+
 
     function renderTreeAsIsTable() {
+
       const tbody = document.getElementById("tree-asis-table-body");
+
       if (!tbody) return;
+
       tbody.innerHTML = "";
+
       treeAsIsData.forEach((row, index) => {
+
         const tr = document.createElement("tr");
+
         tr.className = "draggable-row";
+
         tr.setAttribute("draggable", "true");
+
         tr.dataset.index = index;
 
+
+
         const shape = row.shape || "rect";
+
         const bgColor = row.bgColor || "#ffffff";
 
+
+
         tr.innerHTML = `
+
           <td><span class="drag-handle" title="按住拖曳排序">⠿</span> <input type="text" value="${row.id || ''}" data-index="${index}" data-field="id" placeholder="ID" style="width: calc(100% - 24px); display: inline-block;"></td>
+
           <td><textarea data-index="${index}" data-field="label" class="table-textarea" placeholder="節點名稱">${row.label || ''}</textarea></td>
+
           <td><input type="text" value="${row.parentId || ''}" data-index="${index}" data-field="parentId" placeholder="父ID"></td>
+
           <td>
+
             <select data-index="${index}" data-field="shape">
+
               <option value="round" ${shape === 'round' ? 'selected' : ''}>橢圓</option>
+
               <option value="rect" ${shape === 'rect' ? 'selected' : ''}>矩形</option>
+
             </select>
+
           </td>
+
           <td><textarea data-index="${index}" data-field="note" class="table-textarea" placeholder="輸入備註即時連動至圖表">${row.note || ''}</textarea></td>
+
           <td>
+
             <input type="color" value="${bgColor}" data-index="${index}" data-field="bgColor" style="width: 45px; height: 32px; padding: 0; cursor: pointer; border: 1px solid var(--border-color); border-radius: 4px;">
+
           </td>
+
           <td>
+
             <button class="btn btn-danger btn-outline btn-sm delete-tree-asis-btn" data-index="${index}">刪除</button>
+
           </td>
+
         `;
 
+
+
         tr.addEventListener("dragstart", (e) => { e.dataTransfer.setData("text/plain", index); tr.classList.add("dragging"); });
+
         tr.addEventListener("dragend", () => { tr.classList.remove("dragging"); document.querySelectorAll("#tree-asis-data-table .draggable-row").forEach(r => r.classList.remove("drag-over")); });
+
         tr.addEventListener("dragover", (e) => { e.preventDefault(); tr.classList.add("drag-over"); });
+
         tr.addEventListener("dragleave", () => { tr.classList.remove("drag-over"); });
+
         tr.addEventListener("drop", (e) => {
+
           e.preventDefault();
+
           const draggedIdx = parseInt(e.dataTransfer.getData("text/plain"));
+
           const targetIdx = parseInt(tr.dataset.index);
+
           if (!isNaN(draggedIdx) && draggedIdx !== targetIdx) {
+
             const movedItem = treeAsIsData.splice(draggedIdx, 1)[0];
+
             treeAsIsData.splice(targetIdx, 0, movedItem);
+
             renderTreeAsIsTable();
+
             renderAllCharts();
+
             triggerAutoSave();
+
           }
+
         });
 
+
+
         tbody.appendChild(tr);
+
       });
+
+
 
       document.querySelectorAll("#tree-asis-data-table input, #tree-asis-data-table select, #tree-asis-data-table textarea").forEach(input => {
+
         input.addEventListener("change", (e) => {
+
           const idx = e.target.dataset.index;
+
           const field = e.target.dataset.field;
+
           treeAsIsData[idx][field] = e.target.value;
+
           if (field === 'bgColor') {
+
             treeAsIsData[idx]['textColor'] = isDarkColor(e.target.value) ? '#ffffff' : '#0f172a';
+
           }
+
           renderAllCharts();
+
           triggerAutoSave();
+
         });
+
       });
+
+
 
       document.querySelectorAll("#tree-asis-data-table .delete-tree-asis-btn").forEach(btn => {
+
         btn.addEventListener("click", (e) => {
+
           const idx = e.target.dataset.index;
+
           treeAsIsData.splice(idx, 1);
+
           renderTreeAsIsTable();
+
           renderAllCharts();
+
           triggerAutoSave();
+
         });
+
       });
+
     }
+
+
 
     function renderStackedTable() {
+
       const thead = document.getElementById("stacked-table-head");
+
       const tbody = document.getElementById("stacked-table-body");
+
       if (!thead || !tbody) return;
 
-      let headHTML = `<tr><th style="width: 25%;" id="th-date" title="雙擊可修改名稱">${stackedHeaders.date} ✏️</th>`;
+
+
+      let allSeries = [...stackedSeries, ...lineSeries];
+
+      let headHTML = `<tr><th style="width: 20%;" id="th-date" title="雙擊可修改名稱">${stackedHeaders.date} ✏️</th>`;
+
+      
+
       stackedSeries.forEach((s, i) => {
-        const titleName = stackedHeaders.series[s] || `序列 ${i + 1}`;
-        headHTML += `<th style="width: ${50 / stackedSeries.length}%;" class="th-series" data-series="${s}" title="雙擊可修改名稱">${titleName} ✏️</th>`;
+
+        const titleName = stackedHeaders.series[s] || `堆疊序列 ${i + 1}`;
+
+        headHTML += `<th style="width: ${50 / allSeries.length}%;" class="th-series" data-series="${s}" title="雙擊可修改名稱 (堆疊區)">📦 ${titleName} ✏️</th>`;
+
       });
+
+      lineSeries.forEach((s, i) => {
+
+        const titleName = stackedHeaders.series[s] || `折線序列 ${i + 1}`;
+
+        headHTML += `<th style="width: ${50 / allSeries.length}%;" class="th-series" data-series="${s}" title="雙擊可修改名稱 (右軸折線)">📈 ${titleName} ✏️</th>`;
+
+      });
+
+
+
       headHTML += `<th style="width: 15%;" id="th-total" title="雙擊可修改名稱">${stackedHeaders.total} ✏️</th><th style="width: 10%;">操作</th></tr>`;
+
       thead.innerHTML = headHTML;
 
+
+
       document.getElementById("th-date").addEventListener("dblclick", () => {
+
         const newName = prompt("請輸入新的日期欄位名稱：", stackedHeaders.date);
+
         if (newName !== null && newName.trim() !== "") {
+
           stackedHeaders.date = newName.trim();
+
           renderStackedTable();
+
           renderStackedAreaChart();
+
           triggerAutoSave();
+
         }
+
       });
+
+
 
       document.getElementById("th-total").addEventListener("dblclick", () => {
+
         const newName = prompt("請輸入新的總計欄位名稱：", stackedHeaders.total);
+
         if (newName !== null && newName.trim() !== "") {
+
           stackedHeaders.total = newName.trim();
+
           renderStackedTable();
+
           renderStackedAreaChart();
+
           triggerAutoSave();
+
         }
+
       });
+
+
 
       document.querySelectorAll(".th-series").forEach(th => {
+
         th.addEventListener("dblclick", (e) => {
+
           const sKey = th.dataset.series;
+
           const currentName = stackedHeaders.series[sKey] || sKey;
+
           const newName = prompt("請輸入新的序列欄位名稱：", currentName);
+
           if (newName !== null && newName.trim() !== "") {
+
             stackedHeaders.series[sKey] = newName.trim();
+
             renderStackedTable();
+
             renderStackedAreaChart();
+
             triggerAutoSave();
+
           }
+
         });
+
       });
+
+
 
       tbody.innerHTML = "";
+
       stackedData.forEach((row, index) => {
+
         if (!row.values) row.values = {};
+
         const tr = document.createElement("tr");
 
+
+
         let total = 0;
+
         stackedSeries.forEach(s => {
+
           total += Number(row.values[s]) || 0;
+
         });
 
-        let rowHTML = `<td><input type="text" value="${row.date || ''}" data-index="${index}" data-field="date" placeholder="1/5/2002"></td>`;
-        stackedSeries.forEach(s => {
-          const val = row.values[s] ?? 0;
-          rowHTML += `<td><input type="number" value="${val}" data-index="${index}" data-series="${s}" class="stacked-val-input" style="width:100%;"></td>`;
-        });
-        rowHTML += `<td style="font-weight: 700; text-align: center; background: #f1f5f9;" id="stacked-total-${index}">${total}</td>`;
-        rowHTML += `<td><button class="btn btn-danger btn-outline btn-sm delete-stacked-btn" data-index="${index}">刪除</button></td>`;
+
+
+        let rowHTML = `<td><input type="text" value="${row.date || ''}" data-index="${index}" data-field="date" placeholder="Jan-25"></td>`;
+
         
+
+        stackedSeries.forEach(s => {
+
+          const val = row.values[s] ?? 0;
+
+          rowHTML += `<td><input type="number" value="${val}" data-index="${index}" data-series="${s}" class="stacked-val-input" style="width:100%;"></td>`;
+
+        });
+
+        lineSeries.forEach(s => {
+
+          const val = row.values[s] ?? 0;
+
+          rowHTML += `<td><input type="number" value="${val}" data-index="${index}" data-series="${s}" class="stacked-val-input" style="width:100%; border-color: #8b5cf6;" title="右軸折線數據"></td>`;
+
+        });
+
+
+
+        rowHTML += `<td style="font-weight: 700; text-align: center; background: #f1f5f9;" id="stacked-total-${index}">${total}</td>`;
+
+        rowHTML += `<td><button class="btn btn-danger btn-outline btn-sm delete-stacked-btn" data-index="${index}">刪除</button></td>`;
+
+        
+
         tr.innerHTML = rowHTML;
+
         tbody.appendChild(tr);
+
       });
+
+
 
       document.querySelectorAll("#stacked-data-table input[data-field='date']").forEach(input => {
+
         input.addEventListener("input", (e) => {
+
           const idx = e.target.dataset.index;
+
           stackedData[idx].date = e.target.value;
+
           renderStackedAreaChart();
+
           triggerAutoSave();
+
         });
+
       });
+
+
 
       document.querySelectorAll(".stacked-val-input").forEach(input => {
+
         input.addEventListener("input", (e) => {
+
           const idx = e.target.dataset.index;
+
           const s = e.target.dataset.series;
+
           if (!stackedData[idx].values) stackedData[idx].values = {};
+
           stackedData[idx].values[s] = e.target.value;
 
+
+
           let newTotal = 0;
+
           stackedSeries.forEach(ser => {
+
             newTotal += Number(stackedData[idx].values[ser]) || 0;
+
           });
+
           document.getElementById(`stacked-total-${idx}`).innerText = newTotal;
 
+
+
           renderStackedAreaChart();
+
           triggerAutoSave();
+
         });
+
       });
+
+
 
       document.querySelectorAll("#stacked-data-table .delete-stacked-btn").forEach(btn => {
+
         btn.addEventListener("click", (e) => {
+
           const idx = e.target.dataset.index;
+
           stackedData.splice(idx, 1);
+
           renderStackedTable();
+
           renderStackedAreaChart();
+
           triggerAutoSave();
+
         });
+
       });
+
     }
+
+
 
     function addRow() {
+
       flowData.push({ id: String(flowData.length + 1), label: "", shape: "rect", nextId: "", condition: "", bgColor: "", textColor: "" });
+
       renderTable(); renderAllCharts(); triggerAutoSave();
+
     }
+
+
 
     function addTreeRow() {
+
       treeData.push({ id: `node_${treeData.length + 1}`, label: "", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" });
+
       renderTreeTable(); renderAllCharts(); triggerAutoSave();
+
     }
+
+
 
     function addTreeAsIsRow() {
+
       treeAsIsData.push({ id: `node_asis_${treeAsIsData.length + 1}`, label: "", parentId: "root", shape: "rect", note: "", bgColor: "", textColor: "" });
+
       renderTreeAsIsTable(); renderAllCharts(); triggerAutoSave();
+
     }
+
+
 
     function addStackedRow() {
+
       const newValues = {};
+
       stackedSeries.forEach(s => { newValues[s] = 10; });
-      stackedData.push({ date: "Jan-29", values: newValues });
+
+      lineSeries.forEach(s => { newValues[s] = 95; });
+
+      stackedData.push({ date: "Dec-25", values: newValues });
+
       renderStackedTable();
+
       renderStackedAreaChart();
+
       triggerAutoSave();
+
     }
+
+
 
     function addStackedSeries() {
-      const newSeriesKey = `series${stackedSeries.length + 1}`;
+
+      const newSeriesKey = `series${stackedSeries.length + stackedSeries.length + 1}`;
+
       stackedSeries.push(newSeriesKey);
-      stackedHeaders.series[newSeriesKey] = `序列 ${stackedSeries.length}`;
+
+      stackedHeaders.series[newSeriesKey] = `堆疊序列 ${stackedSeries.length}`;
+
       stackedData.forEach(row => {
+
         if (!row.values) row.values = {};
+
         row.values[newSeriesKey] = 15;
+
       });
+
       renderStackedTable();
+
       renderStackedAreaChart();
+
       triggerAutoSave();
+
     }
+
+
+
+    function addLineSeries() {
+
+      const newLineKey = `line${lineSeries.length + 1}`;
+
+      lineSeries.push(newLineKey);
+
+      stackedHeaders.series[newLineKey] = `折線序列 ${lineSeries.length}`;
+
+      stackedData.forEach(row => {
+
+        if (!row.values) row.values = {};
+
+        row.values[newLineKey] = 90;
+
+      });
+
+      renderStackedTable();
+
+      renderStackedAreaChart();
+
+      triggerAutoSave();
+
+    }
+
+
 
     function removeStackedSeries() {
-      if (stackedSeries.length <= 1) {
+
+      let totalAll = stackedSeries.length + lineSeries.length;
+
+      if (totalAll <= 1) {
+
         alert("至少須保留一個序列！");
+
         return;
+
       }
-      const removedKey = stackedSeries.pop();
-      delete stackedHeaders.series[removedKey];
-      stackedData.forEach(row => {
-        if (row.values) delete row.values[removedKey];
-      });
+
+      if (lineSeries.length > 0 && confirm("要優先刪除折線序列嗎？ (取消則刪除最後一個堆疊序列)")) {
+
+        const removedKey = lineSeries.pop();
+
+        delete stackedHeaders.series[removedKey];
+
+        stackedData.forEach(row => { if (row.values) delete row.values[removedKey]; });
+
+      } else if (stackedSeries.length > 0) {
+
+        const removedKey = stackedSeries.pop();
+
+        delete stackedHeaders.series[removedKey];
+
+        stackedData.forEach(row => { if (row.values) delete row.values[removedKey]; });
+
+      }
+
       renderStackedTable();
+
       renderStackedAreaChart();
+
       triggerAutoSave();
+
     }
+
+
 
     function renderAllCharts() {
+
       renderVerticalChart();
+
       renderSnakeChart();
+
       renderVerticalSnakeChart();
+
       renderTreeChart();
+
       renderHorizontalTreeChart();
+
       renderTreeAsIsChart();
+
       renderHorizontalTreeAsIsChart();
+
       renderStackedAreaChart();
+
     }
+
+
 
     function applyNodeStylingAndEvents(node, item, collectionType) {
+
       if (item.bgColor) {
+
         node.style.backgroundColor = item.bgColor;
+
         node.style.color = item.textColor || '#0f172a';
+
       } else {
+
         node.style.backgroundColor = '#ffffff';
+
         node.style.color = '#0f172a';
+
       }
+
+
 
       node.addEventListener("dblclick", (e) => {
+
         e.stopPropagation();
+
         const existingPopup = document.getElementById("color-picker-popup");
+
         if (existingPopup) existingPopup.remove();
 
+
+
         const popup = document.createElement("div");
+
         popup.id = "color-picker-popup";
+
         popup.className = "color-picker-popup";
 
+
+
         const rect = node.getBoundingClientRect();
+
         popup.style.top = (rect.bottom + window.scrollY + 6) + "px";
+
         popup.style.left = (rect.left + window.scrollX) + "px";
 
+
+
         PRESET_COLORS.forEach(c => {
+
           const opt = document.createElement("div");
+
           opt.className = "color-option";
+
           opt.style.backgroundColor = c.bg;
+
           opt.title = c.name;
+
           opt.addEventListener("click", (evt) => {
+
             evt.stopPropagation();
+
             item.bgColor = c.bg;
+
             item.textColor = c.text;
 
+
+
             if (collectionType === 'linear') renderTable();
+
             else if (collectionType === 'tree') renderTreeTable();
+
             else if (collectionType === 'treeAsIs') renderTreeAsIsTable();
 
+
+
             renderAllCharts();
+
             triggerAutoSave();
+
             popup.remove();
+
           });
+
           popup.appendChild(opt);
+
         });
 
+
+
         document.body.appendChild(popup);
+
       });
+
     }
+
+
 
     function isDarkColor(colorHex) {
+
       if (!colorHex || colorHex.charAt(0) !== '#') return false;
+
       let c = colorHex.replace('#', '');
+
       if (c.length === 3) c = c.split('').map(x => x + x).join('');
+
       if (c.length !== 6) return false;
+
       const rgb = parseInt(c, 16);
+
       const r = (rgb >> 16) & 0xff;
+
       const g = (rgb >> 8) & 0xff;
+
       const b = (rgb >> 0) & 0xff;
+
       const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
       return luma < 110;
+
     }
+
+
 
     function createFlowNode(item, isTree = false, type = 'linear') {
+
       const node = document.createElement("div");
+
       node.className = `flow-node shape-${item.shape || 'rect'}`;
+
       node.innerText = item.label || item.id;
+
       applyNodeStylingAndEvents(node, item, type);
+
       return node;
+
     }
+
+
 
     function createVerticalFlowNode(item) {
+
       const node = document.createElement("div");
+
       node.className = `vertical-flow-node shape-${item.shape || 'rect'}`;
+
       node.innerText = item.label || item.id;
+
       applyNodeStylingAndEvents(node, item, 'linear');
+
       return node;
+
     }
+
+
 
     function renderVerticalChart() {
+
       const target = document.getElementById("vertical-chart-target");
+
       if (!target) return;
+
       target.innerHTML = "";
+
       flowData.forEach((item, idx) => {
+
         if (!item.id) return;
+
         target.appendChild(createFlowNode(item, false, 'linear'));
+
         if (item.nextId && idx < flowData.length - 1) {
+
           const arrow = document.createElement("div");
+
           arrow.className = "arrow-down";
+
           target.appendChild(arrow);
+
         }
+
       });
+
     }
+
+
 
     function renderSnakeChart() {
+
       const target = document.getElementById("snake-chart-target");
+
       if (!target) return;
+
       target.innerHTML = "";
+
       const cols = parseInt(document.getElementById("snake-cols").value) || 4;
+
       const direction = document.getElementById("snake-direction").value;
+
       const validItems = flowData.filter(item => item.id);
 
+
+
       const snakeContainer = document.createElement("div");
+
       snakeContainer.className = "snake-container";
 
+
+
       const totalItems = validItems.length;
+
       let rowsCount = Math.ceil(totalItems / cols);
 
+
+
       for (let r = 0; r < rowsCount; r++) {
+
         const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
+
         const currentRow = document.createElement("div");
+
         currentRow.className = "snake-row";
 
+
+
         let startIndex = r * cols;
+
         let endIndex = Math.min(startIndex + cols, totalItems);
+
         let rowItems = validItems.slice(startIndex, endIndex);
 
+
+
         let gridCells = new Array(cols).fill(null);
+
         if (!isReverse) {
+
           for (let i = 0; i < rowItems.length; i++) gridCells[i] = rowItems[i];
+
         } else {
+
           for (let i = 0; i < rowItems.length; i++) gridCells[cols - 1 - i] = rowItems[i];
+
         }
+
+
 
         for (let c = 0; c < cols; c++) {
+
           const item = gridCells[c];
+
           if (item) {
+
             currentRow.appendChild(createFlowNode(item, false, 'linear'));
+
           } else {
+
             const placeholder = document.createElement("div");
+
             placeholder.className = "flow-node-placeholder";
+
             currentRow.appendChild(placeholder);
+
           }
+
+
 
           if (c < cols - 1) {
+
             let hasArrow = false;
+
             if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
 
+
+
             if (hasArrow) {
+
               const arrow = document.createElement("div");
+
               arrow.className = isReverse ? "arrow-left" : "arrow-right";
+
               currentRow.appendChild(arrow);
+
             } else {
+
               const arrowPlaceholder = document.createElement("div");
+
               arrowPlaceholder.className = "arrow-placeholder";
+
               currentRow.appendChild(arrowPlaceholder);
+
             }
+
           }
+
         }
+
+
 
         snakeContainer.appendChild(currentRow);
 
+
+
         if (r < rowsCount - 1) {
+
           const turnRow = document.createElement("div");
+
           turnRow.style.display = "flex";
+
           turnRow.style.width = "100%";
+
           turnRow.style.margin = "4px 0";
 
+
+
           for (let c = 0; c < cols; c++) {
+
             const cellWrap = document.createElement("div");
+
             cellWrap.style.width = "var(--node-width)";
+
             cellWrap.style.display = "flex";
+
             cellWrap.style.justifyContent = "center";
 
+
+
             const isTurnPos = !isReverse ? (c === cols - 1) : (c === 0);
+
             if (isTurnPos) {
+
               const arrow = document.createElement("div");
+
               arrow.className = "arrow-down";
+
               cellWrap.appendChild(arrow);
+
             }
+
             turnRow.appendChild(cellWrap);
 
+
+
             if (c < cols - 1) {
+
               const spacer = document.createElement("div");
+
               spacer.style.width = "48px";
+
               turnRow.appendChild(spacer);
+
             }
+
           }
+
           snakeContainer.appendChild(turnRow);
+
         }
+
       }
 
+
+
       target.appendChild(snakeContainer);
+
     }
+
+
 
     function renderVerticalSnakeChart() {
+
       const target = document.getElementById("v-snake-chart-target");
+
       if (!target) return;
+
       target.innerHTML = "";
+
       const cols = parseInt(document.getElementById("v-snake-cols").value) || 6;
+
       const direction = document.getElementById("v-snake-direction").value;
+
       const validItems = flowData.filter(item => item.id);
 
+
+
       const snakeContainer = document.createElement("div");
+
       snakeContainer.className = "snake-container";
 
+
+
       const totalItems = validItems.length;
+
       let rowsCount = Math.ceil(totalItems / cols);
 
+
+
       for (let r = 0; r < rowsCount; r++) {
+
         const isReverse = (direction === 'clockwise') ? (r % 2 === 1) : (r % 2 === 0);
+
         const currentRow = document.createElement("div");
+
         currentRow.className = "snake-row";
 
+
+
         let startIndex = r * cols;
+
         let endIndex = Math.min(startIndex + cols, totalItems);
+
         let rowItems = validItems.slice(startIndex, endIndex);
 
+
+
         let gridCells = new Array(cols).fill(null);
+
         if (!isReverse) {
+
           for (let i = 0; i < rowItems.length; i++) gridCells[i] = rowItems[i];
+
         } else {
+
           for (let i = 0; i < rowItems.length; i++) gridCells[cols - 1 - i] = rowItems[i];
+
         }
+
+
 
         for (let c = 0; c < cols; c++) {
+
           const item = gridCells[c];
+
           if (item) {
+
             currentRow.appendChild(createVerticalFlowNode(item));
+
           } else {
+
             const placeholder = document.createElement("div");
+
             placeholder.className = "vertical-flow-node-placeholder";
+
             currentRow.appendChild(placeholder);
+
           }
+
+
 
           if (c < cols - 1) {
+
             let hasArrow = false;
+
             if (gridCells[c] && gridCells[c + 1]) hasArrow = true;
 
+
+
             if (hasArrow) {
+
               const arrow = document.createElement("div");
+
               arrow.className = isReverse ? "arrow-left" : "arrow-right";
+
               currentRow.appendChild(arrow);
+
             } else {
+
               const arrowPlaceholder = document.createElement("div");
+
               arrowPlaceholder.className = "arrow-placeholder";
+
               currentRow.appendChild(arrowPlaceholder);
+
             }
+
           }
+
         }
+
+
 
         snakeContainer.appendChild(currentRow);
 
+
+
         if (r < rowsCount - 1) {
+
           const turnRow = document.createElement("div");
+
           turnRow.style.display = "flex";
+
           turnRow.style.width = "100%";
+
           turnRow.style.margin = "4px 0";
 
+
+
           for (let c = 0; c < cols; c++) {
+
             const cellWrap = document.createElement("div");
+
             cellWrap.style.width = "var(--v-node-width)";
+
             cellWrap.style.display = "flex";
+
             cellWrap.style.justifyContent = "center";
 
+
+
             const isTurnPos = !isReverse ? (c === cols - 1) : (c === 0);
+
             if (isTurnPos) {
+
               const arrow = document.createElement("div");
+
               arrow.className = "arrow-down";
+
               cellWrap.appendChild(arrow);
+
             }
+
             turnRow.appendChild(cellWrap);
 
+
+
             if (c < cols - 1) {
+
               const spacer = document.createElement("div");
+
               spacer.style.width = "48px";
+
               turnRow.appendChild(spacer);
+
             }
+
           }
+
           snakeContainer.appendChild(turnRow);
+
         }
+
       }
 
+
+
       target.appendChild(snakeContainer);
+
     }
 
+
+
     function renderVerticalTreeStructure(targetId, dataset, typeKey) {
+
       const target = document.getElementById(targetId);
+
       if (!target) return;
+
       target.innerHTML = "";
 
+
+
       const container = document.createElement("div");
+
       container.className = "tree-container";
+
+
 
       const rootNodes = dataset.filter(item => !item.parentId || !dataset.some(p => p.id === item.parentId));
 
+
+
       function createBox(item) {
+
         const box = document.createElement("div");
+
         box.className = "tree-node-box";
+
         box.appendChild(createFlowNode(item, true, typeKey));
 
+
+
         if (item.note) {
+
           const noteEl = document.createElement("div");
+
           noteEl.className = "node-note";
+
           noteEl.innerText = `💬 ${item.note}`;
+
           box.appendChild(noteEl);
+
         }
+
         return box;
+
       }
 
+
+
       function buildTreeRecursive(parentId) {
+
         const children = dataset.filter(item => item.parentId === parentId);
+
         if (children.length === 0) return null;
 
+
+
         const childrenContainer = document.createElement("div");
+
         childrenContainer.className = "tree-children-container";
 
+
+
         const horizontalConnector = document.createElement("div");
+
         horizontalConnector.className = "tree-children-connector-line";
+
         childrenContainer.appendChild(horizontalConnector);
+
+
 
         const childWrappers = [];
 
+
+
         children.forEach(childNode => {
+
           const wrapper = document.createElement("div");
+
           wrapper.className = "tree-node-wrapper";
 
+
+
           const branchLine = document.createElement("div");
+
           branchLine.className = "tree-child-branch-line";
+
           wrapper.appendChild(branchLine);
 
+
+
           const nodeBox = createBox(childNode);
+
           wrapper.appendChild(nodeBox);
 
+
+
           const grandChildren = buildTreeRecursive(childNode.id);
+
           if (grandChildren) {
+
             const stem = document.createElement("div");
+
             stem.className = "tree-parent-stem";
+
             wrapper.appendChild(stem);
+
             wrapper.appendChild(grandChildren);
+
           }
+
+
 
           childrenContainer.appendChild(wrapper);
+
           childWrappers.push(wrapper);
+
         });
 
+
+
         setTimeout(() => {
+
           if (childWrappers.length > 0) {
+
             const firstChild = childWrappers[0];
+
             const lastChild = childWrappers[childWrappers.length - 1];
 
+
+
             const firstOffsetLeft = firstChild.offsetLeft + (firstChild.offsetWidth / 2);
+
             const lastOffsetLeft = lastChild.offsetLeft + (lastChild.offsetWidth / 2);
 
+
+
             horizontalConnector.style.left = firstOffsetLeft + "px";
+
             horizontalConnector.style.width = (lastOffsetLeft - firstOffsetLeft) + "px";
+
           }
+
         }, 0);
 
+
+
         return childrenContainer;
+
       }
 
+
+
       rootNodes.forEach(root => {
+
         const rootWrapper = document.createElement("div");
+
         rootWrapper.className = "tree-node-wrapper";
+
         rootWrapper.appendChild(createBox(root));
 
+
+
         const childrenTree = buildTreeRecursive(root.id);
+
         if (childrenTree) {
+
           const stem = document.createElement("div");
+
           stem.className = "tree-parent-stem";
+
           rootWrapper.appendChild(stem);
+
           rootWrapper.appendChild(childrenTree);
+
         }
 
+
+
         container.appendChild(rootWrapper);
+
       });
 
+
+
       target.appendChild(container);
+
     }
 
+
+
     function renderHorizontalTreeStructure(targetId, dataset, typeKey) {
+
       const target = document.getElementById(targetId);
+
       if (!target) return;
+
       target.innerHTML = "";
 
+
+
       const container = document.createElement("div");
+
       container.className = "h-tree-container";
+
+
 
       const rootNodes = dataset.filter(item => !item.parentId || !dataset.some(p => p.id === item.parentId));
 
+
+
       function createBox(item) {
+
         const box = document.createElement("div");
+
         box.className = "tree-node-box";
+
         box.appendChild(createFlowNode(item, true, typeKey));
 
+
+
         if (item.note) {
+
           const noteEl = document.createElement("div");
+
           noteEl.className = "node-note";
+
           noteEl.innerText = `💬 ${item.note}`;
+
           box.appendChild(noteEl);
+
         }
+
         return box;
+
       }
+
+
 
       function buildHSubTree(parentId) {
+
         const children = dataset.filter(item => item.parentId === parentId);
+
         if (children.length === 0) return null;
 
+
+
         const childrenContainer = document.createElement("div");
+
         childrenContainer.className = "h-tree-children";
 
+
+
         children.forEach(childNode => {
+
           const branch = document.createElement("div");
+
           branch.className = "h-tree-branch";
 
+
+
           const row = document.createElement("div");
+
           row.className = "h-tree-row";
 
+
+
           const arrow = document.createElement("div");
+
           arrow.className = "arrow-right";
+
           row.appendChild(arrow);
 
+
+
           row.appendChild(createBox(childNode));
+
           branch.appendChild(row);
 
+
+
           const subTree = buildHSubTree(childNode.id);
+
           if (subTree) branch.appendChild(subTree);
 
+
+
           childrenContainer.appendChild(branch);
+
         });
+
         return childrenContainer;
+
       }
+
+
 
       rootNodes.forEach(root => {
+
         const branch = document.createElement("div");
+
         branch.className = "h-tree-branch";
 
+
+
         const row = document.createElement("div");
+
         row.className = "h-tree-row";
+
         row.appendChild(createBox(root));
+
         branch.appendChild(row);
 
+
+
         const subTree = buildHSubTree(root.id);
+
         if (subTree) branch.appendChild(subTree);
 
+
+
         container.appendChild(branch);
+
       });
 
+
+
       target.appendChild(container);
+
     }
+
+
 
     function renderTreeChart() { renderVerticalTreeStructure("tree-chart-target", treeData, 'tree'); }
+
     function renderHorizontalTreeChart() { renderHorizontalTreeStructure("h-tree-chart-target", treeData, 'tree'); }
+
     function renderTreeAsIsChart() { renderVerticalTreeStructure("tree-asis-chart-target", treeAsIsData, 'treeAsIs'); }
+
     function renderHorizontalTreeAsIsChart() { renderHorizontalTreeStructure("h-tree-asis-chart-target", treeAsIsData, 'treeAsIs'); }
 
+
+
     // Excel 序列日期數字轉字串輔助函式
+
     function excelDateToString(serial) {
+
       if (!isNaN(serial) && typeof serial === 'number') {
+
         const utc_days = Math.floor(serial - 25569);
+
         const utc_value = utc_days * 86400;
+
         const date_info = new Date(utc_value * 1000);
+
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
         const m = months[date_info.getUTCMonth()];
+
         const y = String(date_info.getUTCFullYear()).slice(-2);
+
         return `${m}-${y}`;
+
       }
+
       return String(serial || "");
+
     }
 
-    // 動態多序列堆疊區域圖繪製 (已修復 G3 Back 標籤並將文字與日期標籤優化位移)
+
+
+    // 雙軸圖表渲染引擎 (堆疊區域圖 + 右軸折線圖)
+
     function renderStackedAreaChartToCanvas(canvas) {
+
       if (!canvas) return;
+
       const ctx = canvas.getContext("2d");
+
       const width = canvas.parentElement.clientWidth || 800;
+
       const height = 450;
+
       canvas.width = width * window.devicePixelRatio;
+
       canvas.height = height * window.devicePixelRatio;
+
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+
 
       ctx.clearRect(0, 0, width, height);
 
+
+
       // 繪製圖表標題
+
       ctx.font = "bold 16px Inter, sans-serif";
+
       ctx.fillStyle = "#0f172a";
+
       ctx.textAlign = "center";
-      ctx.fillText(`${stackedHeaders.chartTitle} (${Object.values(stackedHeaders.series).join(' / ')})`, width / 2, 28);
+
+      
+
+      let allSeriesNames = [...stackedSeries.map(s => stackedHeaders.series[s]), ...lineSeries.map(s => stackedHeaders.series[s])];
+
+      ctx.fillText(`${stackedHeaders.chartTitle} (${allSeriesNames.join(' / ')})`, width / 2, 28);
+
+
 
       const paddingLeft = 65;
-      const paddingRight = 40;
+
+      const paddingRight = 65; // 右側留白給右軸
+
       const paddingTop = 55;
+
       const paddingBottom = 75;
+
       const chartWidth = width - paddingLeft - paddingRight;
+
       const chartHeight = height - paddingTop - paddingBottom;
 
+
+
+      // 1. 計算左軸 (堆疊區域圖) 最大值
+
       let maxTotal = 100;
+
       stackedData.forEach(d => {
+
         let sum = 0;
+
         stackedSeries.forEach(s => { sum += Number(d.values?.[s]) || 0; });
+
         if (sum > maxTotal) maxTotal = Math.ceil(sum * 1.2 / 1000) * 1000;
+
       });
 
+
+
+      // 2. 計算右軸 (折線圖) 最大與最小值
+
+      let maxLineVal = 100;
+
+      let minLineVal = 0;
+
+      stackedData.forEach(d => {
+
+        lineSeries.forEach(s => {
+
+          let val = Number(d.values?.[s]) || 0;
+
+          if (val > maxLineVal) maxLineVal = Math.ceil(val * 1.1 / 10) * 10;
+
+        });
+
+      });
+
+
+
+      // 繪製左軸格線與刻度
+
       const ySteps = 5;
+
       ctx.strokeStyle = "#cbd5e1";
+
       ctx.lineWidth = 1;
+
       ctx.fillStyle = "#64748b";
+
       ctx.font = "12px Inter, sans-serif";
+
       ctx.textAlign = "right";
 
+
+
       for (let i = 0; i <= ySteps; i++) {
+
         const val = Math.round((maxTotal / ySteps) * i);
+
         const y = paddingTop + chartHeight - (chartHeight / ySteps) * i;
+
         ctx.beginPath();
+
         ctx.moveTo(paddingLeft, y);
+
         ctx.lineTo(width - paddingRight, y);
+
         ctx.stroke();
+
         ctx.fillText(val, paddingLeft - 10, y + 4);
+
       }
+
+
+
+      // 繪製右軸刻度 (百分比或數值)
+
+      ctx.textAlign = "left";
+
+      ctx.fillStyle = "#8b5cf6";
+
+      for (let i = 0; i <= ySteps; i++) {
+
+        const val = Math.round((maxLineVal / ySteps) * i);
+
+        const y = paddingTop + chartHeight - (chartHeight / ySteps) * i;
+
+        ctx.fillText(`${val}`, width - paddingRight + 12, y + 4);
+
+      }
+
+
 
       if (stackedData.length === 0) return;
 
+
+
       const stepX = chartWidth / (stackedData.length - 1 || 1);
 
+
+
       const points = stackedData.map((d, i) => {
+
         const x = paddingLeft + i * stepX;
+
         let cumSum = 0;
+
         const layers = stackedSeries.map(s => {
+
           const val = Number(d.values?.[s]) || 0;
+
           cumSum += val;
+
           return {
+
             series: s,
+
             val,
+
             yBottom: 0,
+
             yTop: paddingTop + chartHeight - (cumSum / maxTotal) * chartHeight
+
           };
+
         });
+
+
 
         for (let j = 0; j < layers.length; j++) {
+
           if (j === 0) layers[j].yBottom = paddingTop + chartHeight;
+
           else layers[j].yBottom = layers[j - 1].yTop;
+
         }
 
-        return { x, date: d.date, layers };
+
+
+        // 計算右軸折線圖座標
+
+        const lineValues = {};
+
+        lineSeries.forEach(s => {
+
+          const val = Number(d.values?.[s]) || 0;
+
+          lineValues[s] = paddingTop + chartHeight - (val / maxLineVal) * chartHeight;
+
+        });
+
+
+
+        return { x, date: d.date, layers, lineValues };
+
       });
+
+
+
+      // 繪製堆疊區域
 
       for (let j = stackedSeries.length - 1; j >= 0; j--) {
+
         const palette = STACKED_PALETTE[j % STACKED_PALETTE.length];
+
         const sKey = stackedSeries[j];
-        const seriesName = stackedHeaders.series[sKey] || `序列 ${j + 1}`;
+
         
+
         ctx.beginPath();
+
         points.forEach((p, idx) => {
+
           const layer = p.layers[j];
+
           if (idx === 0) ctx.moveTo(p.x, layer.yTop);
+
           else ctx.lineTo(p.x, layer.yTop);
+
         });
+
         for (let idx = points.length - 1; idx >= 0; idx--) {
+
           const layer = points[idx].layers[j];
+
           ctx.lineTo(points[idx].x, layer.yBottom);
+
         }
+
         ctx.closePath();
+
         ctx.fillStyle = palette.fill;
+
         ctx.fill();
 
+
+
         ctx.beginPath();
+
         points.forEach((p, idx) => {
+
           const layer = p.layers[j];
+
           if (idx === 0) ctx.moveTo(p.x, layer.yTop);
+
           else ctx.lineTo(p.x, layer.yTop);
+
         });
+
         ctx.strokeStyle = palette.stroke;
+
         ctx.lineWidth = 2;
+
         ctx.stroke();
 
-        // 標籤字體改成深黑粗體，並將X座標往右微調偏移，避免重疊在開頭白色/無資料區域
+
+
         ctx.font = "bold 12px Inter, sans-serif";
+
         ctx.fillStyle = "#0f172a";
+
         ctx.textAlign = "center";
+
         
-        // 選擇較靠右側的資料點位置來放置文字標籤，確保有色區塊夠寬且不會擠在左側白區
+
         const targetPointIndex = Math.min(Math.max(Math.floor(points.length * 0.65), 3), points.length - 2);
+
         const p = points[targetPointIndex];
+
         if (p) {
+
           const layer = p.layers[j];
-          const blockHeight = layer.yBottom - layer.yTop;
-          if (blockHeight > 20) {
-            ctx.fillText(seriesName, p.x + 15, (layer.yTop + layer.yBottom) / 2 + 4);
-          }
+
+          const seriesTitle = stackedHeaders.series[sKey] || sKey;
+
+          ctx.fillText(seriesTitle, p.x + 12, (layer.yTop + layer.yBottom) / 2 + 4);
+
         }
+
       }
 
-      // 日期標籤優化：加入間距與旋轉角度，避免字體糊在一起
-      ctx.textAlign = "right";
-      ctx.fillStyle = "#64748b";
-      ctx.font = "11px Inter, sans-serif";
+
+
+      // 繪製右軸折線圖 (Line Series)
+
+      lineSeries.forEach((sKey, lineIdx) => {
+
+        const linePalette = "#8b5cf6"; // 紫色系折線
+
+        ctx.beginPath();
+
+        points.forEach((p, idx) => {
+
+          const yPos = p.lineValues[sKey];
+
+          if (idx === 0) ctx.moveTo(p.x, yPos);
+
+          else ctx.lineTo(p.x, yPos);
+
+        });
+
+        ctx.strokeStyle = linePalette;
+
+        ctx.lineWidth = 3;
+
+        ctx.stroke();
+
+
+
+        // 繪製折線圖資料點圓圈
+
+        points.forEach(p => {
+
+          const yPos = p.lineValues[sKey];
+
+          ctx.beginPath();
+
+          ctx.arc(p.x, yPos, 5, 0, Math.PI * 2);
+
+          ctx.fillStyle = "#ffffff";
+
+          ctx.fill();
+
+          ctx.strokeStyle = linePalette;
+
+          ctx.lineWidth = 2.5;
+
+          ctx.stroke();
+
+        });
+
+      });
+
+
+
+      // 繪製 X 軸日期標籤
+
+      ctx.font = "12px Inter, sans-serif";
+
+      ctx.fillStyle = "#334155";
+
+      ctx.textAlign = "center";
+
+      points.forEach(p => {
+
+        ctx.fillText(p.date, p.x, height - paddingBottom + 22);
+
+      });
+
+
+
+      // 繪製圖例 (Legend)
+
+      let legendX = paddingLeft;
+
+      const legendY = height - 25;
+
       
-      // 動態計算顯示頻率，若點數太多則間隔顯示以防擁擠
-      const skipInterval = points.length > 25 ? Math.ceil(points.length / 20) : 1;
 
-      points.forEach((p, idx) => {
-        if (idx % skipInterval === 0 || idx === points.length - 1) {
-          ctx.save();
-          ctx.translate(p.x, paddingTop + chartHeight + 18);
-          ctx.rotate(-Math.PI / 5); // 旋轉角度讓日期排開
-          ctx.fillText(p.date, 0, 0);
-          ctx.restore();
-        }
-      });
+      stackedSeries.forEach((sKey, j) => {
 
-      const legendY = height - 12;
-      const totalLegendWidth = stackedSeries.length * 110;
-      let startLegendX = (width - totalLegendWidth) / 2;
-
-      stackedSeries.forEach((s, j) => {
         const palette = STACKED_PALETTE[j % STACKED_PALETTE.length];
-        const seriesName = stackedHeaders.series[s] || `序列 ${j + 1}`;
+
+        const sName = stackedHeaders.series[sKey] || sKey;
+
+
+
         ctx.fillStyle = palette.stroke;
-        ctx.fillRect(startLegendX, legendY - 8, 12, 12);
+
+        ctx.fillRect(legendX, legendY - 10, 14, 14);
+
         ctx.fillStyle = "#0f172a";
+
         ctx.textAlign = "left";
-        ctx.fillText(seriesName, startLegendX + 18, legendY + 2);
-        startLegendX += 110;
+
+        ctx.fillText(sName, legendX + 20, legendY + 2);
+
+        legendX += ctx.measureText(sName).width + 35;
+
       });
+
+
+
+      lineSeries.forEach((sKey) => {
+
+        const sName = stackedHeaders.series[sKey] || sKey;
+
+        ctx.strokeStyle = "#8b5cf6";
+
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+
+        ctx.moveTo(legendX, legendY - 3);
+
+        ctx.lineTo(legendX + 20, legendY - 3);
+
+        ctx.stroke();
+
+
+
+        ctx.fillStyle = "#8b5cf6";
+
+        ctx.beginPath();
+
+        ctx.arc(legendX + 10, legendY - 3, 4, 0, Math.PI * 2);
+
+        ctx.fill();
+
+
+
+        ctx.fillStyle = "#0f172a";
+
+        ctx.textAlign = "left";
+
+        ctx.fillText(sName + " (右軸)", legendX + 26, legendY + 2);
+
+        legendX += ctx.measureText(sName + " (右軸)").width + 45;
+
+      });
+
     }
+
+
 
     function renderStackedAreaChart() {
+
       const canvas = document.getElementById("stackedAreaCanvas");
-      renderStackedAreaChartToCanvas(canvas);
+
+      if (canvas) renderStackedAreaChartToCanvas(canvas);
+
     }
 
-    function exportToExcel() {
-      const wb = XLSX.utils.book_new();
-      const wsLinear = XLSX.utils.json_to_sheet(flowData.map(item => ({
-        "步驟ID": item.id, "步驟名稱": item.label, "形狀": item.shape, "下一步ID": item.nextId, "條件": item.condition, "背景色": item.bgColor || "", "文字色": item.textColor || ""
-      })));
-      const wsTree = XLSX.utils.json_to_sheet(treeData.map(item => ({
-        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || "", "背景色": item.bgColor || "", "文字色": item.textColor || ""
-      })));
 
-      const stackedExportRows = stackedData.map(row => {
-        const obj = { [stackedHeaders.date]: row.date };
-        stackedSeries.forEach((s) => {
-          const colName = stackedHeaders.series[s] || s;
-          obj[colName] = row.values?.[s] || 0;
-        });
-        return obj;
-      });
-      const wsStacked = XLSX.utils.json_to_sheet(stackedExportRows);
 
-      XLSX.utils.book_append_sheet(wb, wsLinear, "線性流程資料");
-      XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料");
-      XLSX.utils.book_append_sheet(wb, wsStacked, "堆疊區域圖數據");
-      XLSX.writeFile(wb, "企業流程圖資料集.xlsx");
-    }
-
-    function exportTreeToExcel() {
-      const wb = XLSX.utils.book_new();
-      const wsTree = XLSX.utils.json_to_sheet(treeData.map(item => ({
-        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || "", "背景色": item.bgColor || "", "文字色": item.textColor || ""
-      })));
-      XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料_ToBe");
-      XLSX.writeFile(wb, "組織樹狀階層資料_ToBe.xlsx");
-    }
-
-    function exportTreeAsIsToExcel() {
-      const wb = XLSX.utils.book_new();
-      const wsTree = XLSX.utils.json_to_sheet(treeAsIsData.map(item => ({
-        "節點ID": item.id, "節點名稱": item.label, "父節點ID": item.parentId, "形狀": item.shape, "備註": item.note || "", "背景色": item.bgColor || "", "文字色": item.textColor || ""
-      })));
-      XLSX.utils.book_append_sheet(wb, wsTree, "樹狀階層資料_AsIs");
-      XLSX.writeFile(wb, "組織樹狀階層資料_AsIs.xlsx");
-    }
-
-    function exportStackedToExcel() {
-      const wb = XLSX.utils.book_new();
-      const stackedExportRows = stackedData.map(row => {
-        const obj = { [stackedHeaders.date]: row.date };
-        stackedSeries.forEach((s) => {
-          const colName = stackedHeaders.series[s] || s;
-          obj[colName] = row.values?.[s] || 0;
-        });
-        return obj;
-      });
-      const wsStacked = XLSX.utils.json_to_sheet(stackedExportRows);
-      XLSX.utils.book_append_sheet(wb, wsStacked, "堆疊區域圖數據");
-      XLSX.writeFile(wb, "堆疊區域圖數據報表.xlsx");
-    }
-
-    function handleStackedImport(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames.includes("堆疊區域圖數據") ? "堆疊區域圖數據" : workbook.SheetNames[0];
-        
-        if (sheetName) {
-          const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-          if (json.length > 0) {
-            const firstRow = json[0];
-            const keys = Object.keys(firstRow);
-            const dateKey = keys[0];
-            stackedHeaders.date = dateKey;
-
-            const seriesKeys = keys.slice(1);
-            stackedSeries = seriesKeys.map((sk, idx) => `series${idx + 1}`);
-            stackedHeaders.series = {};
-            seriesKeys.forEach((sk, idx) => {
-              stackedHeaders.series[`series${idx + 1}`] = sk;
-            });
-
-            stackedData = json.map(row => {
-              const rawDate = row[dateKey];
-              const dateVal = excelDateToString(rawDate);
-              const values = {};
-              seriesKeys.forEach((sk, idx) => {
-                values[`series${idx + 1}`] = Number(row[sk]) || 0;
-              });
-              return { date: dateVal, values };
-            });
-          }
-        }
-
-        renderStackedTable();
-        renderStackedAreaChart();
-        triggerAutoSave();
-        e.target.value = "";
-      };
-      reader.readAsArrayBuffer ? reader.readAsArrayBuffer(file) : reader.readAsBinaryString(file);
-    }
+    // 匯入 Excel 支援
 
     function handleImport(e) {
+
       const file = e.target.files[0];
+
       if (!file) return;
 
       const reader = new FileReader();
+
       reader.onload = function(evt) {
+
         const data = new Uint8Array(evt.target.result);
+
         const workbook = XLSX.read(data, { type: 'array' });
-        
-        if (workbook.SheetNames.includes("線性流程資料")) {
-          const json1 = XLSX.utils.sheet_to_json(workbook.Sheets["線性流程資料"]);
-          flowData = json1.map(row => ({
-            id: String(row["步驟ID"] || row["id"] || "").trim(),
-            label: String(row["步驟名稱"] || row["label"] || ""),
-            shape: String(row["形狀"] || row["shape"] || "rect").trim(),
-            nextId: String(row["下一步ID"] || row["nextId"] || "").trim(),
-            condition: String(row["條件"] || row["condition"] || "").trim(),
-            bgColor: String(row["背景色"] || row["bgColor"] || "").trim(),
-            textColor: String(row["文字色"] || row["textColor"] || "").trim()
+
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        const json = XLSX.utils.sheet_to_json(firstSheet);
+
+        if (json.length > 0) {
+
+          flowData = json.map(row => ({
+
+            id: String(row["步驟 ID"] || row["id"] || ""),
+
+            label: String(row["步驟名稱 (Label)"] || row["label"] || ""),
+
+            shape: String(row["節點形狀"] || row["shape"] || "rect"),
+
+            nextId: String(row["下一步 ID"] || row["nextId"] || ""),
+
+            condition: String(row["條件標籤"] || row["condition"] || ""),
+
+            bgColor: String(row["自訂顏色"] || row["bgColor"] || ""),
+
+            textColor: String(row["文字顏色"] || row["textColor"] || "")
+
           }));
+
+          renderTable();
+
+          renderAllCharts();
+
+          triggerAutoSave();
+
+          alert("線性流程資料匯入成功！");
+
         }
 
-        renderTable();
-        renderAllCharts();
-        triggerAutoSave();
       };
-      reader.readAsArrayBuffer ? reader.readAsArrayBuffer(file) : reader.readAsBinaryString(file);
+
+      reader.readAsArrayBuffer(file);
+
     }
+
+
 
     function handleTreeImport(e) {
+
       const file = e.target.files[0];
+
       if (!file) return;
 
       const reader = new FileReader();
+
       reader.onload = function(evt) {
+
         const data = new Uint8Array(evt.target.result);
+
         const workbook = XLSX.read(data, { type: 'array' });
-        
-        const sheetName = workbook.SheetNames.includes("樹狀階層資料") ? "樹狀階層資料" : workbook.SheetNames[0];
-        if (sheetName) {
-          const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        const json = XLSX.utils.sheet_to_json(firstSheet);
+
+        if (json.length > 0) {
+
           treeData = json.map(row => ({
-            id: String(row["節點ID"] || row["id"] || "").trim(),
-            label: String(row["節點名稱"] || row["label"] || "").trim(),
-            parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
-            shape: String(row["形狀"] || row["shape"] || "rect").trim(),
-            note: String(row["備註"] || row["note"] || "").trim(),
-            bgColor: String(row["背景色"] || row["bgColor"] || "").trim(),
-            textColor: String(row["文字色"] || row["textColor"] || "").trim()
+
+            id: String(row["節點 ID"] || row["id"] || ""),
+
+            label: String(row["節點名稱 (Label)"] || row["label"] || ""),
+
+            parentId: String(row["父節點 ID"] || row["parentId"] || ""),
+
+            shape: String(row["節點形狀"] || row["shape"] || "rect"),
+
+            note: String(row["備註"] || row["note"] || ""),
+
+            bgColor: String(row["自訂背景色"] || row["bgColor"] || "")
+
           }));
+
+          renderTreeTable();
+
+          renderAllCharts();
+
+          triggerAutoSave();
+
+          alert("樹狀階層資料 (To Be) 匯入成功！");
+
         }
 
-        renderTreeTable();
-        renderAllCharts();
-        triggerAutoSave();
       };
-      reader.readAsArrayBuffer ? reader.readAsArrayBuffer(file) : reader.readAsBinaryString(file);
+
+      reader.readAsArrayBuffer(file);
+
     }
+
+
 
     function handleTreeAsIsImport(e) {
+
       const file = e.target.files[0];
+
       if (!file) return;
 
       const reader = new FileReader();
+
       reader.onload = function(evt) {
+
         const data = new Uint8Array(evt.target.result);
+
         const workbook = XLSX.read(data, { type: 'array' });
-        
-        const sheetName = workbook.SheetNames.includes("樹狀階層資料_AsIs") ? "樹狀階層資料_AsIs" : workbook.SheetNames[0];
-        if (sheetName) {
-          const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-          try {
-            treeAsIsData = json.map(row => ({
-              id: String(row["節點ID"] || row["id"] || "").trim(),
-              label: String(row["節NET名稱"] || row["label"] || "").trim(),
-              parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
-              shape: String(row["形狀"] || row["shape"] || "rect").trim(),
-              note: String(row["備註"] || row["note"] || "").trim(),
-              bgColor: String(row["背景色"] || row["bgColor"] || "").trim(),
-              textColor: String(row["文字色"] || row["textColor"] || "").trim()
-            }));
-          } catch (err) {
-            console.error("資料解析錯誤", err);
-          }
+
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        const json = XLSX.utils.sheet_to_json(firstSheet);
+
+        if (json.length > 0) {
+
+          treeAsIsData = json.map(row => ({
+
+            id: String(row["節點 ID"] || row["id"] || ""),
+
+            label: String(row["節點名稱 (Label)"] || row["label"] || ""),
+
+            parentId: String(row["父節點 ID"] || row["parentId"] || ""),
+
+            shape: String(row["節點形狀"] || row["shape"] || "rect"),
+
+            note: String(row["備註"] || row["note"] || ""),
+
+            bgColor: String(row["自訂背景色"] || row["bgColor"] || "")
+
+          }));
+
+          renderTreeAsIsTable();
+
+          renderAllCharts();
+
+          triggerAutoSave();
+
+          alert("樹狀階層資料 (As Is) 匯入成功！");
+
         }
 
-        renderTreeAsIsTable();
-        renderAllCharts();
-        triggerAutoSave();
       };
-      reader.readAsArrayBuffer ? reader.readAsArrayBuffer(file) : reader.readAsBinaryString(file);
+
+      reader.readAsArrayBuffer(file);
+
     }
 
-    function exportToPNG(containerId, filename) {
-      const target = document.getElementById(containerId);
-      html2canvas(target, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
-        const link = document.createElement("a");
-        link.download = filename;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      });
+
+
+    function handleStackedImport(e) {
+
+      const file = e.target.files[0];
+
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function(evt) {
+
+        const data = new Uint8Array(evt.target.result);
+
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        const json = XLSX.utils.sheet_to_json(firstSheet);
+
+        if (json.length > 0) {
+
+          stackedData = json.map(row => {
+
+            const dateVal = excelDateToString(row[stackedHeaders.date] || row["YYMM"] || Object.values(row)[0]);
+
+            const values = {};
+
+            stackedSeries.forEach(s => {
+
+              const colName = stackedHeaders.series[s] || s;
+
+              values[s] = Number(row[colName] || row[s] || 0);
+
+            });
+
+            lineSeries.forEach(s => {
+
+              const colName = stackedHeaders.series[s] || s;
+
+              values[s] = Number(row[colName] || row[s] || 0);
+
+            });
+
+            return { date: dateVal, values };
+
+          });
+
+          renderStackedTable();
+
+          renderStackedAreaChart();
+
+          triggerAutoSave();
+
+          alert("雙軸圖表資料匯入成功！");
+
+        }
+
+      };
+
+      reader.readAsArrayBuffer(file);
+
     }
+
+
+
+    function exportToExcel() {
+
+      const worksheetData = flowData.map(item => ({
+
+        "步驟 ID": item.id,
+
+        "步驟名稱 (Label)": item.label,
+
+        "節點形狀": item.shape,
+
+        "下一步 ID": item.nextId,
+
+        "條件標籤": item.condition,
+
+        "自訂顏色": item.bgColor
+
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(worksheetData);
+
+      const wb = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(wb, ws, "LinearFlow");
+
+      XLSX.writeFile(wb, "線性流程圖資料.xlsx");
+
+    }
+
+
+
+    function exportTreeToExcel() {
+
+      const worksheetData = treeData.map(item => ({
+
+        "節點 ID": item.id,
+
+        "節點名稱 (Label)": item.label,
+
+        "父節點 ID": item.parentId,
+
+        "節點形狀": item.shape,
+
+        "備註": item.note,
+
+        "自訂背景色": item.bgColor
+
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(worksheetData);
+
+      const wb = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(wb, ws, "ToBeTree");
+
+      XLSX.writeFile(wb, "樹狀階層資料_ToBe.xlsx");
+
+    }
+
+
+
+    function exportTreeAsIsToExcel() {
+
+      const worksheetData = treeAsIsData.map(item => ({
+
+        "節點 ID": item.id,
+
+        "節點名稱 (Label)": item.label,
+
+        "父節點 ID": item.parentId,
+
+        "節點形狀": item.shape,
+
+        "備註": item.note,
+
+        "自訂背景色": item.bgColor
+
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(worksheetData);
+
+      const wb = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(wb, ws, "AsIsTree");
+
+      XLSX.writeFile(wb, "樹狀階層資料_AsIs.xlsx");
+
+    }
+
+
+
+    function exportStackedToExcel() {
+
+      const worksheetData = stackedData.map(row => {
+
+        const obj = { [stackedHeaders.date]: row.date };
+
+        stackedSeries.forEach(s => {
+
+          obj[stackedHeaders.series[s] || s] = row.values?.[s] || 0;
+
+        });
+
+        lineSeries.forEach(s => {
+
+          obj[stackedHeaders.series[s] || s] = row.values?.[s] || 0;
+
+        });
+
+        return obj;
+
+      });
+
+      const ws = XLSX.utils.json_to_sheet(worksheetData);
+
+      const wb = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(wb, ws, "DualAxisData");
+
+      XLSX.writeFile(wb, "雙軸圖表數據.xlsx");
+
+    }
+
+
+
+    function exportToPNG(targetId, filename) {
+
+      const el = document.getElementById(targetId);
+
+      if (!el) return;
+
+      html2canvas(el, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+
+        const link = document.createElement("a");
+
+        link.download = filename;
+
+        link.href = canvas.toDataURL("image/png");
+
+        link.click();
+
+      });
+
+    }
+
   </script>
+
 </body>
+
 </html>
