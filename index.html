@@ -1253,7 +1253,7 @@
           document.getElementById("portal-password").value = "";
         })
         .catch(err => {
-          errorEl.innerText = "登入失敗：帳號或密碼錯誤！(" + err.message + ")";
+          errorEl.innerText = "登入失敗：" + (err.code === 'auth/invalid-credential' ? '帳號或密碼錯誤' : err.message);
         });
     }
 
@@ -2523,15 +2523,19 @@
         const sheetName = workbook.SheetNames.includes("樹狀階層資料_AsIs") ? "樹狀階層資料_AsIs" : workbook.SheetNames[0];
         if (sheetName) {
           const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-          treeAsIsData = json.map(row => ({
-            id: String(row["節點ID"] || row["id"] || "").trim(),
-            label: String(row["節點名稱"] || row["label"] || "").trim(),
-            parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
-            shape: String(row["形狀"] || row["shape"] || "rect").trim(),
-            note: String(row["備註"] || row["note"] || "").trim(),
-            bgColor: String(row["背景色"] || row["bgColor"] || "").trim(),
-            textColor: String(row["文字色"] || row["textColor"] || "").trim()
-          }));
+          try {
+            treeAsIsData = json.map(row => ({
+              id: String(row["節點ID"] || row["id"] || "").trim(),
+              label: String(row["節點名稱"] || row["label"] || "").trim(),
+              parentId: String(row["父節點ID"] || row["parentId"] || "").trim(),
+              shape: String(row["形狀"] || row["shape"] || "rect").trim(),
+              note: String(row["備註"] || row["note"] || "").trim(),
+              bgColor: String(row["背景色"] || row["bgColor"] || "").trim(),
+              textColor: String(row["文字色"] || row["textColor"] || "").trim()
+            }));
+          } catch (err) {
+            console.error("資料解析錯誤", err);
+          }
         }
 
         renderTreeAsIsTable();
