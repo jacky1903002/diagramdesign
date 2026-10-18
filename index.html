@@ -2217,7 +2217,7 @@
       return String(serial || "");
     }
 
-    // 動態多序列堆疊區域圖繪製 (支援多欄位序列與文字標籤)
+    // 動態多序列堆疊區域圖繪製 (圖表內部文字標籤改為僅顯示序列名稱)
     function renderStackedAreaChartToCanvas(canvas) {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
@@ -2292,9 +2292,11 @@
         return { x, date: d.date, layers };
       });
 
-      // 繪製堆疊區域與數值文字標籤
+      // 繪製堆疊區域與序列名稱文字標籤 (不帶數值)
       for (let j = stackedSeries.length - 1; j >= 0; j--) {
         const palette = STACKED_PALETTE[j % STACKED_PALETTE.length];
+        const sKey = stackedSeries[j];
+        const seriesName = stackedHeaders.series[sKey] || `序列 ${j + 1}`;
         
         ctx.beginPath();
         points.forEach((p, idx) => {
@@ -2320,16 +2322,21 @@
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // 數值文字標籤（數值大於 0 時繪製）
-        ctx.font = "10px Inter, sans-serif";
-        ctx.fillStyle = "#1e293b";
+        // 僅在區塊中心顯示序列名稱文字標籤
+        ctx.font = "11px Inter, sans-serif";
+        ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
-        points.forEach(p => {
+        
+        // 為了避免文字過於擁擠，選取中間點附近的資料點顯示標籤
+        const targetPointIndex = Math.floor(points.length / 2);
+        const p = points[targetPointIndex];
+        if (p) {
           const layer = p.layers[j];
-          if (layer.val > 0) {
-            ctx.fillText(layer.val, p.x, (layer.yTop + layer.yBottom) / 2 + 4);
+          const blockHeight = layer.yBottom - layer.yTop;
+          if (blockHeight > 25 && layer.val > 0) {
+            ctx.fillText(seriesName, p.x, (layer.yTop + layer.yBottom) / 2 + 4);
           }
-        });
+        }
       }
 
       // X 軸標籤 (YYMM)
