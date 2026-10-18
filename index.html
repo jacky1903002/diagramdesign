@@ -1076,7 +1076,8 @@
     let stackedHeaders = {
       date: "YYMM",
       series: { series1: "Graphite", series2: "G3(Back)", series3: "AIBT(+)", series4: "Varian(+)" },
-      total: "總計"
+      total: "總計",
+      chartTitle: "堆疊區域圖數據趨勢"
     };
 
     let stackedSeries = ["series1", "series2", "series3", "series4"];
@@ -1138,7 +1139,7 @@
       }, 50);
     };
 
-    // 支援所有圖表標題雙擊修改名稱
+    // 支援所有圖表標題雙擊修改名稱 (包含 HTML DOM 標題與 Canvas 內部標題)
     function setupEditableChartTitles() {
       document.querySelectorAll('.editable-chart-title').forEach(titleEl => {
         titleEl.addEventListener('dblclick', () => {
@@ -1331,6 +1332,19 @@
       document.getElementById("snake-direction").addEventListener("change", () => renderSnakeChart());
       document.getElementById("v-snake-cols").addEventListener("change", () => renderVerticalSnakeChart());
       document.getElementById("v-snake-direction").addEventListener("change", () => renderVerticalSnakeChart());
+
+      // 針對堆疊區域圖 Canvas 雙擊修改標題事件
+      const stackedCanvas = document.getElementById("stackedAreaCanvas");
+      if (stackedCanvas) {
+        stackedCanvas.addEventListener("dblclick", () => {
+          const newTitle = prompt("請輸入新的堆疊區域圖標題：", stackedHeaders.chartTitle);
+          if (newTitle !== null && newTitle.trim() !== "") {
+            stackedHeaders.chartTitle = newTitle.trim();
+            renderStackedAreaChart();
+            triggerAutoSave();
+          }
+        });
+      }
 
       document.addEventListener("click", () => {
         const existingPopup = document.getElementById("color-picker-popup");
@@ -1613,7 +1627,6 @@
       });
     }
 
-    // 動態堆疊區域圖表格渲染與「雙擊更改表頭名稱」功能
     function renderStackedTable() {
       const thead = document.getElementById("stacked-table-head");
       const tbody = document.getElementById("stacked-table-body");
@@ -2242,7 +2255,7 @@
       return String(serial || "");
     }
 
-    // 動態多序列堆疊區域圖繪製
+    // 動態多序列堆疊區域圖繪製 (包含雙擊可修改的 Canvas 標題)
     function renderStackedAreaChartToCanvas(canvas) {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
@@ -2254,11 +2267,11 @@
 
       ctx.clearRect(0, 0, width, height);
 
-      // Title
+      // 繪製圖表標題
       ctx.font = "bold 16px Inter, sans-serif";
       ctx.fillStyle = "#0f172a";
       ctx.textAlign = "center";
-      ctx.fillText(`堆疊區域圖數據趨勢 (${Object.values(stackedHeaders.series).join(' / ')})`, width / 2, 28);
+      ctx.fillText(`${stackedHeaders.chartTitle} (${Object.values(stackedHeaders.series).join(' / ')})`, width / 2, 28);
 
       const paddingLeft = 65;
       const paddingRight = 40;
