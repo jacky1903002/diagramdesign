@@ -205,6 +205,13 @@
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 12px;
+      cursor: default;
+    }
+    .card-title span[data-editable="true"]:hover {
+      background-color: #eff6ff;
+      border-radius: 4px;
+      padding: 2px 6px;
+      cursor: pointer;
     }
 
     .btn {
@@ -674,7 +681,8 @@
       <button class="tab-btn" onclick="switchTab('tab-vertical')">📊 8. 標準垂直流程圖</button>
       <button class="tab-btn" onclick="switchTab('tab-snake')">🐍 9. S型橫向貪食蛇</button>
       <button class="tab-btn" onclick="switchTab('tab-v-snake')">📐 10. 垂直長條貪食蛇</button>
-      <button class="tab-btn" onclick="switchTab('tab-stacked-area')">📈 11. 堆疊區域圖</button>
+      <button class="tab-btn" onclick="switchTab('tab-data-stacked')">📁 11. 堆疊區域資料</button>
+      <button class="tab-btn" onclick="switchTab('tab-stacked-chart')">📈 12. 堆疊區域圖</button>
     </div>
 
     <div class="main-container">
@@ -746,7 +754,7 @@
       <div id="tab-tree-chart" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>樹狀階層流程圖 (To Be - 備註即時連動)</span>
+            <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">樹狀階層流程圖 (To Be - 備註即時連動)</span>
             <div>
               <button class="btn btn-outline" onclick="openFullscreen('tree-chart-target', '樹狀階層流程圖 (To Be)')">🔍 全螢幕檢視</button>
               <button class="btn btn-success" id="export-png-btn-4">下載高解析度 PNG</button>
@@ -762,7 +770,7 @@
       <div id="tab-h-tree-chart" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>橫向樹狀階層圖 (To Be - 備註即時連動)</span>
+            <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">橫向樹狀階層圖 (To Be - 備註即時連動)</span>
             <div>
               <button class="btn btn-outline" onclick="openFullscreen('h-tree-chart-target', '橫向樹狀階層圖 (To Be)')">🔍 全螢幕檢視</button>
               <button class="btn btn-success" id="export-png-btn-5">下載高解析度 PNG</button>
@@ -809,7 +817,7 @@
       <div id="tab-tree-asis-chart" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>樹狀階層流程圖 (As Is - 現況架構與備註連動)</span>
+            <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">樹狀階層流程圖 (As Is - 現況架構與備註連動)</span>
             <div>
               <button class="btn btn-outline" onclick="openFullscreen('tree-asis-chart-target', '樹狀階層流程圖 (As Is)')">🔍 全螢幕檢視</button>
               <button class="btn btn-success" id="export-png-btn-6">下載高解析度 PNG</button>
@@ -825,7 +833,7 @@
       <div id="tab-h-tree-asis-chart" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>橫向樹狀階層圖 (As Is - 現況架構與備註連動)</span>
+            <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">橫向樹狀階層圖 (As Is - 現況架構與備註連動)</span>
             <div>
               <button class="btn btn-outline" onclick="openFullscreen('h-tree-asis-chart-target', '橫向樹狀階層圖 (As Is)')">🔍 全螢幕檢視</button>
               <button class="btn btn-success" id="export-png-btn-7">下載高解析度 PNG</button>
@@ -841,7 +849,7 @@
       <div id="tab-vertical" class="tab-content">
         <div class="card">
           <div class="card-title">
-            <span>標準垂直流程圖 (提示：雙擊格子可開啟 10 色選單)</span>
+            <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">標準垂直流程圖 (提示：雙擊格子可開啟 10 色選單)</span>
             <div>
               <button class="btn btn-outline" onclick="openFullscreen('vertical-chart-target', '標準垂直流程圖')">🔍 全螢幕檢視</button>
               <button class="btn btn-success" id="export-png-btn-1">下載高解析度 PNG</button>
@@ -858,7 +866,7 @@
         <div class="card">
           <div class="card-title">
             <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-              <span>S 型橫向貪食蛇流程圖</span>
+              <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">S 型橫向貪食蛇流程圖</span>
               <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
                 每行步驟數：
                 <input type="number" id="snake-cols" value="4" min="2" max="8" style="width: 65px; padding: 4px 8px;">
@@ -887,7 +895,7 @@
         <div class="card">
           <div class="card-title">
             <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-              <span>垂直長條型貪食蛇流程圖</span>
+              <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">垂直長條型貪食蛇流程圖</span>
               <label style="font-size: 14px; font-weight: normal; color: var(--text-muted);">
                 每行步驟數：
                 <input type="number" id="v-snake-cols" value="6" min="2" max="12" style="width: 65px; padding: 4px 8px;">
@@ -911,8 +919,8 @@
         </div>
       </div>
 
-      <!-- 分頁 11: 堆疊區域圖 (支援雙擊修改欄位名稱與圖表序列文字標籤) -->
-      <div id="tab-stacked-area" class="tab-content">
+      <!-- 分頁 11: 堆疊區域資料 (獨立資料管理分頁) -->
+      <div id="tab-data-stacked" class="tab-content">
         <div class="card">
           <div class="card-title">
             <span>堆疊區域圖數據與動態序列管理 (提示：雙擊表頭可更改欄位名稱)</span>
@@ -922,22 +930,31 @@
               <button class="btn btn-success" id="add-stacked-row-btn">＋ 新增數據列</button>
               <button class="btn" id="add-stacked-series-btn">＋ 新增序列</button>
               <button class="btn btn-danger btn-outline" id="remove-stacked-series-btn">🗑️ 刪除序列</button>
-              <button class="btn btn-outline" onclick="openFullscreen('stacked-chart-target', '堆疊區域圖')">🔍 全螢幕檢視</button>
-              <button class="btn btn-success" id="export-png-btn-8">下載高解析度 PNG</button>
               <input type="file" id="stacked-excel-file" accept=".xlsx, .xls" style="display:none;">
             </div>
           </div>
-          <div style="display: flex; gap: 24px; flex-wrap: wrap; flex: 1; align-items: stretch;">
-            <div class="table-container" style="flex: 1; min-width: 420px;">
-              <table id="stacked-data-table">
-                <thead id="stacked-table-head"></thead>
-                <tbody id="stacked-table-body"></tbody>
-              </table>
+          <div class="table-container">
+            <table id="stacked-data-table">
+              <thead id="stacked-table-head"></thead>
+              <tbody id="stacked-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分頁 12: 堆疊區域圖 (獨立滿版全螢幕圖表分頁) -->
+      <div id="tab-stacked-chart" class="tab-content">
+        <div class="card">
+          <div class="card-title">
+            <span class="editable-chart-title" data-editable="true" title="雙擊可修改標題">堆疊區域圖 (支援平移、縮放與圖表序列檢視)</span>
+            <div>
+              <button class="btn btn-outline" onclick="openFullscreen('stacked-chart-target', '堆疊區域圖')">🔍 全螢幕檢視</button>
+              <button class="btn btn-success" id="export-png-btn-8">下載高解析度 PNG</button>
             </div>
-            <div class="chart-full-area" style="flex: 1; min-width: 400px; min-height: 450px;" id="stacked-chart-container">
-              <div class="chart-inner-canvas" id="stacked-chart-target" style="width: 100%; height: 100%; position: relative;">
-                <canvas id="stackedAreaCanvas" style="width: 100%; height: 380px;"></canvas>
-              </div>
+          </div>
+          <div class="chart-full-area" id="stacked-chart-container">
+            <div class="chart-inner-canvas" id="stacked-chart-target" style="width: 100%; height: 100%; position: relative; min-height: 500px;">
+              <canvas id="stackedAreaCanvas" style="width: 100%; height: 480px;"></canvas>
             </div>
           </div>
         </div>
@@ -1086,6 +1103,7 @@
       renderAllCharts();
       setupEventListeners();
       setupPanAndZoomContainers();
+      setupEditableChartTitles();
 
       onAuthStateChanged(auth, async (user) => {
         const loginPortal = document.getElementById("login-portal");
@@ -1119,6 +1137,19 @@
         renderStackedAreaChart();
       }, 50);
     };
+
+    // 支援所有圖表標題雙擊修改名稱
+    function setupEditableChartTitles() {
+      document.querySelectorAll('.editable-chart-title').forEach(titleEl => {
+        titleEl.addEventListener('dblclick', () => {
+          const currentText = titleEl.innerText;
+          const newTitle = prompt("請輸入新的圖表標題名稱：", currentText);
+          if (newTitle !== null && newTitle.trim() !== "") {
+            titleEl.innerText = newTitle.trim();
+          }
+        });
+      });
+    }
 
     function setupPanAndZoomContainers() {
       const containers = document.querySelectorAll('.chart-full-area');
@@ -1588,7 +1619,6 @@
       const tbody = document.getElementById("stacked-table-body");
       if (!thead || !tbody) return;
 
-      // 建立動態表頭並綁定雙擊事件
       let headHTML = `<tr><th style="width: 25%;" id="th-date" title="雙擊可修改名稱">${stackedHeaders.date} ✏️</th>`;
       stackedSeries.forEach((s, i) => {
         const titleName = stackedHeaders.series[s] || `序列 ${i + 1}`;
@@ -1597,7 +1627,6 @@
       headHTML += `<th style="width: 15%;" id="th-total" title="雙擊可修改名稱">${stackedHeaders.total} ✏️</th><th style="width: 10%;">操作</th></tr>`;
       thead.innerHTML = headHTML;
 
-      // 綁定表頭雙擊更改名稱事件
       document.getElementById("th-date").addEventListener("dblclick", () => {
         const newName = prompt("請輸入新的日期欄位名稱：", stackedHeaders.date);
         if (newName !== null && newName.trim() !== "") {
@@ -1632,7 +1661,6 @@
         });
       });
 
-      // 建立動態表格內容
       tbody.innerHTML = "";
       stackedData.forEach((row, index) => {
         if (!row.values) row.values = {};
@@ -1655,7 +1683,6 @@
         tbody.appendChild(tr);
       });
 
-      // 綁定日期輸入事件
       document.querySelectorAll("#stacked-data-table input[data-field='date']").forEach(input => {
         input.addEventListener("input", (e) => {
           const idx = e.target.dataset.index;
@@ -1665,7 +1692,6 @@
         });
       });
 
-      // 綁定數值輸入事件
       document.querySelectorAll(".stacked-val-input").forEach(input => {
         input.addEventListener("input", (e) => {
           const idx = e.target.dataset.index;
@@ -1684,7 +1710,6 @@
         });
       });
 
-      // 綁定刪除列事件
       document.querySelectorAll("#stacked-data-table .delete-stacked-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
           const idx = e.target.dataset.index;
@@ -2217,12 +2242,12 @@
       return String(serial || "");
     }
 
-    // 動態多序列堆疊區域圖繪製 (圖表內部文字標籤改為僅顯示序列名稱)
+    // 動態多序列堆疊區域圖繪製
     function renderStackedAreaChartToCanvas(canvas) {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
-      const width = canvas.parentElement.clientWidth || 500;
-      const height = 380;
+      const width = canvas.parentElement.clientWidth || 800;
+      const height = 450;
       canvas.width = width * window.devicePixelRatio;
       canvas.height = height * window.devicePixelRatio;
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -2233,12 +2258,12 @@
       ctx.font = "bold 16px Inter, sans-serif";
       ctx.fillStyle = "#0f172a";
       ctx.textAlign = "center";
-      ctx.fillText(`圖表標題：堆疊區域圖 (${Object.values(stackedHeaders.series).join(' / ')})`, width / 2, 28);
+      ctx.fillText(`堆疊區域圖數據趨勢 (${Object.values(stackedHeaders.series).join(' / ')})`, width / 2, 28);
 
-      const paddingLeft = 55;
-      const paddingRight = 30;
-      const paddingTop = 50;
-      const paddingBottom = 60;
+      const paddingLeft = 65;
+      const paddingRight = 40;
+      const paddingTop = 55;
+      const paddingBottom = 75;
       const chartWidth = width - paddingLeft - paddingRight;
       const chartHeight = height - paddingTop - paddingBottom;
 
@@ -2292,7 +2317,6 @@
         return { x, date: d.date, layers };
       });
 
-      // 繪製堆疊區域與序列名稱文字標籤 (不帶數值)
       for (let j = stackedSeries.length - 1; j >= 0; j--) {
         const palette = STACKED_PALETTE[j % STACKED_PALETTE.length];
         const sKey = stackedSeries[j];
@@ -2322,12 +2346,10 @@
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // 僅在區塊中心顯示序列名稱文字標籤
         ctx.font = "11px Inter, sans-serif";
         ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         
-        // 為了避免文字過於擁擠，選取中間點附近的資料點顯示標籤
         const targetPointIndex = Math.floor(points.length / 2);
         const p = points[targetPointIndex];
         if (p) {
@@ -2339,7 +2361,6 @@
         }
       }
 
-      // X 軸標籤 (YYMM)
       ctx.textAlign = "center";
       ctx.fillStyle = "#64748b";
       ctx.font = "11px Inter, sans-serif";
@@ -2351,9 +2372,8 @@
         ctx.restore();
       });
 
-      // 圖例 (Legend) 帶文字標籤
-      const legendY = height - 10;
-      const totalLegendWidth = stackedSeries.length * 100;
+      const legendY = height - 15;
+      const totalLegendWidth = stackedSeries.length * 110;
       let startLegendX = (width - totalLegendWidth) / 2;
 
       stackedSeries.forEach((s, j) => {
@@ -2364,7 +2384,7 @@
         ctx.fillStyle = "#0f172a";
         ctx.textAlign = "left";
         ctx.fillText(seriesName, startLegendX + 18, legendY + 2);
-        startLegendX += 105;
+        startLegendX += 110;
       });
     }
 
@@ -2373,7 +2393,6 @@
       renderStackedAreaChartToCanvas(canvas);
     }
 
-    // Excel 匯出定義
     function exportToExcel() {
       const wb = XLSX.utils.book_new();
       const wsLinear = XLSX.utils.json_to_sheet(flowData.map(item => ({
@@ -2432,7 +2451,6 @@
       XLSX.writeFile(wb, "堆疊區域圖數據報表.xlsx");
     }
 
-    // 支援多欄位序列與日期轉換的 Excel 匯入模組
     function handleStackedImport(e) {
       const file = e.target.files[0];
       if (!file) return;
